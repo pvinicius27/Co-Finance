@@ -244,8 +244,8 @@ for (const [id, bco, nome, rot, a, b, tinta] of F_BIBLIOTECA) {
 }
 // bandeira de cada modelo (da lista dos sites dos bancos; sem ela, o nome do modelo dá a pista) e a função dos que não são de crédito
 const F_MODELO_BAND = {"bb-ourocard-facil": "Visa", "bb-ourocard-universitario": "Visa", "bb-ourocard-visa-gold": "Visa", "bb-ourocard-visa-platinum": "Visa", "bb-ourocard-infinite": "Visa", "bb-ourocard-elo": "Elo", "bb-ourocard-elo-mais": "Elo", "bb-ourocard-grafite": "Elo", "bb-ourocard-nanquim": "Elo", "bb-ourocard-platinum-mastercard": "Mastercard", "bb-ourocard-mastercard-black": "Mastercard", "bb-ourocard-pre-pago": "Visa", "bb-ourocard-travelmoney": "Visa", "bb-smiles-gold": "Visa", "bb-smiles-platinum": "Visa", "bb-smiles-infinite": "Visa", "bb-saraiva": "Visa", "bb-petrobras": "Visa", "bb-dotz-international": "Visa", "bb-dotz-platinum": "Visa", "bb-ame": "Mastercard", "bradesco-visa-gold": "Visa", "bradesco-universitario-visa-gold": "Visa", "bradesco-neo-visa-platinum": "Visa", "bradesco-visa-platinum": "Visa", "bradesco-like-visa": "Visa", "bradesco-visa-signature": "Visa", "bradesco-visa-infinite": "Visa", "bradesco-visa-aeternum": "Visa", "bradesco-gol-smiles-visa-gold": "Visa", "bradesco-gol-smiles-visa-platinum": "Visa", "bradesco-gol-smiles-visa-infinite": "Visa", "bradesco-disney-visa-infinite-magia": "Visa", "bradesco-disney-visa-infinite-star-wars": "Visa", "bradesco-disney-visa-infinite-amigos": "Visa", "bradesco-disney-visa-signature-amigos": "Visa", "bradesco-disney-visa-signature-star-wars": "Visa", "bradesco-horizon-visa-infinite": "Visa", "bradesco-united-mileageplus-visa-infinit": "Visa", "bradesco-marriott-bonvoy-visa-infinite": "Visa", "bradesco-agora-visa-infinite": "Visa", "bradesco-visa-platinum-sem-anuidade": "Visa", "bradesco-visa-internacional": "Visa", "bradesco-gol-smiles-visa-internacional": "Visa", "bradesco-harley-davidson-visa-platinum": "Visa", "bradesco-harley-davidson-visa-signature": "Visa", "bradesco-seguros-visa-gold": "Visa", "bradesco-seguros-visa-platinum": "Visa", "bradesco-seguros-visa-signature": "Visa", "bradesco-visa-nacional": "Visa", "bradesco-visa-universitario-nacional": "Visa", "bradesco-visa-nacional-mais": "Visa", "bradesco-music-visa-platinum": "Visa", "bradesco-visa-basico": "Visa", "bradesco-sos-mata-atlantica": "Visa", "bradesco-sos-visa-gold": "Visa", "bradesco-sos-visa-platinum": "Visa", "bradesco-amex-green": "Amex", "bradesco-amex-gold-card": "Amex", "bradesco-the-platinum-card": "Amex", "bradesco-amex-credit": "Amex", "bradesco-amex-credit-2": "Amex", "bradesco-amex-blue": "Amex", "bradesco-amex-gold-credit": "Amex", "bradesco-seguros-amex-gold": "Amex", "bradesco-amex-gold-credit-2": "Amex", "bradesco-gold-amex": "Amex", "bradesco-seguros-amex-platinum": "Amex", "bradesco-platinum-amex": "Amex", "bradesco-amex-platinum-credit": "Amex", "bradesco-elo-consignado-inss-internacional": "Elo", "bradesco-elo-consignado-internacional": "Elo", "bradesco-elo-internacional": "Elo", "bradesco-elo-mais-internacional": "Elo", "bradesco-elo-grafite": "Elo", "bradesco-elo-nanquim": "Elo", "bradesco-elo-diners-club": "Elo", "bradesco-elo-nacional": "Elo", "bradesco-seguros-elo-nacional": "Elo", "bradesco-music-elo-nacional": "Elo", "bradesco-elo-plus": "Elo", "bradesco-elo-mais": "Elo", "bradesco-elo-universitario-funcao-credito": "Elo", "bradesco-music-elo-internacional": "Elo", "bradesco-elo-plus-internacional": "Elo", "bradesco-seguros-elo-internacional": "Elo", "bradesco-seguros-elo-mais": "Elo", "bradesco-seguros-elo-grafite": "Elo", "bradesco-seguros-elo-nanquim": "Elo", "bradesco-elo-consignado-inss": "Elo", "bradesco-elo-consignado": "Elo", "bradesco-elo-internacional-basico": "Elo", "bradesco-fas-elo-internacional": "Elo", "bradesco-elo-internacional-funcao-credito": "Elo", "bradesco-sos-elo-internacional": "Elo", "bradesco-elo-nacional-funcao-credito": "Elo", "bradesco-mastercard-nacional": "Mastercard", "bradesco-mastercard-internacional": "Mastercard", "bradesco-mastercard-gold": "Mastercard", "bradesco-mastercard-platinum": "Mastercard", "bradesco-mastercard-black": "Mastercard", "bradesco-gol-smiles-mastercard-internacional": "Mastercard", "bradesco-gol-smiles-mastercard-gold": "Mastercard", "bradesco-gol-smiles-mastercard-platinum": "Mastercard", "bradesco-fas-mastercard-gold": "Mastercard", "bradesco-fas-mastercard-internacional": "Mastercard", "bradesco-fas-mastercard-nacional": "Mastercard", "bradesco-debito-visa-internacional": "Visa", "bradesco-debito-visa": "Visa", "bradesco-multiplo-universitario-visa": "Visa", "bradesco-debito-click-conta-visa": "Visa", "bradesco-debito-poupcard-visa": "Visa", "bradesco-debito-conta-salario-visa": "Visa", "bradesco-debito-inss-visa": "Visa", "bradesco-debito-bpc-visa": "Visa", "bradesco-debito-elo-internacional": "Elo", "bradesco-multiplo-elo": "Elo", "bradesco-multiplo-universitario-elo": "Elo", "bradesco-debito-universitario-elo": "Elo", "bradesco-debito-click-conta-elo": "Elo", "bradesco-debito-poupcard-elo": "Elo", "bradesco-debito-conta-salario-elo": "Elo", "bradesco-debito-inss-elo": "Elo", "bradesco-debito-bpc-elo": "Elo", "amazon-bradesco": "Mastercard", "bradesco-amazon-prime": "Mastercard", "brb-visa-infinite": "Visa", "brb-mastercard-black": "Mastercard", "brb-visa-platinum": "Visa", "brb-visa-gold": "Visa", "brb-connect": "Visa", "brb-nacao-brb-fla": ["Visa", "Mastercard"], "btg-ultrablue-world-legend": "Mastercard", "btg-ultrablue": "Mastercard", "btg-black": "Mastercard", "btg-platinum": "Mastercard", "btg-gold": "Mastercard", "btg-tap-black": "Mastercard", "c6-carbon": "Mastercard", "c6-black": "Mastercard", "c6-platinum": "Mastercard", "c6-graphene": "Mastercard", "c6-sunset": "Mastercard", "c6-bubblegum": "Mastercard", "c6-red": "Mastercard", "c6-gold": "Mastercard", "c6-pink": "Mastercard", "c6-boreal-forest": "Mastercard", "c6-silver": "Mastercard", "c6-rainbow": "Mastercard", "c6-acqua": "Mastercard", "c6-blue": "Mastercard", "infinitepay-infinitepay": "Mastercard", "inter-laranja": "Mastercard", "inter-platinum": "Mastercard", "inter-prime": "Mastercard", "inter-win": "Mastercard", "itau-azul-infinite": "Visa", "itau-latam-black": "Mastercard", "itau-azul-platinum": "Visa", "itau-platinum": "Visa", "itau-uniclass-signature": "Visa", "itau-personnalite": "Mastercard", "nubank-roxo": "Mastercard", "nubank-croma": "Mastercard", "nubank-ultravioleta": "Mastercard", "santander-aadvantage-black": "Mastercard", "santander-aadvantage-platinum": "Mastercard", "santander-aadvantage-quantum": "Mastercard", "santander-smiles-infinite": "Visa", "santander-smiles-platinum": "Visa", "santander-smiles-gold": "Visa", "bb-ourocard-debito": "Visa", "bradesco-prime": "Visa", "brb-mastercard-platinum": "Mastercard", "brb-mastercard-gold": "Mastercard", "brb-mastercard-connect": "Mastercard", "c6-basico": "Mastercard", "c6-business": "Mastercard", "itau-azul-gold-visa": "Visa", "itau-azul-gold-mastercard": "Mastercard", "itau-azul-internacional-visa": "Visa", "itau-azul-internacional-mastercard": "Mastercard", "itau-azul-skyline": "Mastercard", "itau-azul-platinum-mastercard": "Mastercard", "itau-instituto-ayrton-senna-mastercard": "Mastercard", "itau-instituto-ayrton-senna-platinum-visa": "Visa", "itau-platinum-mastercard": "Mastercard", "itau-uniclass-black-mastercard": "Mastercard", "itau-uniclass-platinum-mastercard": "Mastercard", "itau-visa-platinum": "Visa", "itau-latam-pass-gold-visa": "Visa", "itau-latam-pass-gold-mastercard": "Mastercard", "itau-latam-pass-infinite-visa": "Visa", "itau-latam-pass-internacional-visa": "Visa", "itau-latam-pass-internacional-mastercard": "Mastercard", "itau-latam-pass-platinum-mastercard": "Mastercard", "itau-latam-pass-platinum-visa": "Visa", "itau-passai-gold": "Visa", "itau-personnalite-black-pontos-mastercard": "Mastercard", "itau-samsung-platinum-visa": "Visa", "itau-samsung-platinum-mastercard": "Mastercard", "itau-n-card-gold-visa": "Visa", "itau-players-bank-platinum": "Mastercard", "itau-pontofrio-internacional-mastercard": "Mastercard", "itau-tim-gold-visa": "Visa", "itau-tim-gold-mastercard": "Mastercard", "itau-tim-internacional-visa": "Visa", "itau-tim-internacional-mastercard": "Mastercard", "itau-tim-platinum-visa": "Visa", "itau-tim-platinum-mastercard": "Mastercard", "itau-empresas": ["Visa", "Mastercard"], "itau-empresas-mastercard-black": "Mastercard", "santander-unlimited": ["Visa", "Mastercard"], "santander-unique": ["Visa", "Mastercard"], "santander-elite": ["Visa", "Mastercard"], "santander-free": ["Visa", "Mastercard"]};
-const F_MODELO_FOTO = new Set(["bb-ame", "bb-dotz-international", "bb-dotz-platinum", "bb-ourocard-elo", "bb-ourocard-elo-mais", "bb-ourocard-facil", "bb-ourocard-grafite", "bb-ourocard-infinite", "bb-ourocard-mastercard-black", "bb-ourocard-nanquim", "bb-ourocard-platinum-mastercard", "bb-ourocard-pre-pago", "bb-ourocard-travelmoney", "bb-ourocard-universitario", "bb-ourocard-visa-gold", "bb-ourocard-visa-platinum", "bb-petrobras", "bb-saraiva", "bb-smiles-gold", "bb-smiles-infinite", "bb-smiles-platinum", "bradesco-agora-visa-infinite", "bradesco-amex-blue", "bradesco-amex-credit", "bradesco-amex-credit-2", "bradesco-amex-gold-card", "bradesco-amex-gold-credit", "bradesco-amex-gold-credit-2", "bradesco-amex-green", "bradesco-amex-platinum-credit", "bradesco-debito-bpc-elo", "bradesco-debito-bpc-visa", "bradesco-debito-click-conta-elo", "bradesco-debito-click-conta-visa", "bradesco-debito-conta-salario-elo", "bradesco-debito-conta-salario-visa", "bradesco-debito-elo-internacional", "bradesco-debito-inss-elo", "bradesco-debito-inss-visa", "bradesco-debito-poupcard-elo", "bradesco-debito-poupcard-visa", "bradesco-debito-universitario-elo", "bradesco-debito-visa", "bradesco-debito-visa-internacional", "bradesco-elo-consignado", "bradesco-elo-consignado-inss", "bradesco-elo-consignado-inss-internacional", "bradesco-elo-consignado-internacional", "bradesco-elo-diners-club", "bradesco-elo-grafite", "bradesco-elo-internacional", "bradesco-elo-internacional-basico", "bradesco-elo-internacional-funcao-credito", "bradesco-elo-mais", "bradesco-elo-mais-internacional", "bradesco-elo-nacional", "bradesco-elo-nacional-funcao-credito", "bradesco-elo-nanquim", "bradesco-elo-plus", "bradesco-elo-plus-internacional", "bradesco-elo-universitario-funcao-credito", "bradesco-fas-elo-internacional", "bradesco-fas-mastercard-gold", "bradesco-fas-mastercard-internacional", "bradesco-fas-mastercard-nacional", "bradesco-gol-smiles-mastercard-gold", "bradesco-gol-smiles-mastercard-internacional", "bradesco-gol-smiles-mastercard-platinum", "bradesco-gol-smiles-visa-gold", "bradesco-gol-smiles-visa-infinite", "bradesco-gol-smiles-visa-internacional", "bradesco-gol-smiles-visa-platinum", "bradesco-gold-amex", "bradesco-horizon-visa-infinite", "bradesco-like-visa", "bradesco-marriott-bonvoy-visa-infinite", "bradesco-mastercard-black", "bradesco-mastercard-gold", "bradesco-mastercard-internacional", "bradesco-mastercard-nacional", "bradesco-mastercard-platinum", "bradesco-multiplo-elo", "bradesco-multiplo-universitario-elo", "bradesco-multiplo-universitario-visa", "bradesco-music-elo-internacional", "bradesco-music-elo-nacional", "bradesco-music-visa-platinum", "bradesco-neo-visa-platinum", "bradesco-platinum-amex", "bradesco-seguros-amex-gold", "bradesco-seguros-amex-platinum", "bradesco-seguros-elo-grafite", "bradesco-seguros-elo-internacional", "bradesco-seguros-elo-mais", "bradesco-seguros-elo-nacional", "bradesco-seguros-elo-nanquim", "bradesco-seguros-visa-gold", "bradesco-seguros-visa-platinum", "bradesco-seguros-visa-signature", "bradesco-sos-elo-internacional", "bradesco-sos-mata-atlantica", "bradesco-sos-visa-gold", "bradesco-sos-visa-platinum", "bradesco-the-platinum-card", "bradesco-united-mileageplus-visa-infinit", "bradesco-universitario-visa-gold", "bradesco-visa-aeternum", "bradesco-visa-basico", "bradesco-visa-gold", "bradesco-visa-infinite", "bradesco-visa-internacional", "bradesco-visa-nacional", "bradesco-visa-nacional-mais", "bradesco-visa-platinum", "bradesco-visa-platinum-sem-anuidade", "bradesco-visa-signature", "bradesco-visa-universitario-nacional", "brb-connect", "brb-mastercard-black", "brb-mastercard-connect", "brb-mastercard-gold", "brb-mastercard-platinum", "brb-visa-gold", "brb-visa-infinite", "brb-visa-platinum", "btg-black", "btg-gold", "btg-platinum", "btg-tap-black", "btg-ultrablue", "btg-ultrablue-world-legend", "infinitepay-infinitepay", "inter-laranja", "inter-platinum", "inter-prime", "inter-win", "nubank-croma", "nubank-roxo", "nubank-ultravioleta", "santander-aadvantage-black", "santander-aadvantage-platinum", "santander-aadvantage-quantum", "santander-elite", "santander-free", "santander-smiles-gold", "santander-smiles-infinite", "santander-smiles-platinum", "santander-unique", "santander-unlimited"]);  // gerada por ferramentas/fotos_cartoes.py
-const F_MODELO_FUNDO = new Set(["bradesco-amazon-prime", "bradesco-disney-visa-infinite-amigos", "bradesco-disney-visa-infinite-magia", "bradesco-disney-visa-infinite-star-wars", "bradesco-disney-visa-signature-amigos", "bradesco-disney-visa-signature-star-wars", "bradesco-harley-davidson-visa-platinum", "bradesco-harley-davidson-visa-signature", "brb-nacao-brb-fla"]);  // gerada por ferramentas/artes_cartoes.py
+const F_MODELO_FOTO = new Set(["brb-connect", "brb-mastercard-black", "brb-mastercard-connect", "brb-mastercard-gold", "brb-mastercard-platinum", "brb-visa-gold", "brb-visa-infinite", "brb-visa-platinum", "btg-black", "btg-gold", "btg-platinum", "btg-tap-black", "btg-ultrablue", "btg-ultrablue-world-legend", "infinitepay-infinitepay", "inter-laranja", "inter-platinum", "inter-prime", "inter-win", "nubank-croma", "nubank-roxo", "nubank-ultravioleta", "santander-aadvantage-black", "santander-aadvantage-platinum", "santander-aadvantage-quantum", "santander-elite", "santander-free", "santander-smiles-gold", "santander-smiles-infinite", "santander-smiles-platinum", "santander-unique", "santander-unlimited"]);  // gerada por ferramentas/fotos_cartoes.py
+const F_MODELO_FUNDO = new Set(["bradesco-amazon-prime", "brb-nacao-brb-fla"]);  // gerada por ferramentas/artes_cartoes.py
 const F_MODELO_FUNC = {"bb-ourocard-pre-pago": "prepago", "bb-ourocard-travelmoney": "prepago", "bradesco-debito-visa-internacional": "debito", "bradesco-debito-visa": "debito", "bradesco-multiplo-universitario-visa": "debito", "bradesco-debito-click-conta-visa": "debito", "bradesco-debito-poupcard-visa": "debito", "bradesco-debito-conta-salario-visa": "debito", "bradesco-debito-inss-visa": "debito", "bradesco-debito-bpc-visa": "debito", "bradesco-debito-elo-internacional": "debito", "bradesco-multiplo-universitario-elo": "debito", "bradesco-debito-universitario-elo": "debito", "bradesco-debito-click-conta-elo": "debito", "bradesco-debito-poupcard-elo": "debito", "bradesco-debito-conta-salario-elo": "debito", "bradesco-debito-inss-elo": "debito", "bradesco-debito-bpc-elo": "debito"};
 F_MODELO_COR["c6-rainbow"].cg = "linear-gradient(125deg,#dbe7f1 0%,#ecd6ec 28%,#cfe9df 52%,#bdb8dc 78%,#dfe5ee 100%)";  // furta-cor
 F_MODELO_COR["infinitepay-infinitepay"].cg = "linear-gradient(180deg,#b9f63c 0%,#8f6dff 38%,#1a1430 70%,#0d0d0f 100%)";  // as faixas verde e roxa no alto
@@ -7961,6 +7961,672 @@ class ComprasV2Card extends Base {
 console.info(`%c COMPRAS-V2 %c ${V2_VERSION} `, "background:#0b6bcb;color:#fff", "");
 
 
+// ----- cartoes ---------------------------------------------------------------
+
+// cartoes/base.js
+// Cartões — peças comuns e o registro dos desenhos de cada banco
+// Parte do CoFinance: o montar.py junta esta pasta no co-finance-card.js. Os cartões ficam deitados (380 × 240).
+//
+// Cada arquivo de banco registra:
+//   layouts: o desenho (uma função que recebe as peças prontas — chip, aproximação, bandeira, o vidro do valor — e devolve a frente)
+//   modelos: qual desenho cada modelo do catálogo usa (id do modelo → nome do layout)
+//   bancos:  os bancos cujo desenho vale para todos os modelos dele que não têm desenho próprio
+//   css:     o estilo das peças daquele banco
+
+const CARTOES = { layouts: {}, modelos: {}, bancos: [], css: [] };
+
+function registrarCartoes({ layouts = {}, modelos = {}, bancos = [], css = "" }) {
+  Object.assign(CARTOES.layouts, layouts);
+  Object.assign(CARTOES.modelos, modelos);
+  CARTOES.bancos.push(...bancos);
+  if (css) CARTOES.css.push(css);
+}
+
+// estilo comum a todos os cartões (frente, vidro do valor, peças)
+const CARTOES_CSS_BASE = `
+    .v3 .fcface.v3f{position:relative;overflow:hidden;display:block;aspect-ratio:1.586;box-sizing:border-box;padding:0;border:0;border-radius:16px;background:var(--cg,var(--cf));color:var(--ct);text-align:left;font-family:Manrope,system-ui,sans-serif;box-shadow:0 10px 24px -12px rgba(0,0,0,.55);container-type:inline-size}
+    .v3 .fcface.v3f.preto{background:linear-gradient(160deg,#2b2b2f 0%,#161618 50%,#0b0b0c 100%)}
+    .v3 .fcface.v3f.preto::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 3px);pointer-events:none}
+    .v3f-arte{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+    .v3f>:not(.v3f-arte){z-index:1}  /* texto e peças sempre à frente do desenho; o contorno na cor do fundo apaga as linhas em volta das letras */
+    .v3 .fcface.v3f{--halo:var(--cf,transparent)}
+    .v3 .fcface.v3f.preto{--halo:#161618}
+    .v3f :is(.v3f-info,.v3f-band,.v3f-marca,.v3f-modelo,.v3f-itop,.v3f-alprod){text-shadow:0 0 2px var(--halo),0 0 4px var(--halo),0 0 7px var(--halo)}
+    .v3f>span{position:absolute}
+    .v3f-marca{left:6%;top:9%;display:grid;justify-items:start;line-height:1}
+    .v3f-marca b{font:600 7cqw/1 Manrope,system-ui,sans-serif;letter-spacing:-.01em}
+    .v3f-marca small{font-size:4.6cqw;margin-top:.3cqw}
+    .v3f-marca.dir{left:auto;right:6%;justify-items:end}
+    .v3f.ouro .v3f-marca{color:#d4b26a}
+    .v3f-chipw{left:6%;top:37%;display:flex;align-items:center;gap:2.4cqw}
+    .v3f-chip{width:11cqw;height:auto}
+    .v3f-nfc{width:5.6cqw;height:5.6cqw;opacity:.85}
+    .v3f-nfcw{right:6%;top:35%}
+    .v3f-bdl{display:block;height:7.4cqw;width:auto;max-width:24cqw;object-fit:contain}
+    .v3f-bdl.amex,.v3f-bdl.jcb,.v3f-bdl.unionpay{height:9.5cqw}
+    .v3f-bdl.diners{height:6.4cqw;max-width:30cqw}
+    .v3f-bdl.hipercard{height:8.6cqw}
+    .v3f-bdl.maestro{height:10cqw}
+    .v3f-bdm{width:16cqw;height:6.6cqw;-webkit-mask-position:right center;mask-position:right center}
+    .v3f-bdm.discover{width:24cqw;height:4.4cqw}
+    .v3f-info{left:6%;bottom:8%;display:grid;line-height:1.15;max-width:60%}
+    .v3f.foto .v3f-info{left:4%;bottom:5%;padding:1.4cqw 2.6cqw 1.6cqw;border-radius:2.8cqw;background:color-mix(in srgb,var(--cf) 58%,transparent);-webkit-backdrop-filter:blur(7px) saturate(1.2);backdrop-filter:blur(7px) saturate(1.2);box-shadow:0 0 0 1px color-mix(in srgb,var(--ct) 14%,transparent)}
+    .v3f-info small{font-size:3.2cqw;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .v3f-info b{font:700 6.4cqw/1.15 Sora,Manrope,sans-serif;letter-spacing:-.01em}
+    .v3f-info em{font-style:normal;font-size:3.1cqw;opacity:.8}
+    .v3f-info em.atr{opacity:1;font-weight:700}
+    .v3f-band{right:6%;bottom:7%;display:grid;justify-items:end;line-height:1;text-align:right}
+    .v3f-band small{font-size:3.6cqw;font-weight:600;margin-top:.6cqw;opacity:.92}
+    .v3f-visa{font:italic 900 8.4cqw/1 Arial,Helvetica,sans-serif;letter-spacing:-.01em;background:linear-gradient(180deg,#f7f7f8 0%,#c3c5c9 55%,#8e9095 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .v3f.ouro .v3f-visa{background:linear-gradient(180deg,#f3dc9a 0%,#d4b26a 55%,#a8862f 100%);-webkit-background-clip:text;background-clip:text}
+    .v3f.ouro .v3f-band small{color:#d4b26a}
+    .v3f:not(.preto) .v3f-visa{background:none;color:var(--ct)}
+    .v3f-mcw{display:grid;justify-items:center;line-height:1}
+    .v3f-mc{width:18.5cqw;height:auto;display:block}
+    .v3f-mcn{font-size:3.1cqw;font-weight:600;letter-spacing:.01em;color:#d9dadc;margin-top:.4cqw}
+    .v3f-marca.baixo{top:auto;bottom:8%;left:6%}
+    .v3f-marca.baixo small{font-size:3.4cqw;font-weight:700;letter-spacing:.14em;margin:0 0 .2cqw}
+    .v3f-marca.baixo b{font-size:7.4cqw;font-weight:500;letter-spacing:.04em}
+    .v3f-logo{display:block;background:currentColor;-webkit-mask:var(--logo) left center/contain no-repeat;mask:var(--logo) left center/contain no-repeat}
+    .v3f-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+    .v3f-logo.visa{width:19cqw;height:6.2cqw;-webkit-mask-position:right center;mask-position:right center;background:linear-gradient(180deg,#f7f7f8 0%,#c3c5c9 55%,#8e9095 100%)}
+    .v3f.ouro .v3f-logo.visa{background:linear-gradient(180deg,#f3dc9a 0%,#d4b26a 55%,#a8862f 100%)}
+    .v3f:not(.preto) .v3f-logo{background:var(--ct)}
+    .v3f-vert{writing-mode:vertical-rl;transform:rotate(180deg);bottom:7%;line-height:1}
+    .v3f-vert.dir{right:5%}
+    .v3f-vert b{font:800 9cqw/1 Manrope,sans-serif;letter-spacing:-.03em;font-style:italic}
+    .v3f-vert small{font:500 3cqw/1 Manrope,sans-serif;font-style:italic;margin-bottom:.6cqw}
+    .v3f-chipw.brbc,.v3f-chipw.intc,.v3f-chipw.amzc{flex-direction:column;align-items:flex-start;top:9%;gap:1.4cqw}
+    .v3f-band.topo{right:5%;top:6%;bottom:auto}
+    .v3f-bd{display:block;height:6cqw;width:auto;color:inherit;overflow:visible}
+    .v3f-bd.amex{height:9.5cqw}
+    .v3f-bd.diners{height:9.5cqw}
+    .v3f-bd.elo{height:7.6cqw}
+    .v3f-bd.hiper{height:8.4cqw}
+    .v3f-bd.jcb{height:9cqw}
+`;
+
+// cartoes/santander.js
+// Cartões — Santander
+// Parte do CoFinance: o montar.py junta esta pasta no co-finance-card.js. Os cartões ficam deitados (380 × 240).
+
+// Cartões do HTML de referência (referencias/cartoes-numerados.html): número · bandeira · nome no site → modelo no catálogo
+//   SAN-001  Visa                 Santander Unlimited Visa (mesma frente nas duas bandeiras)  →  santander-unlimited
+//   SAN-002  Visa                 Santander Unique Visa Infinite (mesma frente nas duas bandeiras)  →  santander-unique
+//   SAN-003  Visa                 Santander Elite Visa Signature (mesma frente nas duas bandeiras)  →  santander-elite
+//   SAN-004  Visa                 Santander FREE Visa (mesma frente nas duas bandeiras)  →  santander-free
+//   SAN-005  Visa                 Santander Gol Smiles Infinite  →  santander-smiles-infinite
+//   SAN-006  Visa                 Santander Gol Smiles Platinum  →  santander-smiles-platinum
+//   SAN-007  Visa                 Santander Gol Smiles Gold  →  santander-smiles-gold
+//   SAN-008  Mastercard           Santander Unlimited Mastercard (mesma frente nas duas bandeiras)  →  santander-unlimited
+//   SAN-009  Mastercard           Santander Unique Mastercard Black (mesma frente nas duas bandeiras)  →  santander-unique
+//   SAN-010  Mastercard           Santander Elite Mastercard Platinum (mesma frente nas duas bandeiras)  →  santander-elite
+//   SAN-011  Mastercard           Santander FREE Mastercard (mesma frente nas duas bandeiras)  →  santander-free
+//   SAN-012  Mastercard           Santander AAdvantage Black  →  santander-aadvantage-black
+//   SAN-013  Mastercard           Santander AAdvantage Platinum  →  santander-aadvantage-platinum
+//   SAN-014  Mastercard           Santander AAdvantage Quartz  →  santander-aadvantage-quantum
+// fim da lista
+
+
+registrarCartoes({
+  layouts: {
+    santander: (p) => {
+      const { prod, semTier, tem, logo, chipSvg, nfc, info, band, e } = p;
+      return `<span class="v3f-marca">${tem.has("santander") ? `${logo("santander")}<b class="v3f-sr">Santander</b>` : "<b>Santander</b>"}</span><span class="v3f-chipw">${chipSvg}</span>
+        ${semTier(prod) ? `<span class="v3f-modelo${semTier(prod).length > 7 ? " longo" : ""}">${e(semTier(prod))}</span>` : ""}<span class="v3f-nfcw">${nfc}</span>${info}${band()}`;
+    },
+  },
+  modelos: {
+    "santander-unique": "santander",
+  },
+  bancos: ["santander"],
+  css: `
+    .v3f.santander .v3f-marca b{font-size:7.8cqw;font-weight:600}
+    .v3f.santander .v3f-chipw{top:33%}
+    .v3f.santander .v3f-chip{width:13cqw}
+    .v3f.santander .v3f-nfc{width:8cqw;height:8cqw}
+    .v3f-modelo{left:0;right:0;top:39%;text-align:center;font-size:3.9cqw;font-weight:700;letter-spacing:1.4em;padding-left:1.4em;opacity:.9}
+    .v3f-modelo.longo{top:55%;left:6%;right:auto;text-align:left;padding-left:0;letter-spacing:.32em;font-size:3.2cqw}
+    .v3f-logo.santander{width:38cqw;height:8.4cqw;background:#e9e9ea}
+  `,
+});
+
+// cartoes/bradesco.js
+// Cartões — Bradesco
+// Parte do CoFinance: o montar.py junta esta pasta no co-finance-card.js. Os cartões ficam deitados (380 × 240).
+
+// Cartões do HTML de referência (referencias/cartoes-numerados.html): número · bandeira · nome no site → modelo no catálogo
+//   BRA-001  Visa                 Bradesco Visa Gold  →  bradesco-visa-gold
+//   BRA-002  Visa                 Bradesco Universitário Visa Gold  →  bradesco-universitario-visa-gold
+//   BRA-003  Visa                 Bradesco Neo Visa Platinum  →  bradesco-neo-visa-platinum
+//   BRA-004  Visa                 Bradesco Visa Platinum  →  bradesco-visa-platinum-sem-anuidade
+//   BRA-005  Visa                 Bradesco Like Visa  →  bradesco-like-visa
+//   BRA-006  Visa                 Bradesco Visa Signature  →  bradesco-visa-signature
+//   BRA-007  Visa                 Bradesco Visa Infinite  →  bradesco-visa-infinite
+//   BRA-008  Visa                 Bradesco Visa Aeternum  →  bradesco-visa-aeternum
+//   BRA-009  Visa                 Bradesco Gol Smiles Visa Gold  →  bradesco-gol-smiles-visa-gold
+//   BRA-010  Visa                 Bradesco Gol Smiles Visa Platinum  →  bradesco-gol-smiles-visa-platinum
+//   BRA-011  Visa                 Bradesco Gol Smiles Visa Infinite  →  bradesco-gol-smiles-visa-infinite
+//   BRA-012  Visa                 Bradesco Disney© Visa Infinite Magia  →  bradesco-disney-visa-infinite-magia
+//   BRA-013  Visa                 Bradesco Disney© Visa Infinite Star Wars  →  bradesco-disney-visa-infinite-star-wars
+//   BRA-014  Visa                 Bradesco Disney© Visa Infinite Amigos  →  bradesco-disney-visa-infinite-amigos
+//   BRA-015  Visa                 Bradesco Disney© Visa Signature Amigos  →  bradesco-disney-visa-signature-amigos
+//   BRA-016  Visa                 Bradesco Disney© Visa Signature Star Wars  →  bradesco-disney-visa-signature-star-wars
+//   BRA-017  Visa                 Bradesco Horizon Visa Infinite  →  bradesco-horizon-visa-infinite
+//   BRA-018  Visa                 Bradesco United MileagePlus Visa Infinite  →  bradesco-united-mileageplus-visa-infinit
+//   BRA-019  Visa                 Bradesco Marriott Bonvoy® Visa Infinite  →  bradesco-marriott-bonvoy-visa-infinite
+//   BRA-020  Visa                 Ágora Visa Infinite  →  bradesco-agora-visa-infinite
+//   BRA-021  Visa                 Bradesco Visa Platinum - sem anuidade  →  bradesco-visa-platinum-sem-anuidade
+//   BRA-022  Visa                 Bradesco Visa Internacional  →  bradesco-visa-internacional
+//   BRA-023  Visa                 Bradesco Gol Smiles Visa Internacional  →  bradesco-gol-smiles-visa-internacional
+//   BRA-024  Visa                 Harley Davidson Visa Platinum  →  bradesco-harley-davidson-visa-platinum
+//   BRA-025  Visa                 Harley Davidson Visa Signature  →  bradesco-harley-davidson-visa-signature
+//   BRA-026  Visa                 Bradesco Seguros Visa Gold  →  bradesco-seguros-visa-gold
+//   BRA-027  Visa                 Bradesco Seguros Visa Platinum  →  bradesco-seguros-visa-platinum
+//   BRA-028  Visa                 Bradesco Seguros Visa Signature  →  bradesco-seguros-visa-signature
+//   BRA-029  Visa                 Bradesco Visa Nacional  →  bradesco-visa-nacional
+//   BRA-030  Visa                 Bradesco Visa Universitário Nacional  →  bradesco-visa-universitario-nacional
+//   BRA-031  Visa                 Bradesco Visa Nacional Mais  →  bradesco-visa-nacional-mais
+//   BRA-032  Visa                 Bradesco Music Visa Platinum  →  bradesco-music-visa-platinum
+//   BRA-033  Visa                 Bradesco Visa Básico  →  bradesco-visa-basico
+//   BRA-034  Visa                 Fundação SOS Mata Atlântica Bradesco Visa Nacional  →  bradesco-sos-mata-atlantica
+//   BRA-035  Visa                 Fundação SOS Mata Atlântica Bradesco Visa Gold  →  bradesco-sos-visa-gold
+//   BRA-036  Visa                 Fundação SOS Mata Atlântica Bradesco Visa Platinum  →  bradesco-sos-visa-platinum
+//   BRA-037  Visa                 Bradesco Débito Visa Internacional (débito)  →  bradesco-debito-visa-internacional
+//   BRA-038  Visa                 Bradesco Débito Visa (débito)  →  bradesco-debito-visa
+//   BRA-039  Visa                 Bradesco Múltiplo Universitário Visa (débito)  →  bradesco-multiplo-universitario-visa
+//   BRA-040  Visa                 Bradesco Débito Click Conta Visa (débito)  →  bradesco-debito-click-conta-visa
+//   BRA-041  Visa                 Bradesco Débito Poupcard Visa (débito)  →  bradesco-debito-poupcard-visa
+//   BRA-042  Visa                 Bradesco Débito Conta salário Visa (débito)  →  bradesco-debito-conta-salario-visa
+//   BRA-043  Visa                 Bradesco Débito INSS Visa (débito)  →  bradesco-debito-inss-visa
+//   BRA-044  Visa                 Bradesco Débito BPC VISA (débito)  →  bradesco-debito-bpc-visa
+//   BRA-045  Mastercard           Bradesco Mastercard® Nacional  →  bradesco-mastercard-nacional
+//   BRA-046  Mastercard           Bradesco Mastercard® Internacional  →  bradesco-mastercard-internacional
+//   BRA-047  Mastercard           Bradesco Mastercard® Gold  →  bradesco-mastercard-gold
+//   BRA-048  Mastercard           Bradesco Mastercard® Platinum  →  bradesco-mastercard-platinum
+//   BRA-049  Mastercard           Bradesco Mastercard® Black  →  bradesco-mastercard-black
+//   BRA-050  Mastercard           Bradesco Gol Smiles Mastercard® Internacional  →  bradesco-gol-smiles-mastercard-internacional
+//   BRA-051  Mastercard           Bradesco Gol Smiles Mastercard® Gold  →  bradesco-gol-smiles-mastercard-gold
+//   BRA-052  Mastercard           Bradesco Gol Smiles Mastercard® Platinum  →  bradesco-gol-smiles-mastercard-platinum
+//   BRA-053  Mastercard           Fundação Amazonas Sustentável Bradesco Mastercard® Gold  →  bradesco-fas-mastercard-gold
+//   BRA-054  Mastercard           Fundação Amazonas Sustentável Bradesco Mastercard® Internacional  →  bradesco-fas-mastercard-internacional
+//   BRA-055  Mastercard           Fundação Amazonas Sustentável Bradesco Mastercard® Nacional  →  bradesco-fas-mastercard-nacional
+//   BRA-056  Mastercard           Amazon.com.br Mastercard (branco)  →  amazon-bradesco
+//   BRA-057  Mastercard           Amazon Prime Mastercard (grafite)  →  bradesco-amazon-prime  (ainda fora do catálogo)
+//   BRA-058  Elo                  Bradesco Elo Consignado INSS Internacional  →  bradesco-elo-consignado-inss-internacional
+//   BRA-059  Elo                  Bradesco Elo Consignado Internacional  →  bradesco-elo-consignado-internacional
+//   BRA-060  Elo                  Bradesco Elo Internacional  →  bradesco-elo-internacional
+//   BRA-061  Elo                  Bradesco Elo Mais Internacional  →  bradesco-elo-mais-internacional
+//   BRA-062  Elo                  Bradesco Elo Grafite  →  bradesco-elo-grafite
+//   BRA-063  Elo                  Bradesco Elo Nanquim  →  bradesco-elo-nanquim
+//   BRA-064  Elo                  Bradesco Elo Diners Club  →  bradesco-elo-diners-club
+//   BRA-065  Elo                  Bradesco Elo Nacional  →  bradesco-elo-nacional
+//   BRA-066  Elo                  Bradesco Seguros Elo Nacional  →  bradesco-seguros-elo-nacional
+//   BRA-067  Elo                  Bradesco Music Elo Nacional  →  bradesco-music-elo-nacional
+//   BRA-068  Elo                  Bradesco Elo Plus  →  bradesco-elo-plus
+//   BRA-069  Elo                  Bradesco Elo Mais  →  bradesco-elo-mais
+//   BRA-070  Elo                  Bradesco Elo Universitário Função Crédito  →  bradesco-elo-universitario-funcao-credito
+//   BRA-071  Elo                  Bradesco Music Elo Internacional  →  bradesco-music-elo-internacional
+//   BRA-072  Elo                  Bradesco Elo Plus Internacional  →  bradesco-elo-plus-internacional
+//   BRA-073  Elo                  Bradesco Seguros Elo Internacional  →  bradesco-seguros-elo-internacional
+//   BRA-074  Elo                  Bradesco Seguros Elo Mais  →  bradesco-seguros-elo-mais
+//   BRA-075  Elo                  Bradesco Seguros Elo Grafite  →  bradesco-seguros-elo-grafite
+//   BRA-076  Elo                  Bradesco Seguros Elo Nanquim  →  bradesco-seguros-elo-nanquim
+//   BRA-077  Elo                  Bradesco Elo Consignado INSS  →  bradesco-elo-consignado-inss
+//   BRA-078  Elo                  Bradesco Elo Consignado  →  bradesco-elo-consignado
+//   BRA-079  Elo                  Bradesco Elo Internacional Básico  →  bradesco-elo-internacional-basico
+//   BRA-080  Elo                  Fundação Amazonas Sustentável Bradesco Elo Internacional  →  bradesco-fas-elo-internacional
+//   BRA-081  Elo                  Bradesco Elo Internacional - Função crédito  →  bradesco-multiplo-elo
+//   BRA-082  Elo                  Fundação SOS Mata Atlântica Bradesco Elo internacional  →  bradesco-sos-elo-internacional
+//   BRA-083  Elo                  Bradesco Elo Nacional - Função Crédito  →  bradesco-elo-nacional-funcao-credito
+//   BRA-084  Elo                  Bradesco Débito Elo Internacional (débito)  →  bradesco-debito-elo-internacional
+//   BRA-085  Elo                  Bradesco Múltiplo Elo (débito)  →  bradesco-multiplo-elo
+//   BRA-086  Elo                  Bradesco Múltiplo Universitário Elo (débito)  →  bradesco-multiplo-universitario-elo
+//   BRA-087  Elo                  Bradesco Débito Universitário Elo (débito)  →  bradesco-debito-universitario-elo
+//   BRA-088  Elo                  Bradesco Débito Click Conta Elo (débito)  →  bradesco-debito-click-conta-elo
+//   BRA-089  Elo                  Bradesco Débito Poupcard Elo (débito)  →  bradesco-debito-poupcard-elo
+//   BRA-090  Elo                  Bradesco Débito Conta salário Elo (débito)  →  bradesco-debito-conta-salario-elo
+//   BRA-091  Elo                  Bradesco Débito INSS Elo (débito)  →  bradesco-debito-inss-elo
+//   BRA-092  Elo                  Bradesco Débito BPC Elo (débito)  →  bradesco-debito-bpc-elo
+//   BRA-093  American Express     American Express® Green  →  bradesco-amex-green
+//   BRA-094  American Express     American Express® Gold Card  →  bradesco-amex-gold-card
+//   BRA-095  American Express     The Platinum Card®  →  bradesco-the-platinum-card
+//   BRA-096  American Express     Bradesco American Express® Credit  →  bradesco-amex-credit
+//   BRA-097  American Express     American Express® Credit  →  bradesco-amex-credit-2
+//   BRA-098  American Express     American Express® Blue  →  bradesco-amex-blue
+//   BRA-099  American Express     Bradesco American Express® Gold Credit  →  bradesco-amex-gold-credit
+//   BRA-100  American Express     Bradesco Seguros American Express® Gold  →  bradesco-seguros-amex-gold
+//   BRA-101  American Express     American Express® Gold Credit  →  bradesco-amex-gold-credit-2
+//   BRA-102  American Express     Bradesco Gold American Express®  →  bradesco-gold-amex
+//   BRA-103  American Express     Bradesco Seguros American Express® Platinum  →  bradesco-seguros-amex-platinum
+//   BRA-104  American Express     Bradesco Platinum American Express®  →  bradesco-platinum-amex
+//   BRA-105  American Express     American Express® Platinum Credit  →  bradesco-amex-platinum-credit
+// fim da lista
+
+
+registrarCartoes({
+  layouts: {
+    bradesco: (p) => {
+      const { prod, semTier, arte, tem, logo, chipSvg, nfc, info, band, e } = p;
+      return `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="M262 0 300 0 232 128z" fill="#fff" opacity=".10"/><path d="M380 30v14L250 120z" fill="#fff" opacity=".12"/><path d="M380 150v8L190 190z" fill="#fff" opacity=".08"/></svg>
+        <span class="v3f-marca">${tem.has("bradesco") ? `${logo("bradesco")}<b class="v3f-sr">Bradesco</b>` : "<b>bradesco</b>"}${semTier(prod) ? `<small>${e(semTier(prod).toLowerCase())}</small>` : ""}</span><span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
+    },
+    amazon: (p) => {
+      const { arte, chipSvg, nfc, bandeira, info, band } = p;
+      // Amazon (Bradesco): branco, "amazon.com.br" em pé à direita com o sorriso, a seta clara ao fundo
+      return `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="M150 230C190 150 192 80 170 10" stroke="#c9d8f2" stroke-width="5" fill="none" opacity=".7"/><path d="M158 26 170 8 186 22" stroke="#c9d8f2" stroke-width="5" fill="none" opacity=".7"/></svg>
+        <span class="v3f-vert dir amz"><b>amazon<small>.com.br</small></b><i aria-hidden="true"></i></span><span class="v3f-chipw amzc">${nfc}${chipSvg}</span>${info}${bandeira ? `<span class="v3f-band amzb">${bandeira}</span>` : ""}`;
+    },
+  },
+  modelos: {
+    "bradesco-prime": "bradesco",
+    "amazon-bradesco": "amazon",
+  },
+  bancos: ["bradesco"],
+  css: `
+    .v3f.bradesco .v3f-marca b{font-weight:700;font-size:6.6cqw;letter-spacing:-.03em}
+    .v3f.bradesco .v3f-marca small{font-size:5.2cqw;font-weight:500;margin-top:0}
+    .v3f-logo.bradesco{width:33cqw;height:6.2cqw;background:#f2f2f3}
+    .v3f-vert.amz{display:flex;align-items:center;gap:1cqw;color:#232f3e}
+    .v3f-vert.amz b{font:800 8cqw/1 Arial,Helvetica,sans-serif;font-style:normal;letter-spacing:-.04em}
+    .v3f-vert.amz b small{font:600 4cqw/1 Arial,sans-serif;font-style:normal}
+    .v3f-vert.amz i{display:block;width:3cqw;height:20cqw;border-left:1cqw solid #ff9900;border-radius:50%;margin-right:-2cqw}
+    .v3f-chipw.amzc{top:10%}
+    .v3f-band.amzb{right:22%;bottom:7%}
+    .v3f.amazon .v3f-info{color:#232f3e}
+  `,
+});
+
+// cartoes/bb.js
+// Cartões — Banco do Brasil
+// Parte do CoFinance: o montar.py junta esta pasta no co-finance-card.js. Os cartões ficam deitados (380 × 240).
+
+// Cartões do HTML de referência (referencias/cartoes-numerados.html): número · bandeira · nome no site → modelo no catálogo
+//   BB-001  Visa                 Ourocard Fácil  →  bb-ourocard-facil
+//   BB-002  Visa                 Ourocard Universitário  →  bb-ourocard-universitario
+//   BB-003  Visa                 Ourocard Visa Gold  →  bb-ourocard-visa-gold
+//   BB-004  Visa                 Ourocard Visa Platinum  →  bb-ourocard-visa-platinum
+//   BB-005  Visa                 Ourocard Visa Infinite  →  bb-ourocard-infinite
+//   BB-006  Visa                 Ourocard Pré-pago  →  bb-ourocard-pre-pago
+//   BB-007  Visa                 Ourocard TravelMoney  →  bb-ourocard-travelmoney
+//   BB-008  Visa                 GOL Smiles Gold  →  bb-smiles-gold
+//   BB-009  Visa                 GOL Smiles Platinum  →  bb-smiles-platinum
+//   BB-010  Visa                 GOL Smiles Infinite  →  bb-smiles-infinite
+//   BB-011  Visa                 Saraiva  →  bb-saraiva
+//   BB-012  Visa                 Petrobras  →  bb-petrobras
+//   BB-013  Visa                 Dotz International  →  bb-dotz-international
+//   BB-014  Visa                 Dotz Platinum  →  bb-dotz-platinum
+//   BB-015  Mastercard           Ourocard Platinum Mastercard  →  bb-ourocard-platinum-mastercard
+//   BB-016  Mastercard           Ourocard Mastercard Black  →  bb-ourocard-mastercard-black
+//   BB-017  Mastercard           AME  →  bb-ame
+//   BB-018  Elo                  Ourocard Elo  →  bb-ourocard-elo
+//   BB-019  Elo                  Ourocard Elo Mais  →  bb-ourocard-elo-mais
+//   BB-020  Elo                  Ourocard Elo Grafite  →  bb-ourocard-grafite
+//   BB-021  Elo                  Ourocard Elo Nanquim  →  bb-ourocard-nanquim
+// fim da lista
+
+
+registrarCartoes({
+  layouts: {
+    bb: (p) => {
+      const { prod, semTier, arte, tem, logo, chipSvg, nfc, info, band, e } = p;
+      const ouroNome = /OUROCARD/.test(prod) ? "ourocard" : "Banco do Brasil", resto = semTier(prod.replace("OUROCARD", ""));
+      return `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="M0 150C120 150 120 132 220 104 300 80 340 62 380 50" stroke="#d4b26a" stroke-width="1.6" fill="none"/></svg>
+        ${tem.has("bb") ? `<span class="v3f-bbs">${logo("bb")}</span>` : ""}<span class="v3f-marca dir"><b>${e(ouroNome)}</b>${resto ? `<small>${e(resto)}</small>` : ""}</span><span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
+    },
+    bbd: (p) => {
+      const { arte, tem, logo, chipSvg, nfc, info, band } = p;
+      // Ourocard débito: preto, tudo branco, linhas finas em trilhos (como no cartão), faixa amarela na borda esquerda
+      const tre = "M187.6 45.7L236.7 77.7M138.5 77.7L163 93.7M138.5 109.7L261.2 189.7M40.3 77.7L138.5 141.7M236.7 205.7L261.2 221.7M-33.9 61.3L40.3 109.7M114 157.7L163 189.7M15.8 125.7L40.3 141.7M138.5 205.7L219.6 258.6M40.3 173.7L89.4 205.7M40.3 205.7L121.4 258.6M15.8 93.7L40.3 77.7M-33.9 158.1L114 61.7M7.9 162.9L187.6 45.7M118.4 122.8L236.7 45.7M40.3 173.7L98.3 135.9M178.7 115.5L236.7 77.7M7.9 226.9L163 125.7M187.6 141.7L236.7 109.7M7.4 259.2L187.6 141.7M138.5 205.7L212.1 157.7M178.5 211.6L236.7 173.7M105.8 259L163 221.7M203.9 259L261.2 221.7";  // linhas do fundo, iguais às do cartão de verdade (grade de passo 32; os cantos se encontram exatos)
+      return `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="${tre}" stroke="#fff" stroke-width="1.2" opacity=".45" fill="none"/><path d="M0 168L7.9 162.8V240H0z" fill="#ffd400"/></svg>
+        ${tem.has("bb") ? `<span class="v3f-bbs">${logo("bb", "bb bbw")}</span>` : ""}<span class="v3f-marca dir"><b class="v3f-ourod">ourocard</b></span>
+        <span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
+    },
+  },
+  modelos: {
+    "bb-ourocard-infinite": "bb",
+    "bb-ourocard-debito": "bbd",
+    "bb-ourocard-mastercard-black": "bbd",  // BB-016: o mesmo cartão preto com os trilhos e a faixa amarela
+  },
+  bancos: ["bb"],
+  css: `
+    .v3 .fcface.v3f.preto.bbd{--halo:#1b1815}
+    .v3f.bb .v3f-marca b{font-size:6.2cqw}
+    .v3f.bb .v3f-chipw{top:42%}
+    .v3f-logo.bb.bbw{background:#f4f4f5}
+    .v3f-ourod{font-weight:600!important;font-size:7.6cqw!important;letter-spacing:-.02em;color:#f4f4f5}
+    .v3 .fcface.v3f.preto.bbd{background:linear-gradient(160deg,#2a2622 0%,#1b1815 55%,#0f0d0b 100%)}
+    .v3f.bbd .v3f-chipw{top:40%}
+    .v3f.bbd .v3f-band small{text-transform:lowercase}
+    .v3f-bbs{left:6%;top:9%}
+    .v3f-logo.bb{width:9cqw;height:9cqw;background:linear-gradient(160deg,#f3dc9a,#c9a453 60%,#9c7a2c)}
+  `,
+});
+
+// cartoes/itau.js
+// Cartões — Itaú
+// Parte do CoFinance: o montar.py junta esta pasta no co-finance-card.js. Os cartões ficam deitados (380 × 240).
+
+// Cartões do HTML de referência (referencias/cartoes-numerados.html): número · bandeira · nome no site → modelo no catálogo
+//   ITA-001  Visa                 Azul Gold Visa  →  itau-azul-gold-visa  (ainda fora do catálogo)
+//   ITA-002  Visa                 Azul Infinite Visa  →  itau-azul-infinite
+//   ITA-003  Visa                 Azul Internacional Visa  →  itau-azul-internacional-visa  (ainda fora do catálogo)
+//   ITA-004  Visa                 Azul Platinum Visa  →  itau-azul-platinum
+//   ITA-005  Visa                 Instituto Ayrton Senna Platinum Visa  →  itau-instituto-ayrton-senna-platinum-visa  (ainda fora do catálogo)
+//   ITA-006  Visa                 Itaú Uniclass Signature Visa  →  itau-uniclass-signature
+//   ITA-007  Visa                 Itaú Visa Platinum  →  itau-visa-platinum  (ainda fora do catálogo)
+//   ITA-008  Visa                 LATAM Pass Itaú Gold Visa  →  itau-latam-pass-gold-visa  (ainda fora do catálogo)
+//   ITA-009  Visa                 LATAM Pass Itaú Infinite Visa  →  itau-latam-pass-infinite-visa  (ainda fora do catálogo)
+//   ITA-010  Visa                 LATAM Pass Itaú Internacional Visa  →  itau-latam-pass-internacional-visa  (ainda fora do catálogo)
+//   ITA-011  Visa                 LATAM Pass Itaú Platinum Visa  →  itau-latam-pass-platinum-visa  (ainda fora do catálogo)
+//   ITA-012  Visa                 Passaí Gold Visa  →  itau-passai-gold
+//   ITA-013  Visa                 Samsung Itaú Platinum Visa  →  itau-samsung-platinum-visa  (ainda fora do catálogo)
+//   ITA-014  Visa                 N Card (Netshoes) Gold Visa  →  itau-n-card-gold-visa  (ainda fora do catálogo)
+//   ITA-015  Visa                 TIM Gold Visa  →  itau-tim-gold-visa  (ainda fora do catálogo)
+//   ITA-016  Visa                 TIM Internacional Visa  →  itau-tim-internacional-visa  (ainda fora do catálogo)
+//   ITA-017  Visa                 TIM Platinum Visa  →  itau-tim-platinum-visa  (ainda fora do catálogo)
+//   ITA-018  Mastercard           Azul Gold Mastercard  →  itau-azul-gold-mastercard  (ainda fora do catálogo)
+//   ITA-019  Mastercard           Azul Internacional Mastercard  →  itau-azul-internacional-mastercard  (ainda fora do catálogo)
+//   ITA-020  Mastercard           Azul Itaú Mastercard Skyline  →  itau-azul-skyline
+//   ITA-021  Mastercard           Azul Platinum Mastercard  →  itau-azul-platinum-mastercard  (ainda fora do catálogo)
+//   ITA-022  Mastercard           Instituto Ayrton Senna Mastercard  →  itau-instituto-ayrton-senna-mastercard  (ainda fora do catálogo)
+//   ITA-023  Mastercard           Itaú Platinum Mastercard  →  itau-platinum-mastercard  (ainda fora do catálogo)
+//   ITA-024  Mastercard           Itaú Uniclass Black Mastercard  →  itau-uniclass-black-mastercard  (ainda fora do catálogo)
+//   ITA-025  Mastercard           Itaú Uniclass Platinum Mastercard  →  itau-uniclass-platinum-mastercard  (ainda fora do catálogo)
+//   ITA-026  Mastercard           LATAM Pass Itaú Black Mastercard  →  itau-latam-black
+//   ITA-027  Mastercard           LATAM Pass Itaú Gold Mastercard  →  itau-latam-pass-gold-mastercard  (ainda fora do catálogo)
+//   ITA-028  Mastercard           LATAM Pass Itaú Internacional Mastercard  →  itau-latam-pass-internacional-mastercard  (ainda fora do catálogo)
+//   ITA-029  Mastercard           LATAM Pass Itaú Platinum Mastercard  →  itau-latam-pass-platinum-mastercard  (ainda fora do catálogo)
+//   ITA-030  Mastercard           Personnalité Black Pontos Mastercard  →  itau-personnalite-black-pontos-mastercard  (ainda fora do catálogo)
+//   ITA-031  Mastercard           Samsung Itaú Platinum Mastercard  →  itau-samsung-platinum-mastercard  (ainda fora do catálogo)
+//   ITA-032  Mastercard           Player's Bank Platinum  →  itau-players-bank-platinum  (ainda fora do catálogo)
+//   ITA-033  Mastercard           Pontofrio Internacional Mastercard  →  itau-pontofrio-internacional-mastercard  (ainda fora do catálogo)
+//   ITA-034  Mastercard           TIM Gold Mastercard  →  itau-tim-gold-mastercard  (ainda fora do catálogo)
+//   ITA-035  Mastercard           TIM Internacional Mastercard  →  itau-tim-internacional-mastercard  (ainda fora do catálogo)
+//   ITA-036  Mastercard           TIM Platinum Mastercard  →  itau-tim-platinum-mastercard  (ainda fora do catálogo)
+//   ITA-037  Mastercard           Personnalité Mastercard  →  itau-personnalite
+//   ITA-038  Mastercard           Itaú Empresas Mastercard Black  →  itau-empresas-mastercard-black  (ainda fora do catálogo)
+//   ITA-039  Visa e Mastercard    Itaú Empresas (varia conforme o contrato)  →  itau-empresas  (ainda fora do catálogo)
+// fim da lista
+
+
+registrarCartoes({
+  layouts: {
+    itau: (p) => {
+      const { prod, tier, semTier, arte, tem, chipSvg, nfc, bandeira, info, band, e, LOGO } = p;
+      // itaú (e a categoria) no alto à esquerda com o chip embaixo; LATAM PASS no alto à direita; bandeira embaixo
+      const lp = /LATAM/.test(prod);
+      return `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="M0 92h150l14 14v18H0zM0 136h210l14 14v18H0zM0 180h270l14 14v18H0z" fill="#fff" opacity=".07"/></svg>
+        <span class="v3f-itop">${tem.has("itau") ? `<img src="${LOGO("itau")}" alt="Itaú">` : `<b>itaú</b>`}${tier ? `<b class="v3f-itier">${e(tier.toLowerCase())}</b>` : ""}</span>
+        <span class="v3f-marca dir lp">${lp ? `<small>LATAM</small><b>PASS</b>` : `<b>${e(semTier(prod) || "")}</b>`}</span>
+        <span class="v3f-chipw itc">${chipSvg}${nfc}</span>${info}${bandeira ? `<span class="v3f-band">${bandeira}</span>` : ""}`;
+    },
+  },
+  modelos: {
+    "itau-latam-black": "itau",
+  },
+  bancos: ["itau"],
+  css: `
+    .v3f.itau .v3f-band.topo{left:6%;right:auto;top:8%;bottom:auto;justify-items:start}
+    .v3f.itau .v3f-band.topo .v3f-mcw{justify-items:start}
+    .v3f-itop{left:6%;top:8%;display:flex;align-items:center;gap:2.4cqw}
+    .v3f-itop img{display:block;width:9.5cqw;height:auto;filter:grayscale(1) invert(1) brightness(1.05);border-radius:1.6cqw}
+    .v3f-itop b{font:700 5.4cqw/1 Manrope,sans-serif}
+    .v3f-itop .v3f-itier{font-weight:600;font-size:5cqw;letter-spacing:.02em;opacity:.95}
+    .v3f-chipw.itc{left:6%;top:37%}
+    .v3f-marca.dir.lp{justify-items:end}
+    .v3f-marca.lp small{font-size:3.4cqw;font-weight:700;letter-spacing:.14em;margin:0 0 .2cqw}
+    .v3f-marca.lp b{font-size:7cqw;font-weight:500;letter-spacing:.04em}
+    .v3f-itaul{right:6%;bottom:7%}
+    .v3f-itaul img{display:block;width:9cqw;height:auto;filter:grayscale(1) invert(1) brightness(1.05);border-radius:1.6cqw}
+    .v3f-itau{right:6%;bottom:8%;font:700 5.4cqw/1 Manrope,sans-serif;letter-spacing:-.02em;opacity:.9}
+  `,
+});
+
+// cartoes/caixa.js
+// Cartões — Caixa
+// Parte do CoFinance: o montar.py junta esta pasta no co-finance-card.js. Os cartões ficam deitados (380 × 240).
+
+
+registrarCartoes({
+  layouts: {
+    caixa: (p) => {
+      const { k, prod, tier, semTier, arte, chipSvg, nfc, info, band, e } = p;
+      // Caixa: o X no alto à direita (laranja e branco nos coloridos, prata nos pretos, grafite no prata) e o nome no alto à esquerda
+      const cm = { "caixa-platinum": [["#3d3f42", "#6d7074"], (tier || semTier(prod) || "platinum").toUpperCase(), "nivel"], "caixa-sim": [["#ffffff", "#f39200"], "Sim", "sim"],
+        "caixa-universitario": [["#ffffff", "#f39200"], "UNIVERSITÁRIO", "fino"], "caixa-gold": [["#ffffff", "#f39200"], ""], "caixa-elo-mais": [["#ffffff", "#f39200"], ""],
+        "caixa-infinite": [["#f2f2f3", "#9da0a5"], ""], "caixa-icone": [["#f2f2f3", "#9da0a5"], "ÍCONE", "fino"], "caixa-nanquim": [["#f2f2f3", "#9da0a5"], ""],
+        "caixa-diners": [["#c8743a", "#eba66a"], "Diners Club", "diners"] }[k.modelo] || [["#ffffff", "#f39200"], semTier(prod)];
+      const [xc, rot, est] = cm;
+      return `${k.modelo === "caixa-platinum" ? `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="M0 240 380 0V240z" fill="#fff" opacity=".16"/><path d="M0 52h380" stroke="#000" stroke-opacity=".05"/></svg>` : ""}
+        <svg class="v3f-cx" viewBox="0 0 60 50" aria-hidden="true"><path d="M2 2h18l38 46H40z" fill="${xc[0]}"/><path d="M58 2H40L2 48h18z" fill="${xc[1]}"/></svg>
+        ${rot ? `<span class="v3f-marca"><small class="v3f-cxr ${est || ""}">${e(rot)}${est === "diners" ? "<i>INTERNATIONAL</i>" : ""}</small></span>` : ""}<span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
+    },
+  },
+  modelos: {
+    "caixa-platinum": "caixa",
+    "caixa-sim": "caixa",
+    "caixa-universitario": "caixa",
+    "caixa-gold": "caixa",
+    "caixa-elo-mais": "caixa",
+    "caixa-infinite": "caixa",
+    "caixa-icone": "caixa",
+    "caixa-nanquim": "caixa",
+    "caixa-diners": "caixa",
+  },
+  css: `
+    .v3f-cx{position:absolute;right:6%;top:7%;width:17cqw;height:auto;z-index:1}
+    .v3f.caixa .v3f-marca{top:12%}
+    .v3f-cxr{font:500 3.4cqw/1 Manrope,sans-serif!important;letter-spacing:.06em}
+    .v3f-cxr.nivel{color:#3b3f43}
+    .v3f-cxr.sim{font:italic 500 7cqw/1 "Brush Script MT","Segoe Script",cursive!important;letter-spacing:0}
+    .v3f-cxr.fino{font-size:2.8cqw!important;letter-spacing:.18em;opacity:.9}
+    .v3f-cxr.diners{display:grid;font:600 4.6cqw/1 Georgia,"Times New Roman",serif!important;letter-spacing:0;color:#e3b877}
+    .v3f-cxr.diners i{font:500 2.2cqw/1.4 Georgia,serif;font-style:normal;letter-spacing:.12em}
+  `,
+});
+
+// cartoes/btg.js
+// Cartões — BTG Pactual
+// Parte do CoFinance: o montar.py junta esta pasta no co-finance-card.js. Os cartões ficam deitados (380 × 240).
+
+// Cartões do HTML de referência (referencias/cartoes-numerados.html): número · bandeira · nome no site → modelo no catálogo
+//   BTG-001  Mastercard           Ultrablue World Legend  →  btg-ultrablue-world-legend
+//   BTG-002  Mastercard           Ultrablue  →  btg-ultrablue
+//   BTG-003  Mastercard           Black  →  btg-black
+//   BTG-004  Mastercard           Platinum  →  btg-platinum
+//   BTG-005  Mastercard           Gold  →  btg-gold
+//   BTG-006  Mastercard           TAP BTG Black  →  btg-tap-black
+// fim da lista
+
+
+registrarCartoes({
+  layouts: {
+    btg: (p) => {
+      const { prod, semTier, tem, logo, chipSvg, nfc, info, band, e } = p;
+      // BTG Ultrablue: azul escovado, "btg pactual" no alto à direita com o arco, o produto à esquerda
+      return `${tem.has("btg") ? `<span class="v3f-btgl">${logo("btg", "btgl")}<b class="v3f-sr">BTG Pactual</b></span>` : `<span class="v3f-btg"><b><i aria-hidden="true"></i>btg</b><small>pactual</small></span>`}
+        <span class="v3f-marca"><b class="v3f-btgp">${e(semTier(prod) ? semTier(prod).toLowerCase().replace(/^./, (s) => s.toUpperCase()) : "")}</b></span><span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
+    },
+  },
+  modelos: {
+    "btg-ultrablue": "btg",
+  },
+  bancos: ["btg"],
+  css: `
+    .v3f-btgl{right:5%;top:5%}
+    .v3f-logo.btgl{width:40cqw;height:11cqw;-webkit-mask-position:right center;mask-position:right center}
+    .v3f-btg{right:6%;top:8%;display:flex;align-items:baseline;gap:1.2cqw;color:#fff}
+    .v3f-btg b{position:relative;font:500 8cqw/1 Manrope,sans-serif;letter-spacing:-.02em;padding:0 1cqw}
+    .v3f-btg b i{position:absolute;left:-1.6cqw;top:-2.4cqw;width:13cqw;height:13cqw;border:.5cqw solid #fff;border-radius:50%;border-left-color:transparent;transform:rotate(-30deg)}
+    .v3f-btg small{font:400 6cqw/1 Manrope,sans-serif;letter-spacing:-.01em}
+    .v3f-btgp{font:500 4.6cqw/1 Manrope,sans-serif!important;letter-spacing:.01em}
+    .v3f.btg .v3f-marca{top:22%}
+  `,
+});
+
+// cartoes/brb.js
+// Cartões — BRB (BRBCARD)
+// Parte do CoFinance: o montar.py junta esta pasta no co-finance-card.js. Os cartões ficam deitados (380 × 240).
+
+// Cartões do HTML de referência (referencias/cartoes-numerados.html): número · bandeira · nome no site → modelo no catálogo
+//   BRB-001  Visa                 BRBCARD Visa Infinite  →  brb-visa-infinite
+//   BRB-002  Visa                 BRBCARD Visa Platinum  →  brb-visa-platinum
+//   BRB-003  Visa                 BRBCARD Visa Gold  →  brb-visa-gold
+//   BRB-004  Visa                 BRBCARD Visa Connect  →  brb-connect
+//   BRB-005  Mastercard           BRBCARD Mastercard Black  →  brb-mastercard-black
+//   BRB-006  Mastercard           BRBCARD Mastercard Platinum  →  brb-mastercard-platinum
+//   BRB-007  Mastercard           BRBCARD Mastercard Gold  →  brb-mastercard-gold
+//   BRB-008  Mastercard           BRBCARD Mastercard Connect  →  brb-mastercard-connect
+//   BRB-009  Visa e Mastercard    Nação BRB FLA (imagem com vários cartões, Visa e Mastercard)  →  brb-nacao-brb-fla
+// fim da lista
+
+
+registrarCartoes({
+  layouts: {
+    brb: (p) => {
+      const { k, prod, semTier, chipSvg, nfc, bandeira, info, band, e } = p;
+      // BRB Connect: azul em degradê, BRB em pé à direita, "connect" à esquerda, bandeira no alto à direita
+      return `<span class="v3f-vert dir"><small>banco</small><b>BRB</b></span><span class="v3f-chipw brbc">${nfc}${chipSvg}</span>
+        <span class="v3f-brbn">${e(semTier(prod) ? semTier(prod).toLowerCase() : !k.modelo || k.modelo === "brb-connect" ? "connect" : "")}</span>${info}${bandeira ? `<span class="v3f-band topo">${bandeira}</span>` : ""}`;
+    },
+  },
+  modelos: {
+    "brb-connect": "brb",
+  },
+  bancos: ["brb"],
+  css: `
+    .v3f-chipw.brbc{top:16%;left:13%}
+    .v3f-brbn{left:6%;top:56%;font:500 4cqw/1 Manrope,sans-serif;letter-spacing:.02em}
+  `,
+});
+
+// cartoes/inter.js
+// Cartões — Inter
+// Parte do CoFinance: o montar.py junta esta pasta no co-finance-card.js. Os cartões ficam deitados (380 × 240).
+
+// Cartões do HTML de referência (referencias/cartoes-numerados.html): número · bandeira · nome no site → modelo no catálogo
+//   INT-001  Mastercard           Inter Gold  →  inter-laranja
+//   INT-002  Mastercard           Inter Platinum  →  inter-platinum
+//   INT-003  Mastercard           Inter Prime  →  inter-prime
+//   INT-004  Mastercard           Inter Win  →  inter-win
+// fim da lista
+
+
+registrarCartoes({
+  layouts: {
+    inter: (p) => {
+      const { prod, semTier, tem, logo, chipSvg, nfc, bandeira, info, band, e } = p;
+      // Inter: laranja, "inter" em pé à direita, chip no alto à esquerda, bandeira no alto à direita
+      return `<span class="v3f-vert dir int">${tem.has("inter") ? `<span class="v3f-intl">${logo("inter", "intl")}</span><b class="v3f-sr">inter</b>` : "<b>inter</b>"}${semTier(prod) ? `<small class="v3f-intp">${e(semTier(prod).toLowerCase())}</small>` : ""}</span><span class="v3f-chipw intc">${nfc}${chipSvg}</span>${info}${bandeira ? `<span class="v3f-band topo">${bandeira}</span>` : ""}`;
+    },
+  },
+  bancos: ["inter"],
+  css: `
+    .v3f-intp{font:500 3.6cqw/1 Manrope,sans-serif!important;font-style:normal!important;margin:0 0 0 .8cqw!important}
+    .v3f-intl{display:block;transform:rotate(180deg)}
+    .v3f-logo.intl{width:9cqw;height:20cqw;transform:rotate(-90deg)}
+    .v3f-vert.int b{font-style:normal;font-weight:700;font-size:11cqw;letter-spacing:-.02em}
+  `,
+});
+
+// cartoes/c6.js
+// Cartões — C6 Bank
+// Parte do CoFinance: o montar.py junta esta pasta no co-finance-card.js. Os cartões ficam deitados (380 × 240).
+
+// Cartões do HTML de referência (referencias/cartoes-numerados.html): número · bandeira · nome no site → modelo no catálogo
+//   C6-001  Mastercard           C6 Carbon Mastercard Black  →  c6-carbon
+//   C6-002  Mastercard           C6 Black  →  c6-black
+//   C6-003  Mastercard           C6 Platinum  →  c6-platinum
+//   C6-004  Mastercard           C6 (básico)  →  c6-basico  (ainda fora do catálogo)
+//   C6-005  Mastercard           C6 Business  →  c6-business  (ainda fora do catálogo)
+//   C6-006  Mastercard           C6 Graphene World Legend  →  c6-graphene
+//   C6-007  Mastercard           C6 – cor Sunset  →  c6-sunset
+//   C6-008  Mastercard           C6 – cor Bubblegum  →  c6-bubblegum
+//   C6-009  Mastercard           C6 – cor Red  →  c6-red
+//   C6-010  Mastercard           C6 – cor Gold  →  c6-gold
+//   C6-011  Mastercard           C6 – cor Pink  →  c6-pink
+//   C6-012  Mastercard           C6 – cor Boreal Forest  →  c6-boreal-forest
+//   C6-013  Mastercard           C6 – cor Silver  →  c6-silver
+//   C6-014  Mastercard           C6 – cor Rainbow  →  c6-rainbow
+//   C6-015  Mastercard           C6 – cor Acqua  →  c6-acqua
+//   C6-016  Mastercard           C6 – cor Blue  →  c6-blue
+// fim da lista
+
+
+registrarCartoes({
+  layouts: {
+    c6: (p) => {
+      const { k, prod, tier, semTier, tem, logo, chipSvg, nfc, bandeira, info, band, e } = p;
+      // C6 Carbon: fibra de carbono, "C6 BANK" em pé à direita, o nível em pé à esquerda, bandeira embaixo à direita
+      return `${tem.has("c6") ? `<span class="v3f-c6l">${logo("c6", "c6l")}<b class="v3f-sr">C6 Bank</b></span>` : `<span class="v3f-vert dir c6"><b>C6</b><small>BANK</small></span>`}<span class="v3f-chipw c6c">${nfc}${chipSvg}</span>
+        ${k.modelo === "c6-carbon" ? `<span class="v3f-vert c6n"><b>${e(semTier(prod) || "Carbon")}</b><small>${e(tier ? tier.toLowerCase().replace(/^./, (s) => s.toUpperCase()) : "Black")}</small></span>`
+          : prod ? `<span class="v3f-vert c6n"><small>${e(prod.toLowerCase().replace(/^./, (s) => s.toUpperCase()))}</small></span>` : ""}${info}${band("c6b")}`;
+    },
+  },
+  modelos: {
+    "c6-carbon": "c6",
+  },
+  bancos: ["c6"],
+  css: `
+    .v3f-c6l{right:2%;top:24%;transform:rotate(-90deg);transform-origin:center}
+    .v3f-logo.c6l{width:30cqw;height:6cqw}
+    .v3f-vert.c6{top:7%;bottom:auto;display:flex;align-items:center;gap:1cqw}
+    .v3f-vert.c6 b{font:900 8cqw/1 Manrope,sans-serif;font-style:normal;letter-spacing:-.04em}
+    .v3f-vert.c6 small{font:300 6.4cqw/1 Manrope,sans-serif;font-style:normal;letter-spacing:.02em;margin:0}
+    .v3f-chipw.c6c{flex-direction:column;align-items:flex-start;top:18%;left:13%;gap:1.4cqw}
+    .v3f-vert.c6n{left:4%;top:auto;bottom:34%;display:flex;gap:.6cqw}
+    .v3f-vert.c6n b{font:700 3.6cqw/1 Manrope,sans-serif}
+    .v3f-vert.c6n small{font:300 3.6cqw/1 Manrope,sans-serif;font-style:italic;margin:0}
+  `,
+});
+
+// cartoes/outros.js
+// Cartões — Outros (Wise, Alelo e o desenho genérico dos demais bancos)
+// Parte do CoFinance: o montar.py junta esta pasta no co-finance-card.js. Os cartões ficam deitados (380 × 240).
+
+// Cartões do HTML de referência (referencias/cartoes-numerados.html): número · bandeira · nome no site → modelo no catálogo
+//   INF-001  Mastercard           InfinitePay (imagem com várias cores do cartão)  →  infinitepay-infinitepay
+//   NUB-001  Mastercard           Nubank (roxo) – foto do cartão  →  nubank-roxo
+//   NUB-002  Mastercard           Nubank Croma Mastercard Platinum  →  nubank-croma
+//   NUB-003  Mastercard           Nubank Ultravioleta Mastercard Black  →  nubank-ultravioleta
+// fim da lista
+
+
+registrarCartoes({
+  layouts: {
+    wise: (p) => {
+      const { arte, tem, info, band, LOGO } = p;
+      // Wise: verde, a marca grande no alto, sem chip, VISA embaixo
+      return `${tem.has(arte) ? `<img class="v3f-arte" src="${LOGO(arte)}" alt="">` : `<b class="v3f-wisen">wise</b>`}${info}${band()}`;
+    },
+    alelo: (p) => {
+      const { k, arte, tem, logo, info, e, LOGO } = p;
+      // Alelo: verde-limão, linhas com talheres e copo, mancha do logo e os saldos embaixo dela
+      return `${tem.has(arte) ? `<img class="v3f-arte" src="${LOGO(arte)}" alt="">` : `<b class="v3f-alelon">alelo</b>`}<span class="v3f-alprod">${e(String(k.visual?.produto || { refeicao: "refeição", alimentacao: "alimentação", multi: "multibenefício" }[k.beneficio_de] || "refeição · alimentação").toLowerCase())}</span>${info}`;
+    },
+    outro: (p) => {
+      const { k, prod, semTier, bid, tem, logo, chipSvg, nfc, info, band, e } = p;
+      const nb = bid === "nubank" && !tem.has("nubank") ? "nu" : p.nomeBanco() || k.apelido || k.nome;  // outros bancos: logo (se o arquivo existir) ou o nome, e o modelo embaixo
+      return `<span class="v3f-marca">${bid && tem.has(bid) ? `${logo(bid, "gen")}<b class="v3f-sr">${e(nb)}</b>` : `<b${bid === "nubank" ? ' class="v3f-nu"' : ""}>${e(nb)}</b>`}${semTier(prod) ? `<small>${e(semTier(prod))}</small>` : ""}</span><span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
+    },
+  },
+  modelos: {
+    "wise-verde": "wise",
+    "alelo-refeicao": "alelo",
+  },
+  bancos: ["wise", "alelo"],
+  css: `
+    .v3f-nu{font:800 11cqw/1 Manrope,sans-serif!important;letter-spacing:-.06em!important}
+    .v3f-wisen{left:2%;top:-6%;font:italic 800 31cqw/1 Manrope,sans-serif;letter-spacing:-.04em;color:rgba(0,0,0,.1)}
+    .v3f-alelon{left:50%;top:14%;transform:translateX(-50%);padding:2cqw 7cqw;border-radius:99px;background:#347756;color:#fff;font:700 9cqw/1 Manrope,sans-serif}
+    .v3f-alprod{left:0;right:0;top:41.5%;text-align:center;font:500 2.7cqw/1 Manrope,sans-serif;letter-spacing:.06em;color:#2f6b3f}
+    .v3f-logo.gen{width:30cqw;height:7.5cqw;background:currentColor}
+    .v3f:not(.preto) .v3f-logo.gen{background:var(--ct)}
+  `,
+});
+
+
 // ----- compras-v3-card -------------------------------------------------------
 
 // =============================================================================
@@ -7976,8 +8642,9 @@ console.info(`%c COMPRAS-V2 %c ${V2_VERSION} `, "background:#0b6bcb;color:#fff",
 
 // compras-v2-card: incluído acima
 const BaseNova = ComprasCard;  // mesmo arquivo
+// CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.5";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.6";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
@@ -8776,10 +9443,7 @@ class ComprasV3Card extends BaseV2 {
     const mi = this._finModelo?.(k.modelo), c = this._finCartaoCor(k), hoje = this._fFin.hoje, prod = String(k.visual?.produto || mi?.rotulo || this._finBeneficio?.(k) || "").toUpperCase();
     const tier = this._finCategoria(k), semTier = (s) => s.replace(/\b(INFINITE|BLACK|PLATINUM|SIGNATURE|GOLD|NANQUIM|GRAFITE|CLASSIC|STANDARD|INTERNACIONAL)\b/g, "").replace(/\s+/g, " ").trim();
     // o modelo escolhido no cadastro manda; sem ele, o padrão do banco (Bradesco Prime, Santander Unique, Ourocard crédito, Latam Pass)
-    const MOD = { "bradesco-prime": "bradesco", "santander-unique": "santander", "bb-ourocard-infinite": "bb", "bb-ourocard-debito": "bbd", "itau-latam-black": "itau", "wise-verde": "wise", "alelo-refeicao": "alelo",
-      "caixa-platinum": "caixa", "caixa-sim": "caixa", "caixa-universitario": "caixa", "caixa-gold": "caixa", "caixa-elo-mais": "caixa",
-      "caixa-infinite": "caixa", "caixa-icone": "caixa", "caixa-nanquim": "caixa", "caixa-diners": "caixa", "btg-ultrablue": "btg", "brb-connect": "brb", "amazon-bradesco": "amazon", "c6-carbon": "c6" };
-    const LAY = ["santander", "bradesco", "bb", "itau", "wise", "alelo", "btg", "brb", "inter", "c6"];  // bancos com desenho próprio
+    const MOD = CARTOES.modelos, LAY = CARTOES.bancos;  // codigo/cartoes/: o desenho de cada modelo e os bancos com desenho próprio
     const bid = this._finBancoId(k), b = MOD[k.modelo] || (mi ? (LAY.includes(mi.banco) ? mi.banco : "outro") : LAY.includes(bid) ? bid : "outro"), ouro = c.ouro && b !== "bbd" || (b === "bb" && c.preto);
     const arte = { wise: "wise-verde", alelo: "alelo-refeicao" }[b];  // desenho inteiro do cartão (arquivo em logos/, opcional)
     // fundo do modelo da biblioteca (logos/cartoes/<modelo>.svg: cor e textura do cartão de verdade); logo, chip e bandeira vêm por cima, como em todos
@@ -8801,60 +9465,9 @@ class ComprasV3Card extends BaseV2 {
     const sit = !x || x.gasto ? "" : x.pago ? "✓ paga" : x.vence < hoje ? "atrasada" : x.vence === hoje ? "vence hoje" : "";
     const info = `<span class="v3f-info"><small>${x?.gasto ? this._e(x.rotulo) : x ? `Fatura · vence ${this._dataCurta(x.vence + "T12:00")}` : k.credito === false ? "Nenhum gasto este mês" : "Nenhuma fatura em aberto"}</small><b>${x ? this._brl(x.total) : "—"}</b>${sit ? `<em class="${sit === "✓ paga" ? "" : "atr"}">${sit}</em>` : x?.gasto ? `<em>${x.n} ${x.n === 1 ? "compra" : "compras"}</em>` : ""}</span>`;
     const band = (cls = "") => bandeira ? `<span class="v3f-band ${cls}">${bandeira}${tier ? `<small>${this._e(k.bandeira === "Mastercard" ? tier.toLowerCase() : tier)}</small>` : ""}</span>` : "";
-    let corpo;
-    if (b === "santander") {
-      corpo = `<span class="v3f-marca">${tem.has("santander") ? `${logo("santander")}<b class="v3f-sr">Santander</b>` : "<b>Santander</b>"}</span><span class="v3f-chipw">${chipSvg}</span>
-        ${semTier(prod) ? `<span class="v3f-modelo${semTier(prod).length > 7 ? " longo" : ""}">${this._e(semTier(prod))}</span>` : ""}<span class="v3f-nfcw">${nfc}</span>${info}${band()}`;
-    } else if (b === "bradesco") {
-      corpo = `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="M262 0 300 0 232 128z" fill="#fff" opacity=".10"/><path d="M380 30v14L250 120z" fill="#fff" opacity=".12"/><path d="M380 150v8L190 190z" fill="#fff" opacity=".08"/></svg>
-        <span class="v3f-marca">${tem.has("bradesco") ? `${logo("bradesco")}<b class="v3f-sr">Bradesco</b>` : "<b>bradesco</b>"}${semTier(prod) ? `<small>${this._e(semTier(prod).toLowerCase())}</small>` : ""}</span><span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
-    } else if (b === "bb") {
-      const ouroNome = /OUROCARD/.test(prod) ? "ourocard" : "Banco do Brasil", resto = semTier(prod.replace("OUROCARD", ""));
-      corpo = `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="M0 150C120 150 120 132 220 104 300 80 340 62 380 50" stroke="#d4b26a" stroke-width="1.6" fill="none"/></svg>
-        ${tem.has("bb") ? `<span class="v3f-bbs">${logo("bb")}</span>` : ""}<span class="v3f-marca dir"><b>${this._e(ouroNome)}</b>${resto ? `<small>${this._e(resto)}</small>` : ""}</span><span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
-    } else if (b === "bbd") {  // Ourocard débito: preto, tudo branco, linhas finas em trilhos (como no cartão), faixa amarela na borda esquerda
-      const tre = "M187.6 45.7L236.7 77.7M138.5 77.7L163 93.7M138.5 109.7L261.2 189.7M40.3 77.7L138.5 141.7M236.7 205.7L261.2 221.7M-33.9 61.3L40.3 109.7M114 157.7L163 189.7M15.8 125.7L40.3 141.7M138.5 205.7L219.6 258.6M40.3 173.7L89.4 205.7M40.3 205.7L121.4 258.6M15.8 93.7L40.3 77.7M-33.9 158.1L114 61.7M7.9 162.9L187.6 45.7M118.4 122.8L236.7 45.7M40.3 173.7L98.3 135.9M178.7 115.5L236.7 77.7M7.9 226.9L163 125.7M187.6 141.7L236.7 109.7M7.4 259.2L187.6 141.7M138.5 205.7L212.1 157.7M178.5 211.6L236.7 173.7M105.8 259L163 221.7M203.9 259L261.2 221.7";  // linhas do fundo, iguais às do cartão de verdade (grade de passo 32; os cantos se encontram exatos)
-      corpo = `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="${tre}" stroke="#fff" stroke-width="1.2" opacity=".45" fill="none"/><path d="M0 168L7.9 162.8V240H0z" fill="#ffd400"/></svg>
-        ${tem.has("bb") ? `<span class="v3f-bbs">${logo("bb", "bb bbw")}</span>` : ""}<span class="v3f-marca dir"><b class="v3f-ourod">ourocard</b></span>
-        <span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
-    } else if (b === "itau") {  // itaú (e a categoria) no alto à esquerda com o chip embaixo; LATAM PASS no alto à direita; bandeira embaixo
-      const lp = /LATAM/.test(prod);
-      corpo = `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="M0 92h150l14 14v18H0zM0 136h210l14 14v18H0zM0 180h270l14 14v18H0z" fill="#fff" opacity=".07"/></svg>
-        <span class="v3f-itop">${tem.has("itau") ? `<img src="${V3_LOGO("itau")}" alt="Itaú">` : `<b>itaú</b>`}${tier ? `<b class="v3f-itier">${this._e(tier.toLowerCase())}</b>` : ""}</span>
-        <span class="v3f-marca dir lp">${lp ? `<small>LATAM</small><b>PASS</b>` : `<b>${this._e(semTier(prod) || "")}</b>`}</span>
-        <span class="v3f-chipw itc">${chipSvg}${nfc}</span>${info}${bandeira ? `<span class="v3f-band">${bandeira}</span>` : ""}`;
-    } else if (b === "caixa") {  // Caixa: o X no alto à direita (laranja e branco nos coloridos, prata nos pretos, grafite no prata) e o nome no alto à esquerda
-      const cm = { "caixa-platinum": [["#3d3f42", "#6d7074"], (tier || semTier(prod) || "platinum").toUpperCase(), "nivel"], "caixa-sim": [["#ffffff", "#f39200"], "Sim", "sim"],
-        "caixa-universitario": [["#ffffff", "#f39200"], "UNIVERSITÁRIO", "fino"], "caixa-gold": [["#ffffff", "#f39200"], ""], "caixa-elo-mais": [["#ffffff", "#f39200"], ""],
-        "caixa-infinite": [["#f2f2f3", "#9da0a5"], ""], "caixa-icone": [["#f2f2f3", "#9da0a5"], "ÍCONE", "fino"], "caixa-nanquim": [["#f2f2f3", "#9da0a5"], ""],
-        "caixa-diners": [["#c8743a", "#eba66a"], "Diners Club", "diners"] }[k.modelo] || [["#ffffff", "#f39200"], semTier(prod)];
-      const [xc, rot, est] = cm;
-      corpo = `${k.modelo === "caixa-platinum" ? `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="M0 240 380 0V240z" fill="#fff" opacity=".16"/><path d="M0 52h380" stroke="#000" stroke-opacity=".05"/></svg>` : ""}
-        <svg class="v3f-cx" viewBox="0 0 60 50" aria-hidden="true"><path d="M2 2h18l38 46H40z" fill="${xc[0]}"/><path d="M58 2H40L2 48h18z" fill="${xc[1]}"/></svg>
-        ${rot ? `<span class="v3f-marca"><small class="v3f-cxr ${est || ""}">${this._e(rot)}${est === "diners" ? "<i>INTERNATIONAL</i>" : ""}</small></span>` : ""}<span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
-    } else if (b === "btg") {  // BTG Ultrablue: azul escovado, "btg pactual" no alto à direita com o arco, o produto à esquerda
-      corpo = `${tem.has("btg") ? `<span class="v3f-btgl">${logo("btg", "btgl")}<b class="v3f-sr">BTG Pactual</b></span>` : `<span class="v3f-btg"><b><i aria-hidden="true"></i>btg</b><small>pactual</small></span>`}
-        <span class="v3f-marca"><b class="v3f-btgp">${this._e(semTier(prod) ? semTier(prod).toLowerCase().replace(/^./, (s) => s.toUpperCase()) : "")}</b></span><span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
-    } else if (b === "brb") {  // BRB Connect: azul em degradê, BRB em pé à direita, "connect" à esquerda, bandeira no alto à direita
-      corpo = `<span class="v3f-vert dir"><small>banco</small><b>BRB</b></span><span class="v3f-chipw brbc">${nfc}${chipSvg}</span>
-        <span class="v3f-brbn">${this._e(semTier(prod) ? semTier(prod).toLowerCase() : !k.modelo || k.modelo === "brb-connect" ? "connect" : "")}</span>${info}${bandeira ? `<span class="v3f-band topo">${bandeira}</span>` : ""}`;
-    } else if (b === "inter") {  // Inter: laranja, "inter" em pé à direita, chip no alto à esquerda, bandeira no alto à direita
-      corpo = `<span class="v3f-vert dir int">${tem.has("inter") ? `<span class="v3f-intl">${logo("inter", "intl")}</span><b class="v3f-sr">inter</b>` : "<b>inter</b>"}${semTier(prod) ? `<small class="v3f-intp">${this._e(semTier(prod).toLowerCase())}</small>` : ""}</span><span class="v3f-chipw intc">${nfc}${chipSvg}</span>${info}${bandeira ? `<span class="v3f-band topo">${bandeira}</span>` : ""}`;
-    } else if (b === "amazon") {  // Amazon (Bradesco): branco, "amazon.com.br" em pé à direita com o sorriso, a seta clara ao fundo
-      corpo = `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="M150 230C190 150 192 80 170 10" stroke="#c9d8f2" stroke-width="5" fill="none" opacity=".7"/><path d="M158 26 170 8 186 22" stroke="#c9d8f2" stroke-width="5" fill="none" opacity=".7"/></svg>
-        <span class="v3f-vert dir amz"><b>amazon<small>.com.br</small></b><i aria-hidden="true"></i></span><span class="v3f-chipw amzc">${nfc}${chipSvg}</span>${info}${bandeira ? `<span class="v3f-band amzb">${bandeira}</span>` : ""}`;
-    } else if (b === "c6") {  // C6 Carbon: fibra de carbono, "C6 BANK" em pé à direita, o nível em pé à esquerda, bandeira embaixo à direita
-      corpo = `${tem.has("c6") ? `<span class="v3f-c6l">${logo("c6", "c6l")}<b class="v3f-sr">C6 Bank</b></span>` : `<span class="v3f-vert dir c6"><b>C6</b><small>BANK</small></span>`}<span class="v3f-chipw c6c">${nfc}${chipSvg}</span>
-        ${k.modelo === "c6-carbon" ? `<span class="v3f-vert c6n"><b>${this._e(semTier(prod) || "Carbon")}</b><small>${this._e(tier ? tier.toLowerCase().replace(/^./, (s) => s.toUpperCase()) : "Black")}</small></span>`
-          : prod ? `<span class="v3f-vert c6n"><small>${this._e(prod.toLowerCase().replace(/^./, (s) => s.toUpperCase()))}</small></span>` : ""}${info}${band("c6b")}`;
-    } else if (b === "wise") {  // Wise: verde, a marca grande no alto, sem chip, VISA embaixo
-      corpo = `${tem.has(arte) ? `<img class="v3f-arte" src="${V3_LOGO(arte)}" alt="">` : `<b class="v3f-wisen">wise</b>`}${info}${band()}`;
-    } else if (b === "alelo") {  // Alelo: verde-limão, linhas com talheres e copo, mancha do logo e os saldos embaixo dela
-      corpo = `${tem.has(arte) ? `<img class="v3f-arte" src="${V3_LOGO(arte)}" alt="">` : `<b class="v3f-alelon">alelo</b>`}<span class="v3f-alprod">${this._e(String(k.visual?.produto || { refeicao: "refeição", alimentacao: "alimentação", multi: "multibenefício" }[k.beneficio_de] || "refeição · alimentação").toLowerCase())}</span>${info}`;
-    } else {
-      const nb = bid === "nubank" && !tem.has("nubank") ? "nu" : this._finBancoNome(k) || k.apelido || k.nome;  // outros bancos: logo (se o arquivo existir) ou o nome, e o modelo embaixo
-      corpo = `<span class="v3f-marca">${bid && tem.has(bid) ? `${logo(bid, "gen")}<b class="v3f-sr">${this._e(nb)}</b>` : `<b${bid === "nubank" ? ' class="v3f-nu"' : ""}>${this._e(nb)}</b>`}${semTier(prod) ? `<small>${this._e(semTier(prod))}</small>` : ""}</span><span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
-    }
+    const p = { k, x, c, mi, prod, tier, semTier, bid, arte, tem, logo, chipSvg, nfc, mc, mcCor, bandeira, info, band, e: (s) => this._e(s), LOGO: V3_LOGO,
+      nomeBanco: () => this._finBancoNome(k) };
+    let corpo = (CARTOES.layouts[b] || CARTOES.layouts.outro)(p);  // o desenho de cada banco mora em codigo/cartoes/<banco>.js
     // cartão em foto: o desenho do banco inteiro, igual ao de verdade; o CoFinance só escreve o valor e a fatura (num vidro, para ler em qualquer fundo)
     const foto = fundoN && this._finEhFoto?.(k.modelo);
     if (foto) corpo = `<img class="v3f-arte" src="${V3_LOGO(fundoN)}" alt="">${info}`;
@@ -9447,82 +10060,7 @@ class ComprasV3Card extends BaseV2 {
     .v3-total.m{font-size:32px;margin:2px 0 6px}
     .v3 .fpilha{width:100%;max-width:none;justify-self:center;box-sizing:border-box}.v3 .fpilha>.fcface,.v3 .fpilha>.fpeek{width:100%;max-width:none}
     .v3 .fpk>b{white-space:nowrap;flex:none}.v3 .fpk>span:not(.fpk-v){white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1 1 auto}.v3 .fpk>.fpk-v{flex:none;white-space:nowrap}
-    .v3 .fcface.v3f{position:relative;overflow:hidden;display:block;aspect-ratio:1.586;box-sizing:border-box;padding:0;border:0;border-radius:16px;background:var(--cg,var(--cf));color:var(--ct);text-align:left;font-family:Manrope,system-ui,sans-serif;box-shadow:0 10px 24px -12px rgba(0,0,0,.55);container-type:inline-size}
-    .v3 .fcface.v3f.preto{background:linear-gradient(160deg,#2b2b2f 0%,#161618 50%,#0b0b0c 100%)}
-    .v3 .fcface.v3f.preto::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 3px);pointer-events:none}
-    .v3f-arte{position:absolute;inset:0;width:100%;height:100%;z-index:0}
-    .v3f>:not(.v3f-arte){z-index:1}  /* texto e peças sempre à frente do desenho; o contorno na cor do fundo apaga as linhas em volta das letras */
-    .v3 .fcface.v3f{--halo:var(--cf,transparent)}.v3 .fcface.v3f.preto{--halo:#161618}.v3 .fcface.v3f.preto.bbd{--halo:#1b1815}
-    .v3f :is(.v3f-info,.v3f-band,.v3f-marca,.v3f-modelo,.v3f-itop,.v3f-alprod){text-shadow:0 0 2px var(--halo),0 0 4px var(--halo),0 0 7px var(--halo)}
-    .v3f>span{position:absolute}
-    .v3f-marca{left:6%;top:9%;display:grid;justify-items:start;line-height:1}.v3f-marca b{font:600 7cqw/1 Manrope,system-ui,sans-serif;letter-spacing:-.01em}
-    .v3f-marca small{font-size:4.6cqw;margin-top:.3cqw}.v3f-marca.dir{left:auto;right:6%;justify-items:end}
-    .v3f.bradesco .v3f-marca b{font-weight:700;font-size:6.6cqw;letter-spacing:-.03em}.v3f.bradesco .v3f-marca small{font-size:5.2cqw;font-weight:500;margin-top:0}
-    .v3f.santander .v3f-marca b{font-size:7.8cqw;font-weight:600}
-    .v3f.ouro .v3f-marca{color:#d4b26a}.v3f.bb .v3f-marca b{font-size:6.2cqw}
-    .v3f-chipw{left:6%;top:37%;display:flex;align-items:center;gap:2.4cqw}.v3f-chip{width:11cqw;height:auto}.v3f-nfc{width:5.6cqw;height:5.6cqw;opacity:.85}
-    .v3f.santander .v3f-chipw{top:33%}.v3f.santander .v3f-chip{width:13cqw}.v3f-nfcw{right:6%;top:35%}.v3f.santander .v3f-nfc{width:8cqw;height:8cqw}
-    .v3f-modelo{left:0;right:0;top:39%;text-align:center;font-size:3.9cqw;font-weight:700;letter-spacing:1.4em;padding-left:1.4em;opacity:.9}
-    .v3f.bb .v3f-chipw{top:42%}
-    .v3f-intp{font:500 3.6cqw/1 Manrope,sans-serif!important;font-style:normal!important;margin:0 0 0 .8cqw!important}
-    .v3f-bdl{display:block;height:7.4cqw;width:auto;max-width:24cqw;object-fit:contain}.v3f-bdl.amex,.v3f-bdl.jcb,.v3f-bdl.unionpay{height:9.5cqw}
-    .v3f-bdl.diners{height:6.4cqw;max-width:30cqw}.v3f-bdl.hipercard{height:8.6cqw}.v3f-bdl.maestro{height:10cqw}
-    .v3f-bdm{width:16cqw;height:6.6cqw;-webkit-mask-position:right center;mask-position:right center}.v3f-bdm.discover{width:24cqw;height:4.4cqw}
-    .v3f-btgl{right:5%;top:5%}.v3f-logo.btgl{width:40cqw;height:11cqw;-webkit-mask-position:right center;mask-position:right center}
-    .v3f-c6l{right:2%;top:24%;transform:rotate(-90deg);transform-origin:center}.v3f-logo.c6l{width:30cqw;height:6cqw}
-    .v3f-intl{display:block;transform:rotate(180deg)}.v3f-logo.intl{width:9cqw;height:20cqw;transform:rotate(-90deg)}
-    .v3f-nu{font:800 11cqw/1 Manrope,sans-serif!important;letter-spacing:-.06em!important}
-    .v3f-modelo.longo{top:55%;left:6%;right:auto;text-align:left;padding-left:0;letter-spacing:.32em;font-size:3.2cqw}
-    .v3f-info{left:6%;bottom:8%;display:grid;line-height:1.15;max-width:60%}
-    .v3f.foto .v3f-info{left:4%;bottom:5%;padding:1.4cqw 2.6cqw 1.6cqw;border-radius:2.8cqw;background:color-mix(in srgb,var(--cf) 58%,transparent);-webkit-backdrop-filter:blur(7px) saturate(1.2);backdrop-filter:blur(7px) saturate(1.2);box-shadow:0 0 0 1px color-mix(in srgb,var(--ct) 14%,transparent)}.v3f-info small{font-size:3.2cqw;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .v3f-info b{font:700 6.4cqw/1.15 Sora,Manrope,sans-serif;letter-spacing:-.01em}.v3f-info em{font-style:normal;font-size:3.1cqw;opacity:.8}.v3f-info em.atr{opacity:1;font-weight:700}
-    .v3f-band{right:6%;bottom:7%;display:grid;justify-items:end;line-height:1;text-align:right}
-    .v3f-band small{font-size:3.6cqw;font-weight:600;margin-top:.6cqw;opacity:.92}
-    .v3f-visa{font:italic 900 8.4cqw/1 Arial,Helvetica,sans-serif;letter-spacing:-.01em;background:linear-gradient(180deg,#f7f7f8 0%,#c3c5c9 55%,#8e9095 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
-    .v3f.ouro .v3f-visa{background:linear-gradient(180deg,#f3dc9a 0%,#d4b26a 55%,#a8862f 100%);-webkit-background-clip:text;background-clip:text}.v3f.ouro .v3f-band small{color:#d4b26a}
-    .v3f:not(.preto) .v3f-visa{background:none;color:var(--ct)}
-    .v3f-mcw{display:grid;justify-items:center;line-height:1}.v3f-mc{width:18.5cqw;height:auto;display:block}.v3f-mcn{font-size:3.1cqw;font-weight:600;letter-spacing:.01em;color:#d9dadc;margin-top:.4cqw}
-    .v3f.itau .v3f-band.topo{left:6%;right:auto;top:8%;bottom:auto;justify-items:start}.v3f.itau .v3f-band.topo .v3f-mcw{justify-items:start}
-    .v3f-itop{left:6%;top:8%;display:flex;align-items:center;gap:2.4cqw}.v3f-itop img{display:block;width:9.5cqw;height:auto;filter:grayscale(1) invert(1) brightness(1.05);border-radius:1.6cqw}
-    .v3f-itop b{font:700 5.4cqw/1 Manrope,sans-serif}.v3f-itop .v3f-itier{font-weight:600;font-size:5cqw;letter-spacing:.02em;opacity:.95}
-    .v3f-chipw.itc{left:6%;top:37%}
-    .v3f-marca.dir.lp{justify-items:end}.v3f-marca.lp small{font-size:3.4cqw;font-weight:700;letter-spacing:.14em;margin:0 0 .2cqw}.v3f-marca.lp b{font-size:7cqw;font-weight:500;letter-spacing:.04em}
-    .v3f-marca.baixo{top:auto;bottom:8%;left:6%}.v3f-marca.baixo small{font-size:3.4cqw;font-weight:700;letter-spacing:.14em;margin:0 0 .2cqw}.v3f-marca.baixo b{font-size:7.4cqw;font-weight:500;letter-spacing:.04em}
-    .v3f-logo{display:block;background:currentColor;-webkit-mask:var(--logo) left center/contain no-repeat;mask:var(--logo) left center/contain no-repeat}
-    .v3f-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-    .v3f-logo.bb.bbw{background:#f4f4f5}.v3f-ourod{font-weight:600!important;font-size:7.6cqw!important;letter-spacing:-.02em;color:#f4f4f5}
-    .v3 .fcface.v3f.preto.bbd{background:linear-gradient(160deg,#2a2622 0%,#1b1815 55%,#0f0d0b 100%)}
-    .v3f.bbd .v3f-chipw{top:40%}.v3f.bbd .v3f-band small{text-transform:lowercase}
-    .v3f-wisen{left:2%;top:-6%;font:italic 800 31cqw/1 Manrope,sans-serif;letter-spacing:-.04em;color:rgba(0,0,0,.1)}
-    .v3f-alelon{left:50%;top:14%;transform:translateX(-50%);padding:2cqw 7cqw;border-radius:99px;background:#347756;color:#fff;font:700 9cqw/1 Manrope,sans-serif}
-    .v3f-alprod{left:0;right:0;top:41.5%;text-align:center;font:500 2.7cqw/1 Manrope,sans-serif;letter-spacing:.06em;color:#2f6b3f}
-    .v3f-logo.gen{width:30cqw;height:7.5cqw;background:currentColor}.v3f:not(.preto) .v3f-logo.gen{background:var(--ct)}
-    .v3f-logo.bradesco{width:33cqw;height:6.2cqw;background:#f2f2f3}.v3f-logo.santander{width:38cqw;height:8.4cqw;background:#e9e9ea}
-    .v3f-bbs{left:6%;top:9%}.v3f-logo.bb{width:9cqw;height:9cqw;background:linear-gradient(160deg,#f3dc9a,#c9a453 60%,#9c7a2c)}
-    .v3f-logo.visa{width:19cqw;height:6.2cqw;-webkit-mask-position:right center;mask-position:right center;background:linear-gradient(180deg,#f7f7f8 0%,#c3c5c9 55%,#8e9095 100%)}
-    .v3f.ouro .v3f-logo.visa{background:linear-gradient(180deg,#f3dc9a 0%,#d4b26a 55%,#a8862f 100%)}.v3f:not(.preto) .v3f-logo{background:var(--ct)}
-    .v3f-cx{position:absolute;right:6%;top:7%;width:17cqw;height:auto;z-index:1}
-    .v3f.caixa .v3f-marca{top:12%}.v3f-cxr{font:500 3.4cqw/1 Manrope,sans-serif!important;letter-spacing:.06em}.v3f-cxr.nivel{color:#3b3f43}
-    .v3f-cxr.sim{font:italic 500 7cqw/1 "Brush Script MT","Segoe Script",cursive!important;letter-spacing:0}.v3f-cxr.fino{font-size:2.8cqw!important;letter-spacing:.18em;opacity:.9}
-    .v3f-cxr.diners{display:grid;font:600 4.6cqw/1 Georgia,"Times New Roman",serif!important;letter-spacing:0;color:#e3b877}.v3f-cxr.diners i{font:500 2.2cqw/1.4 Georgia,serif;font-style:normal;letter-spacing:.12em}
-    .v3f-btg{right:6%;top:8%;display:flex;align-items:baseline;gap:1.2cqw;color:#fff}.v3f-btg b{position:relative;font:500 8cqw/1 Manrope,sans-serif;letter-spacing:-.02em;padding:0 1cqw}
-    .v3f-btg b i{position:absolute;left:-1.6cqw;top:-2.4cqw;width:13cqw;height:13cqw;border:.5cqw solid #fff;border-radius:50%;border-left-color:transparent;transform:rotate(-30deg)}
-    .v3f-btg small{font:400 6cqw/1 Manrope,sans-serif;letter-spacing:-.01em}.v3f-btgp{font:500 4.6cqw/1 Manrope,sans-serif!important;letter-spacing:.01em}.v3f.btg .v3f-marca{top:22%}
-    .v3f-vert{writing-mode:vertical-rl;transform:rotate(180deg);bottom:7%;line-height:1}.v3f-vert.dir{right:5%}
-    .v3f-vert b{font:800 9cqw/1 Manrope,sans-serif;letter-spacing:-.03em;font-style:italic}.v3f-vert small{font:500 3cqw/1 Manrope,sans-serif;font-style:italic;margin-bottom:.6cqw}
-    .v3f-vert.int b{font-style:normal;font-weight:700;font-size:11cqw;letter-spacing:-.02em}
-    .v3f-vert.amz{display:flex;align-items:center;gap:1cqw;color:#232f3e}.v3f-vert.amz b{font:800 8cqw/1 Arial,Helvetica,sans-serif;font-style:normal;letter-spacing:-.04em}.v3f-vert.amz b small{font:600 4cqw/1 Arial,sans-serif;font-style:normal}
-    .v3f-vert.amz i{display:block;width:3cqw;height:20cqw;border-left:1cqw solid #ff9900;border-radius:50%;margin-right:-2cqw}
-    .v3f-chipw.brbc,.v3f-chipw.intc,.v3f-chipw.amzc{flex-direction:column;align-items:flex-start;top:9%;gap:1.4cqw}.v3f-chipw.brbc{top:16%;left:13%}.v3f-chipw.amzc{top:10%}
-    .v3f-brbn{left:6%;top:56%;font:500 4cqw/1 Manrope,sans-serif;letter-spacing:.02em}
-    .v3f-band.topo{right:5%;top:6%;bottom:auto}.v3f-band.amzb{right:22%;bottom:7%}
-    .v3f.amazon .v3f-info{color:#232f3e}
-    .v3f-vert.c6{top:7%;bottom:auto;display:flex;align-items:center;gap:1cqw}.v3f-vert.c6 b{font:900 8cqw/1 Manrope,sans-serif;font-style:normal;letter-spacing:-.04em}.v3f-vert.c6 small{font:300 6.4cqw/1 Manrope,sans-serif;font-style:normal;letter-spacing:.02em;margin:0}
-    .v3f-chipw.c6c{flex-direction:column;align-items:flex-start;top:18%;left:13%;gap:1.4cqw}
-    .v3f-vert.c6n{left:4%;top:auto;bottom:34%;display:flex;gap:.6cqw}.v3f-vert.c6n b{font:700 3.6cqw/1 Manrope,sans-serif}.v3f-vert.c6n small{font:300 3.6cqw/1 Manrope,sans-serif;font-style:italic;margin:0}
-    .v3f-bd{display:block;height:6cqw;width:auto;color:inherit;overflow:visible}.v3f-bd.amex{height:9.5cqw}.v3f-bd.diners{height:9.5cqw}.v3f-bd.elo{height:7.6cqw}.v3f-bd.hiper{height:8.4cqw}.v3f-bd.jcb{height:9cqw}
-    .v3f-itaul{right:6%;bottom:7%}.v3f-itaul img{display:block;width:9cqw;height:auto;filter:grayscale(1) invert(1) brightness(1.05);border-radius:1.6cqw}
-    .v3f-itau{right:6%;bottom:8%;font:700 5.4cqw/1 Manrope,sans-serif;letter-spacing:-.02em;opacity:.9}
+    ${CARTOES_CSS_BASE}${CARTOES.css.join("\n")}
     .v3 .v3-pilha{display:block;width:100%;max-width:340px;margin:4px auto 0}.v3 .v3-pilha .fpilha{max-width:none}
     .v3-pgpilha .fpilha{justify-items:stretch}.v3-pgpilha .fcface{max-width:none;width:100%}.v3 .v3-pgpilha{display:block;width:100%;max-width:340px;margin:4px auto 0}.v3 .v3-pgpilha .fpilha{max-width:none}
     .v3 .fcfg-hd h1{display:none}
