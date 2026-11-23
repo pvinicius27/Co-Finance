@@ -1,0 +1,15 @@
+{
+  "domain": "co_finance",
+  "name": "CoFinance",
+  "version": "0.0.1",
+  "config_flow": true,
+  "documentation": "https://github.com/pvinicius27/Co-Finance",
+  "issue_tracker": "https://github.com/pvinicius27/Co-Finance/issues",
+  "codeowners": ["@pvinicius27"],
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "dependencies": ["http", "frontend", "webhook", "panel_custom"],
+  "after_dependencies": ["mobile_app", "notify", "logbook"],
+  "single_config_entry": true,
+  "requirements": []
+}

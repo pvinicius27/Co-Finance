@@ -1,0 +1,20 @@
+pedido:
+  fields:
+    pedido:
+      required: true
+      selector:
+        object:
+avisar:
+  fields:
+    status:
+      selector:
+        text:
+    mensagem:
+      selector:
+        text:
+    quem:
+      selector:
+        text:
+    id:
+      selector:
+        text:

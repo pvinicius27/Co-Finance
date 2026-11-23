@@ -1,0 +1,65 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "CoFinance",
+        "description": "Onde ficam os dados (compras e cópias das notas). Se você já usava a Central, aponte para a mesma pasta: tudo o que já foi escaneado continua, e o Atalho do iPhone também.",
+        "data": {
+          "pasta": "Pasta dos dados"
+        }
+      }
+    },
+    "error": {
+      "pasta": "Informe o caminho completo da pasta, começando com / (ex.: /config/co_dados/co_finance)."
+    },
+    "abort": {
+      "already_configured": "O CoFinance já está instalada.",
+      "single_instance_allowed": "O CoFinance já está instalada."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Atalho do telefone",
+        "description": "Gere um código novo se o endereço do Atalho vazou. O endereço antigo para de funcionar: depois copie o novo em ⚙ › Atalho do iPhone, na Central, e cole no Atalho.",
+        "data": {
+          "novo_codigo": "Gerar um código novo para o Atalho"
+        }
+      }
+    }
+  },
+  "services": {
+    "pedido": {
+      "name": "Pedido",
+      "description": "Usado pelo card da Central (consultas e ajustes).",
+      "fields": {
+        "pedido": {
+          "name": "Pedido",
+          "description": "O pedido da tela."
+        }
+      }
+    },
+    "avisar": {
+      "name": "Avisar",
+      "description": "Aviso no celular do que entrou pelo card (Enviar nota, Lançar compra).",
+      "fields": {
+        "status": {
+          "name": "Situação",
+          "description": "nova, atualizada, repetida ou erro"
+        },
+        "mensagem": {
+          "name": "Mensagem",
+          "description": "O texto do aviso"
+        },
+        "quem": {
+          "name": "Quem comprou",
+          "description": "Um nome do cadastro de Pessoas"
+        },
+        "id": {
+          "name": "Compra",
+          "description": "Tocar no aviso abre esta compra"
+        }
+      }
+    }
+  }
+}

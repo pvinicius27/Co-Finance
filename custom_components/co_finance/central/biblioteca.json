@@ -1,0 +1,840 @@
+{
+ "versao": 4,
+ "abreviacoes": {
+  "AMAC": "amaciante",
+  "SAB": "sabonete",
+  "DEO": "desodorante",
+  "DETERG": "detergente",
+  "DESINF": "desinfetante",
+  "IOG": "iogurte",
+  "QJO": "queijo",
+  "MUSS": "mussarela",
+  "REQ": "requeijão",
+  "CR DENT": "creme dental",
+  "ESC DENT": "escova de dentes",
+  "ESC DENTAL": "escova de dentes",
+  "BISC": "biscoito",
+  "RECH": "recheado",
+  "CHOC": "chocolate",
+  "MAC": "macarrão",
+  "MAC INST": "macarrão instantâneo miojo",
+  "TEMP": "tempero",
+  "TOM": "tomate",
+  "EXT TOM": "extrato de tomate",
+  "SALG": "salgadinho",
+  "REFRI": "refrigerante",
+  "CERV": "cerveja",
+  "COND": "condicionador",
+  "LEITE COND": "leite condensado",
+  "HIDRAT": "hidratante",
+  "PAPEL HIG": "papel higiênico",
+  "FGO": "frango",
+  "BOV": "bovino carne",
+  "CONG": "congelado",
+  "BDJ": "bandeja",
+  "INTG": "integral",
+  "S LAC": "sem lactose",
+  "NOLAC": "sem lactose",
+  "NO LAC": "sem lactose",
+  "SEMI DESN": "semidesnatado",
+  "SEMI DES": "semidesnatado",
+  "SEMI D": "semidesnatado",
+  "LV": "longa vida",
+  "CR LEITE": "creme de leite",
+  "LT": "lata",
+  "TP": "caixinha",
+  "SCH": "sachê",
+  "PT": "pote",
+  "VDR": "vidro",
+  "MOR": "morango",
+  "MARAC": "maracujá",
+  "FRAMB": "framboesa",
+  "TANG": "tangerina",
+  "FR VERM": "frutas vermelhas",
+  "TRAD": "tradicional",
+  "ORG": "orgânico",
+  "PED": "pedaço",
+  "NAT": "natural",
+  "ADOC": "adoçado",
+  "POLPA FR": "polpa de fruta",
+  "COCO RAL": "coco ralado",
+  "BCO": "branco",
+  "VERM": "vermelho",
+  "CX": "caixa",
+  "FD": "folha dupla",
+  "FT": "folha tripla",
+  "CREM": "cremoso",
+  "MASC": "masculino",
+  "LAV": "lavanda",
+  "E V": "extra virgem",
+  "PORT": "português",
+  "LIQ": "líquido",
+  "PO": "pó",
+  "CSAL": "com sal",
+  "C SAL": "com sal",
+  "S SAL": "sem sal",
+  "TABL": "tablete",
+  "DEF": "defumado",
+  "VD": "",
+  "FAT": "fatiado",
+  "GASEIF": "gaseificado",
+  "INST": "instantâneo",
+  "PREM": "premium",
+  "ESP": "especial",
+  "EXT": "extra",
+  "S AC": "sem açúcar",
+  "PIM": "pimenta",
+  "C OVOS": "com ovos",
+  "COVOS": "com ovos",
+  "UHT": "longa vida",
+  "CHA": "chá",
+  "CHAS": "chá",
+  "ACUCAR": "açúcar",
+  "FEIJAO": "feijão",
+  "MACA": "maçã",
+  "MAMAO": "mamão",
+  "MELAO": "melão",
+  "LIMAO": "limão",
+  "ABOBORA": "abóbora",
+  "PIMENTAO": "pimentão",
+  "BROCOLIS": "brócolis",
+  "MARACUJA": "maracujá",
+  "PAO": "pão",
+  "FRANCES": "francês",
+  "REQUEIJAO": "requeijão",
+  "ACEM": "acém",
+  "FILE": "filé",
+  "SAPONACEO": "saponáceo",
+  "ALCOOL": "álcool",
+  "ISOTONICO": "isotônico",
+  "GELEIA": "geleia",
+  "CAFE": "café",
+  "SOLUVEL": "solúvel"
+ },
+ "tipos": [
+  {
+   "tipo": "Biscoito",
+   "secao": "Doces e snacks",
+   "padroes": [
+    "\\bBISC\\b",
+    "\\bBOLACHA\\b"
+   ]
+  },
+  {
+   "tipo": "Chocolate",
+   "secao": "Doces e snacks",
+   "padroes": [
+    "\\bCHOC\\b",
+    "\\bBOMBOM\\b"
+   ]
+  },
+  {
+   "tipo": "Gelatina",
+   "secao": "Doces e snacks",
+   "padroes": [
+    "\\bGELATINA\\b"
+   ]
+  },
+  {
+   "tipo": "Salgadinho",
+   "secao": "Doces e snacks",
+   "padroes": [
+    "\\bSALG\\b"
+   ]
+  },
+  {
+   "tipo": "Batata chips",
+   "secao": "Doces e snacks",
+   "padroes": [
+    "\\bBATATA (CRONY|LAYS|RUFFLES)\\b"
+   ]
+  },
+  {
+   "tipo": "Geleia",
+   "secao": "Padaria e matinais",
+   "padroes": [
+    "\\bGELEIA\\b"
+   ]
+  },
+  {
+   "tipo": "Leite condensado",
+   "secao": "Laticínios",
+   "padroes": [
+    "\\bLEITE COND\\b"
+   ]
+  },
+  {
+   "tipo": "Creme de leite",
+   "secao": "Laticínios",
+   "padroes": [
+    "\\bCR LEITE\\b"
+   ]
+  },
+  {
+   "tipo": "Leite em pó",
+   "secao": "Laticínios",
+   "padroes": [
+    "\\bLEITE PO\\b"
+   ]
+  },
+  {
+   "tipo": "Pão de queijo",
+   "secao": "Congelados",
+   "padroes": [
+    "\\bPAO QJO\\b"
+   ]
+  },
+  {
+   "tipo": "Manteiga",
+   "secao": "Laticínios",
+   "padroes": [
+    "\\bMANTEIGA\\b"
+   ]
+  },
+  {
+   "tipo": "Requeijão",
+   "secao": "Laticínios",
+   "padroes": [
+    "\\bREQ\\b",
+    "\\bREQUEIJAO\\b"
+   ]
+  },
+  {
+   "tipo": "Queijo",
+   "secao": "Laticínios",
+   "padroes": [
+    "\\bQJO\\b",
+    "\\bMUSSARELA\\b"
+   ]
+  },
+  {
+   "tipo": "Iogurte",
+   "secao": "Laticínios",
+   "padroes": [
+    "\\bIOG\\b"
+   ]
+  },
+  {
+   "tipo": "Leite",
+   "secao": "Laticínios",
+   "padroes": [
+    "\\bLEITE\\b"
+   ]
+  },
+  {
+   "tipo": "Ovos",
+   "secao": "Carnes e ovos",
+   "padroes": [
+    "^OVOS?\\b"
+   ]
+  },
+  {
+   "tipo": "Frios",
+   "secao": "Carnes e ovos",
+   "padroes": [
+    "\\bPEITO FGO DEF\\b"
+   ]
+  },
+  {
+   "tipo": "Frango",
+   "secao": "Carnes e ovos",
+   "padroes": [
+    "\\bFILE PEITO\\b",
+    "\\bFILEZINHO\\b",
+    "\\bPEITO FGO\\b",
+    "\\bFRANGO\\b"
+   ]
+  },
+  {
+   "tipo": "Carne bovina",
+   "secao": "Carnes e ovos",
+   "padroes": [
+    "\\bBOV\\b"
+   ]
+  },
+  {
+   "tipo": "Atum",
+   "secao": "Mercearia",
+   "padroes": [
+    "\\bATUM\\b"
+   ]
+  },
+  {
+   "tipo": "Batata congelada",
+   "secao": "Congelados",
+   "padroes": [
+    "\\bBATATA CONG\\b"
+   ]
+  },
+  {
+   "tipo": "Batata-doce",
+   "secao": "Hortifrúti",
+   "padroes": [
+    "\\bBATATA DOCE\\b"
+   ]
+  },
+  {
+   "tipo": "Morango congelado",
+   "secao": "Congelados",
+   "padroes": [
+    "\\bMORANGO (CONG|FRUT CENTER)\\b"
+   ]
+  },
+  {
+   "tipo": "Polpa de fruta",
+   "secao": "Congelados",
+   "padroes": [
+    "\\bPOLPA FR\\b"
+   ]
+  },
+  {
+   "tipo": "Pipoca",
+   "secao": "Mercearia",
+   "padroes": [
+    "\\bMILHO PIPOCA\\b"
+   ]
+  },
+  {
+   "tipo": "Milho em lata",
+   "secao": "Mercearia",
+   "padroes": [
+    "\\bMILHO VERDE BONARE\\b"
+   ]
+  },
+  {
+   "tipo": "Macarrão instantâneo",
+   "secao": "Mercearia",
+   "padroes": [
+    "\\bMAC INST\\b"
+   ]
+  },
+  {
+   "tipo": "Macarrão",
+   "secao": "Mercearia",
+   "padroes": [
+    "\\bMAC\\b"
+   ]
+  },
+  {
+   "tipo": "Massa de pastel/pizza",
+   "secao": "Mercearia",
+   "padroes": [
+    "\\bMASSA (PASTEL|PIZZA)\\b"
+   ]
+  },
+  {
+   "tipo": "Extrato/molho de tomate",
+   "secao": "Mercearia",
+   "padroes": [
+    "\\bEXT TOM\\b",
+    "\\bMOLHO TOM\\b",
+    "\\bPASSATA\\b"
+   ]
+  },
+  {
+   "tipo": "Tempero",
+   "secao": "Mercearia",
+   "padroes": [
+    "\\bTEMP\\b",
+    "\\bCALDO\\b",
+    "\\bSAL\\b(?! NIVEA)"
+   ]
+  },
+  {
+   "tipo": "Arroz",
+   "secao": "Mercearia",
+   "padroes": [
+    "\\bARROZ\\b"
+   ]
+  },
+  {
+   "tipo": "Feijão",
+   "secao": "Mercearia",
+   "padroes": [
+    "\\bFEIJAO\\b"
+   ]
+  },
+  {
+   "tipo": "Açúcar",
+   "secao": "Mercearia",
+   "padroes": [
+    "\\bACUCAR\\b"
+   ]
+  },
+  {
+   "tipo": "Azeite",
+   "secao": "Mercearia",
+   "padroes": [
+    "\\bAZEITE\\b"
+   ]
+  },
+  {
+   "tipo": "Farofa",
+   "secao": "Mercearia",
+   "padroes": [
+    "\\bFAROFA\\b"
+   ]
+  },
+  {
+   "tipo": "Aveia",
+   "secao": "Padaria e matinais",
+   "padroes": [
+    "\\bAVEIA\\b"
+   ]
+  },
+  {
+   "tipo": "Café",
+   "secao": "Padaria e matinais",
+   "padroes": [
+    "\\bCAFE\\b"
+   ]
+  },
+  {
+   "tipo": "Chá",
+   "secao": "Padaria e matinais",
+   "padroes": [
+    "\\bCHAS?\\b"
+   ]
+  },
+  {
+   "tipo": "Pão",
+   "secao": "Padaria e matinais",
+   "padroes": [
+    "\\bPAO\\b",
+    "\\bTORRADA\\b"
+   ]
+  },
+  {
+   "tipo": "Panetone",
+   "secao": "Padaria e matinais",
+   "padroes": [
+    "\\bPANETTONE\\b"
+   ]
+  },
+  {
+   "tipo": "Coco ralado",
+   "secao": "Mercearia",
+   "padroes": [
+    "\\bCOCO RAL\\b"
+   ]
+  },
+  {
+   "tipo": "Palmito",
+   "secao": "Mercearia",
+   "padroes": [
+    "\\bPALMITO\\b"
+   ]
+  },
+  {
+   "tipo": "Suco",
+   "secao": "Bebidas",
+   "padroes": [
+    "\\bSUCO\\b"
+   ]
+  },
+  {
+   "tipo": "Refrigerante",
+   "secao": "Bebidas",
+   "padroes": [
+    "\\bREFRI\\b"
+   ]
+  },
+  {
+   "tipo": "Cerveja",
+   "secao": "Bebidas",
+   "padroes": [
+    "\\bCERV\\b"
+   ]
+  },
+  {
+   "tipo": "Isotônico",
+   "secao": "Bebidas",
+   "padroes": [
+    "\\bISOTONICO\\b"
+   ]
+  },
+  {
+   "tipo": "Amaciante",
+   "secao": "Limpeza",
+   "padroes": [
+    "\\bAMAC\\b"
+   ]
+  },
+  {
+   "tipo": "Detergente",
+   "secao": "Limpeza",
+   "padroes": [
+    "\\bDETERG\\b"
+   ]
+  },
+  {
+   "tipo": "Sabão para roupas",
+   "secao": "Limpeza",
+   "padroes": [
+    "\\bLAVA ROUPAS\\b"
+   ]
+  },
+  {
+   "tipo": "Desinfetante",
+   "secao": "Limpeza",
+   "padroes": [
+    "\\bDESINF\\b"
+   ]
+  },
+  {
+   "tipo": "Saponáceo",
+   "secao": "Limpeza",
+   "padroes": [
+    "\\bSAPONACEO\\b"
+   ]
+  },
+  {
+   "tipo": "Álcool",
+   "secao": "Limpeza",
+   "padroes": [
+    "\\bALCOOL\\b"
+   ]
+  },
+  {
+   "tipo": "Esponja",
+   "secao": "Limpeza",
+   "padroes": [
+    "\\bESPONJA\\b"
+   ]
+  },
+  {
+   "tipo": "Saco de lixo",
+   "secao": "Limpeza",
+   "padroes": [
+    "\\bSACO LIXO\\b"
+   ]
+  },
+  {
+   "tipo": "Papel higiênico",
+   "secao": "Higiene",
+   "padroes": [
+    "\\bPAPEL HIG\\b"
+   ]
+  },
+  {
+   "tipo": "Papel toalha",
+   "secao": "Limpeza",
+   "padroes": [
+    "\\bPAPEL TOALHA\\b"
+   ]
+  },
+  {
+   "tipo": "Escova de dentes",
+   "secao": "Higiene",
+   "padroes": [
+    "\\bESC DENT(AL)?\\b"
+   ]
+  },
+  {
+   "tipo": "Creme dental",
+   "secao": "Higiene",
+   "padroes": [
+    "\\bCR DENT\\b"
+   ]
+  },
+  {
+   "tipo": "Desodorante",
+   "secao": "Higiene",
+   "padroes": [
+    "\\bDEO\\b"
+   ]
+  },
+  {
+   "tipo": "Sabonete",
+   "secao": "Higiene",
+   "padroes": [
+    "\\bSAB\\b"
+   ]
+  },
+  {
+   "tipo": "Condicionador",
+   "secao": "Higiene",
+   "padroes": [
+    "^COND\\b"
+   ]
+  },
+  {
+   "tipo": "Hidratante",
+   "secao": "Higiene",
+   "padroes": [
+    "\\bHIDRAT\\b"
+   ]
+  },
+  {
+   "tipo": "Sacola",
+   "secao": "Outros",
+   "padroes": [
+    "\\bSACOLA\\b"
+   ]
+  },
+  {
+   "tipo": "Umidificador",
+   "secao": "Outros",
+   "padroes": [
+    "\\bUMIDIFICADOR\\b"
+   ]
+  },
+  {
+   "tipo": "Fruta",
+   "secao": "Hortifrúti",
+   "padroes": [
+    "\\b(BANANA|LARANJA|MEXERICA|LIMAO|UVA|MELANCIA|MELAO|MAMAO|MACA|PERA|MORANGO|MARACUJA)\\b"
+   ]
+  },
+  {
+   "tipo": "Verdura e legume",
+   "secao": "Hortifrúti",
+   "padroes": [
+    "\\b(BATATA|TOMATE|CEBOLA|ALHO|BROCOLIS|ALFACE|COUVE|REPOLHO|CENOURA|PIMENTAO|ABOBORA|MILHO VERDE|GENGIBRE)\\b"
+   ]
+  },
+  {
+   "tipo": "Bolsa e mala",
+   "secao": "Vestuário e Acessórios",
+   "padroes": [
+    "\\b(BOLSA|MALA|MOCHILA|NECESSAIRE)\\b"
+   ]
+  },
+  {
+   "tipo": "Película automotiva",
+   "secao": "Veículo",
+   "categoria": "Veículo",
+   "padroes": [
+    "\\b(PELICULA AUTOMOTIVA|INSULFILM|PELICULA AUTO)\\b"
+   ]
+  },
+  {
+   "tipo": "Pneu",
+   "secao": "Veículo",
+   "categoria": "Veículo",
+   "padroes": [
+    "\\bPNEU\\b"
+   ]
+  }
+ ],
+ "ncm_secao": {
+  "07": "Hortifrúti",
+  "08": "Hortifrúti",
+  "02": "Carnes e ovos",
+  "04": "Laticínios",
+  "19": "Mercearia",
+  "20": "Mercearia",
+  "21": "Mercearia",
+  "22": "Bebidas",
+  "33": "Higiene",
+  "34": "Limpeza",
+  "38": "Limpeza",
+  "48": "Limpeza"
+ },
+ "ncm_produtos": [
+  [
+   "8418",
+   "Geladeira",
+   "geladeira refrigerador freezer frigobar",
+   "Eletrodomésticos"
+  ],
+  [
+   "8450",
+   "Máquina de lavar",
+   "maquina de lavar lavadora lava e seca lava roupas",
+   "Eletrodomésticos"
+  ],
+  [
+   "8451",
+   "Secadora",
+   "secadora de roupas",
+   "Eletrodomésticos"
+  ],
+  [
+   "8422",
+   "Lava-louças",
+   "lava loucas",
+   "Eletrodomésticos"
+  ],
+  [
+   "851650",
+   "Micro-ondas",
+   "micro-ondas microondas",
+   "Eletrodomésticos"
+  ],
+  [
+   "851660",
+   "Forno elétrico",
+   "forno eletrico cooktop",
+   "Eletrodomésticos"
+  ],
+  [
+   "7321",
+   "Fogão",
+   "fogao cooktop",
+   "Eletrodomésticos"
+  ],
+  [
+   "842121",
+   "Purificador de água",
+   "purificador filtro de agua bebedouro",
+   "Eletrodomésticos"
+  ],
+  [
+   "8415",
+   "Ar-condicionado",
+   "ar condicionado split",
+   "Eletrodomésticos"
+  ],
+  [
+   "8508",
+   "Aspirador",
+   "aspirador de po",
+   "Eletrodomésticos"
+  ],
+  [
+   "8509",
+   "Eletroportátil",
+   "eletroportatil liquidificador batedeira umidificador",
+   "Eletrodomésticos"
+  ],
+  [
+   "8516",
+   "Eletroportátil",
+   "eletroportatil chuveiro ferro de passar secador",
+   "Eletrodomésticos"
+  ],
+  [
+   "8528",
+   "Televisão",
+   "tv televisao televisor smart tv",
+   "Eletrônicos"
+  ],
+  [
+   "8471",
+   "Computador",
+   "computador notebook",
+   "Eletrônicos"
+  ],
+  [
+   "8517",
+   "Celular",
+   "celular smartphone telefone roteador",
+   "Eletrônicos"
+  ],
+  [
+   "8518",
+   "Som",
+   "caixa de som fone de ouvido",
+   "Eletrônicos"
+  ],
+  [
+   "8712",
+   "Bicicleta",
+   "bicicleta bike",
+   "Esporte e Lazer"
+  ],
+  [
+   "9506",
+   "Artigo esportivo",
+   "esporte academia",
+   "Esporte e Lazer"
+  ],
+  [
+   "4202",
+   "Bolsa e mala",
+   "bolsa mala mochila",
+   "Vestuário e Acessórios"
+  ],
+  [
+   "61",
+   "Roupa",
+   "roupa vestuario",
+   "Vestuário e Acessórios"
+  ],
+  [
+   "62",
+   "Roupa",
+   "roupa vestuario",
+   "Vestuário e Acessórios"
+  ],
+  [
+   "64",
+   "Calçado",
+   "calcado tenis sapato",
+   "Vestuário e Acessórios"
+  ],
+  [
+   "271019",
+   "Óleo de motor",
+   "oleo de motor lubrificante",
+   "Veículo"
+  ],
+  [
+   "271012",
+   "Combustível",
+   "gasolina combustivel",
+   "Combustível"
+  ],
+  [
+   "2207",
+   "Etanol",
+   "etanol alcool combustivel",
+   "Combustível"
+  ],
+  [
+   "842123",
+   "Filtro automotivo",
+   "filtro de oleo filtro de combustivel",
+   "Veículo"
+  ],
+  [
+   "842131",
+   "Filtro automotivo",
+   "filtro de ar",
+   "Veículo"
+  ],
+  [
+   "8708",
+   "Autopeça",
+   "autopeca peca de carro",
+   "Veículo"
+  ],
+  [
+   "4011",
+   "Pneu",
+   "pneu",
+   "Veículo"
+  ],
+  [
+   "4010",
+   "Correia",
+   "correia",
+   "Veículo"
+  ],
+  [
+   "8205",
+   "Ferramenta",
+   "ferramenta",
+   "Casa e Construção"
+  ],
+  [
+   "30",
+   "Remédio",
+   "remedio medicamento",
+   "Farmácia"
+  ],
+  [
+   "2309",
+   "Ração",
+   "racao pet",
+   "Pet"
+  ],
+  [
+   "8301",
+   "Fechadura",
+   "fechadura smart lock fechadura digital",
+   "Casa e Construção"
+  ]
+ ]
+}

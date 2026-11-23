@@ -1,0 +1,2 @@
+pdf.js 4.10.38 (Mozilla, Apache-2.0), build/pdf.min.mjs e build/pdf.worker.min.mjs do pacote pdfjs-dist.
+Usado pelo card para tirar o texto das faturas em PDF no navegador.

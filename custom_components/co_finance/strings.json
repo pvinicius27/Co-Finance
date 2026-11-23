@@ -1,0 +1,65 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "CoFinance",
+        "description": "Where the data lives (purchases and receipt copies). If you already used CoFinance, point to the same folder: everything scanned is kept, and so is the iPhone Shortcut.",
+        "data": {
+          "pasta": "Data folder"
+        }
+      }
+    },
+    "error": {
+      "pasta": "Enter the full folder path, starting with / (e.g. /config/co_dados/co_finance)."
+    },
+    "abort": {
+      "already_configured": "CoFinance is already installed.",
+      "single_instance_allowed": "CoFinance is already installed."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Phone shortcut",
+        "description": "Create a new code if the Shortcut address leaked. The old address stops working.",
+        "data": {
+          "novo_codigo": "Create a new Shortcut code"
+        }
+      }
+    }
+  },
+  "services": {
+    "pedido": {
+      "name": "Request",
+      "description": "Used by the Central card.",
+      "fields": {
+        "pedido": {
+          "name": "Request",
+          "description": "The card request."
+        }
+      }
+    },
+    "avisar": {
+      "name": "Notify",
+      "description": "Phone notification for what came in through the card.",
+      "fields": {
+        "status": {
+          "name": "Status",
+          "description": "new, updated, repeated or error"
+        },
+        "mensagem": {
+          "name": "Message",
+          "description": "Notification text"
+        },
+        "quem": {
+          "name": "Who bought",
+          "description": "A name from People"
+        },
+        "id": {
+          "name": "Purchase",
+          "description": "Tapping opens this purchase"
+        }
+      }
+    }
+  }
+}
