@@ -28,8 +28,8 @@ const F_PAINEL_ENERGIA = "/co-energy";  // o item da barra lateral do CoEnergy (
 const F_BANCOS = { santander: "Santander", bb: "Banco do Brasil", bradesco: "Bradesco", itau: "Itaú", brb: "BRB", btg: "BTG Pactual", caixa: "Caixa", inter: "Inter", nubank: "Nubank" };
 const F_EMISSORES = {bb: ["Banco do Brasil", "#fcfc30", "#1d3f9b"], bradesco: ["Bradesco", "#cc092f", "#ffffff"], itau: ["Itaú", "#ec7000", "#ffffff"], santander: ["Santander", "#ec0000", "#ffffff"], caixa: ["Caixa", "#005ca9", "#ffffff"], nubank: ["Nubank", "#820ad1", "#ffffff"], inter: ["Inter", "#ff7a00", "#ffffff"], c6: ["C6 Bank", "#242424", "#ffffff"], btg: ["BTG Pactual", "#0d2240", "#ffffff"], xp: ["XP", "#111111", "#f5c518"], sicredi: ["Sicredi", "#3fa110", "#ffffff"], sicoob: ["Sicoob", "#003641", "#7db61c"], banrisul: ["Banrisul", "#00519e", "#ffffff"], brb: ["BRB", "#0a3d91", "#ffffff"], pan: ["Banco Pan", "#00aeef", "#ffffff"], bv: ["Banco BV", "#1b2a5c", "#ffffff"], safra: ["Safra", "#00205b", "#c9a45c"], porto: ["Porto Bank", "#0046c0", "#ffffff"], picpay: ["PicPay", "#21c25e", "#ffffff"], mercadopago: ["Mercado Pago", "#00b1ea", "#ffffff"], neon: ["Neon", "#0e1a3f", "#2de0ff"], next: ["Next", "#00ff5f", "#111111"], will: ["Will Bank", "#ffe500", "#111111"], original: ["Original", "#00a335", "#ffffff"], wise: ["Wise", "#7beb7f", "#163300"], infinitepay: ["InfinitePay", "#111111", "#ffffff"], alelo: ["Alelo", "#bad355", "#1f5136"], vr: ["VR", "#00a650", "#ffe600"], ticket: ["Ticket", "#e2231a", "#ffffff"], pluxee: ["Pluxee", "#221c46", "#00eb5e"], flash: ["Flash", "#f5317f", "#ffffff"], caju: ["Caju", "#ff6a3d", "#ffffff"], ifood: ["iFood Benefícios", "#ea1d2c", "#ffffff"], swile: ["Swile", "#6d4aff", "#ffffff"]};  // banco do cartão: nome, fundo e tinta
 // modelos de cartão (desenho na V3): id → [banco, nome]. Cada foto de cartão nova vira um modelo aqui
-const F_MODELOS = { "bradesco-prime": ["bradesco", "Bradesco Prime · preto"], "santander-unique": ["santander", "Santander Unique · preto"],
-  "bb-ourocard-infinite": ["bb", "Ourocard Infinite crédito · preto e dourado"], "bb-ourocard-debito": ["bb", "Ourocard débito · preto, linhas brancas"],
+const F_MODELOS = { "santander-unique": ["santander", "Santander Unique · preto"],
+  "bb-ourocard-infinite": ["bb", "Ourocard Visa Infinite"],
   "itau-latam-black": ["itau", "Itaú Latam Pass Black · preto"], "wise-verde": ["wise", "Wise · verde"], "alelo-refeicao": ["alelo", "Alelo refeição e alimentação · verde-limão"],
   "caixa-sim": ["caixa", "Caixa Sim · azul"], "caixa-universitario": ["caixa", "Caixa Universitário · verde"],
   "caixa-gold": ["caixa", "Caixa Gold · azul-petróleo"], "caixa-elo-mais": ["caixa", "Caixa Elo Mais · azul-petróleo"],
@@ -38,9 +38,12 @@ const F_MODELOS = { "bradesco-prime": ["bradesco", "Bradesco Prime · preto"], "
   "caixa-diners": ["caixa", "Caixa Diners Club · preto e cobre"], "btg-ultrablue": ["btg", "BTG Pactual Ultrablue · azul escovado"], "brb-connect": ["brb", "BRB Connect · azul"],
   "inter-laranja": ["inter", "Inter Gold"], "amazon-bradesco": ["bradesco", "Amazon (Bradesco) · branco"], "c6-carbon": ["c6", "C6 Carbon Black · preto fibra de carbono"] };
 // cor de cada modelo (fundo, tinta, e o degradê do cartão de verdade); sem modelo, a cor do banco
+// modelos que saíram do catálogo (iguais a outro do HTML de referência): quem já tinha um deles passa a usar o equivalente
+const F_MODELO_ALIAS = {"bradesco-prime": "bradesco-visa-infinite", "bb-ourocard-debito": "bb-ourocard-infinite", "bradesco-visa-platinum": "bradesco-visa-platinum-sem-anuidade", "bradesco-elo-internacional-funcao-credito": "bradesco-multiplo-elo", "btg-black-visual": "btg-black", "itau-latam-pass-platinum": "itau-latam-black", "itau-platinum": "itau-latam-black", "santander-sx": "santander-free"};
+const fModeloId = (id) => F_MODELO_ALIAS[id] || id;
 const F_MODELO_COR = {
   "bradesco-prime": { preto: true }, "santander-unique": { preto: true }, "itau-latam-black": { preto: true },
-  "bb-ourocard-infinite": { preto: true, ouro: true }, "bb-ourocard-debito": { preto: true },
+  "bb-ourocard-infinite": { preto: true },
   "caixa-sim": { fundo: "#0a5fb4", tinta: "#ffffff", cg: "linear-gradient(120deg,#2b9be0 0%,#0a62b6 60%,#0b4f9c 100%)" },
   "caixa-universitario": { fundo: "#62c48a", tinta: "#ffffff", cg: "linear-gradient(120deg,#bfdc4a 0%,#66c58a 55%,#34b2a2 100%)" },
   "caixa-gold": { fundo: "#05476e", tinta: "#ffffff", cg: "linear-gradient(200deg,rgba(255,255,255,.07) 0 40%,transparent 40%),linear-gradient(160deg,#0b6c95 0%,#05486f 60%,#033a5c 100%)" },
@@ -61,7 +64,6 @@ const F_BIBLIOTECA = [
   ["bradesco-visa-gold", "bradesco", "Visa Gold", "Gold", "#bb8840", "#b4823c", "#ffffff"],
   ["bradesco-universitario-visa-gold", "bradesco", "Universitário Visa Gold", "Universitário Gold", "#5b6163", "#5c5b5b", "#ffffff"],
   ["bradesco-neo-visa-platinum", "bradesco", "Neo Visa Platinum", "Neo Platinum", "#a53e6b", "#90306c", "#ffffff"],
-  ["bradesco-visa-platinum", "bradesco", "Visa Platinum", "Platinum", "#7d7f7e", "#7c7c7c", "#ffffff"],
   ["bradesco-like-visa", "bradesco", "Like Visa", "Like", "#9f345f", "#ab2950", "#ffffff"],
   ["bradesco-visa-signature", "bradesco", "Visa Signature", "Signature", "#5b5d5f", "#555759", "#ffffff"],
   ["bradesco-visa-infinite", "bradesco", "Visa Infinite", "Infinite", "#0e0f0f", "#060606", "#ffffff"],
@@ -104,7 +106,6 @@ const F_BIBLIOTECA = [
   ["bb-ame", "bb", "AME", "AME", "#a82568", "#a72568", "#ffffff"],
   ["santander-unlimited", "santander", "Santander Unlimited", "Unlimited", "#070808", "#000000", "#ffffff"],
   ["santander-elite", "santander", "Santander Elite", "Elite", "#4b4d4f", "#424345", "#ffffff"],
-  ["santander-sx", "santander", "Santander SX", "SX", "#8c141b", "#3d0a13", "#ffffff"],
   ["santander-aadvantage-black", "santander", "AAdvantage Black", "AAdvantage Black", "#4f4c49", "#3a3632", "#ffffff"],
   ["santander-aadvantage-platinum", "santander", "AAdvantage Platinum", "AAdvantage Platinum", "#6e6a6b", "#605f5e", "#ffffff"],
   ["santander-aadvantage-quantum", "santander", "AAdvantage Quartz", "AAdvantage Quartz", "#e3e0e4", "#fcfdfd", "#1f2430"],
@@ -112,7 +113,6 @@ const F_BIBLIOTECA = [
   ["santander-smiles-platinum", "santander", "Smiles Platinum", "Smiles Platinum", "#3f6a7c", "#3c6271", "#ffffff"],
   ["santander-smiles-gold", "santander", "Smiles Gold", "Smiles Gold", "#914a15", "#7e3a0f", "#ffffff"],
   ["btg-ultrablue-world-legend", "btg", "Ultrablue World Legend", "Ultrablue World Legend", "#204576", "#133460", "#ffffff"],
-  ["btg-black-visual", "btg", "Black · com visual", "Black", "#051c2c", "#051c2c", "#ffffff"],
   ["btg-platinum", "btg", "Platinum · prata", "Platinum", "#465868", "#465868", "#ffffff"],
   ["btg-gold", "btg", "Gold · azul", "Gold", "#092789", "#082689", "#ffffff"],
   ["btg-tap-black", "btg", "TAP Black", "TAP Black", "#040404", "#020202", "#ffffff"],
@@ -123,9 +123,7 @@ const F_BIBLIOTECA = [
   ["itau-azul-infinite", "itau", "Azul Infinite", "Azul Infinite", "#f6f7fb", "#d9e1f0", "#1f2430"],
   ["itau-azul-skyline", "itau", "Azul Skyline", "Azul Skyline", "#ffffff", "#e6eaf1", "#1f2430"],
   ["itau-azul-platinum", "itau", "Azul Platinum", "Azul Platinum", "#3e5f9a", "#16244a", "#ffffff"],
-  ["itau-latam-pass-platinum", "itau", "Latam Pass Platinum", "Latam Pass Platinum", "#8b7563", "#53443a", "#ffffff"],
   ["itau-passai-gold", "itau", "Passaí Gold", "Passaí Gold", "#d6b34a", "#a8862a", "#1f2430"],
-  ["itau-platinum", "itau", "Itaú Platinum", "Platinum", "#ff7a1a", "#e85d00", "#ffffff"],
   ["itau-uniclass-signature", "itau", "Uniclass Signature", "Uniclass Signature", "#2347b3", "#132c78", "#ffffff"],
   ["itau-personnalite", "itau", "Personnalité", "Personnalité", "#262628", "#0b0b0c", "#ffffff"],
   ["mercadopago-mercado-pago", "mercadopago", "Mercado Pago", "", "#2a2a2c", "#0e0e0f", "#ffffff"],
@@ -194,7 +192,6 @@ const F_BIBLIOTECA = [
   ["bradesco-elo-consignado", "bradesco", "Elo Consignado", "Consignado", "#264162", "#29476c", "#ffffff"],
   ["bradesco-elo-internacional-basico", "bradesco", "Elo Internacional Básico", "Internacional Básico", "#0a89cc", "#0583c7", "#ffffff"],
   ["bradesco-fas-elo-internacional", "bradesco", "Amazonas Sustentável Elo Internacional", "Amazonas Sustentável Internacional", "#5d553d", "#58483c", "#ffffff"],
-  ["bradesco-elo-internacional-funcao-credito", "bradesco", "Elo Internacional - Função crédito", "Internacional", "#721b24", "#721c24", "#ffffff"],
   ["bradesco-sos-elo-internacional", "bradesco", "SOS Mata Atlântica Elo internacional", "SOS Mata Atlântica internacional", "#50874a", "#4c7f47", "#ffffff"],
   ["bradesco-elo-nacional-funcao-credito", "bradesco", "Elo Nacional - Função Crédito", "Nacional", "#721b24", "#721c24", "#ffffff"],
   ["bradesco-mastercard-nacional", "bradesco", "Mastercard Nacional", "Nacional", "#243e7b", "#263f72", "#ffffff"],
@@ -665,7 +662,7 @@ function instalarFinancas(Classe) {
   // O ✓ Paguei mora na janela de cada fatura/conta; a lista só aponta para ela.
   // desenho do cartão (cadastro): cor do banco, ou preto com o nome do produto e detalhe prata/dourado
   P._finCartaoCor = function (k) {
-    const mc = F_MODELO_COR[k?.modelo];
+    const mc = F_MODELO_COR[fModeloId(k?.modelo)];
     if (mc?.preto) return { fundo: "#151517", tinta: mc.ouro ? "#d4b26a" : "#d4d4d8", preto: true, ouro: !!mc.ouro, escuro: true };
     if (mc) return { fundo: mc.fundo, tinta: mc.tinta, cg: mc.cg, escuro: F_LUZ(mc.fundo) < 0.06 };
     if (k?.visual?.estilo === "preto") { const ouro = k.visual.metal === "dourado"; return { fundo: "#151517", tinta: ouro ? "#d4b26a" : "#d4d4d8", preto: true, ouro }; }
@@ -694,7 +691,7 @@ function instalarFinancas(Classe) {
     return `${nome}${tipo(k) ? ` · ${tipo(k)}` : ""} · ${k.dono || k.nome}`;
   };
   // "Automático" no modelo: o desenho que sai quando só o banco é escolhido
-  const F_MODELO_PADRAO = { bradesco: "bradesco-prime", santander: "santander-unique", bb: "bb-ourocard-infinite", itau: "itau-latam-black", wise: "wise-verde", alelo: "alelo-refeicao", btg: "btg-ultrablue", brb: "brb-connect", inter: "inter-laranja", c6: "c6-carbon" };
+  const F_MODELO_PADRAO = { bradesco: "bradesco-visa-infinite", santander: "santander-unique", bb: "bb-ourocard-infinite", itau: "itau-latam-black", wise: "wise-verde", alelo: "alelo-refeicao", btg: "btg-ultrablue", brb: "brb-connect", inter: "inter-laranja", c6: "c6-carbon" };
   P._finAutoTxt = function (banco) {
     const m = F_MODELOS[F_MODELO_PADRAO[banco]]?.[1];
     return `Automático: ${m || (F_EMISSORES[banco] ? `cartão na cor do ${F_EMISSORES[banco][0]}` : "cartão simples")}`;
@@ -716,6 +713,7 @@ function instalarFinancas(Classe) {
   };
   // a bandeira que o modelo diz no nome (Ourocard Nanquim → Elo, Visa Gold → Visa); sem pista, nenhuma
   P._finModeloBandeira = function (id) {
+    id = fModeloId(id);
     const n = `${F_MODELOS[id]?.[1] || ""} ${F_MODELO_ROT[id] || ""}`, fixo = { "c6-carbon": "Mastercard", "caixa-diners": "Diners" }[id];
     const fb = F_MODELO_BAND[id];  // frente igual nas duas bandeiras (lista): o modelo não decide, fica a escolhida
     if (Array.isArray(fb)) return "";
@@ -1882,7 +1880,8 @@ function instalarFinancas(Classe) {
   P._finModelosIds = function () { return Object.keys(F_MODELOS); };
   P._finTemFundo = function (id) { return F_MODELO_FUNDO.has(id) || F_MODELO_FOTO.has(id); };  // logos/cartoes/<id>.svg
   P._finEhFoto = function (id) { return F_MODELO_FOTO.has(id); };  // o cartão inteiro (logo, chip, bandeira) vem no desenho
-  P._finModelo = function (id) { return id && F_MODELOS[id] ? { banco: F_MODELOS[id][0], nome: F_MODELOS[id][1], rotulo: F_MODELO_ROT[id] || "" } : null; };
+  P._finModeloId = fModeloId;
+  P._finModelo = function (id) { id = fModeloId(id); return id && F_MODELOS[id] ? { banco: F_MODELOS[id][0], nome: F_MODELOS[id][1], rotulo: F_MODELO_ROT[id] || "" } : null; };
 
   P._finKcFuncao = function (k) { return k.vale ? "beneficio" : k.prepago ? "prepago" : k.credito === false ? "debito" : k.debito ? "ambos" : "credito"; };
 
@@ -8219,7 +8218,7 @@ registrarCartoes({
     },
   },
   modelos: {
-    "bradesco-prime": "bradesco",
+    "bradesco-visa-infinite": "bradesco",  // BRA-007 (Visa Infinite): o desenho do Bradesco Prime, que é este cartão
     "amazon-bradesco": "amazon",
   },
   bancos: ["bradesco"],
@@ -8266,40 +8265,69 @@ registrarCartoes({
 // fim da lista
 
 
+// Família Ourocard (BB-001…005, 015, 016, 018…021): o mesmo cartão — símbolo do BB no alto à esquerda, "ourocard" no alto à
+// direita, chip e aproximação, os trilhos atrás, a faixa amarela na borda esquerda (menos nos amarelos) e a bandeira embaixo.
+// Muda só: as cores (fundo, trilhos, letras), a bandeira e a categoria escrita (platinum, black...). Cores tiradas das fotos.
+const OURO_AMARELO = { fundo: ["#ffe94a", "#fde100"], linha: "#c2ac00", op: 0.85, tinta: "#1d4f9c", faixa: false };
+const OURO_DOURADO = { fundo: ["#d2bf80", "#c4ad69"], linha: "#9a8640", op: 0.85, tinta: "#ffffff", faixa: true };
+const OURO_PRATA = { fundo: ["#a0a1a4", "#8c8d90"], linha: "#76777a", op: 0.8, tinta: "#dcdcde", faixa: true };
+const OUROCARD = {
+  "bb-ourocard-facil": OURO_AMARELO,
+  "bb-ourocard-universitario": OURO_AMARELO,
+  "bb-ourocard-elo": OURO_AMARELO,
+  "bb-ourocard-visa-gold": OURO_DOURADO,
+  "bb-ourocard-elo-mais": OURO_DOURADO,
+  "bb-ourocard-visa-platinum": OURO_PRATA,
+  "bb-ourocard-platinum-mastercard": { ...OURO_PRATA, cat: "platinum" },
+  "bb-ourocard-grafite": OURO_PRATA,
+  "bb-ourocard-infinite": { fundo: ["#35363b", "#26272c"], linha: "#7a7b80", op: 0.6, tinta: "#ececec", faixa: true },
+  "bb-ourocard-mastercard-black": { fundo: ["#121212", "#020202"], linha: "#ffffff", op: 0.45, tinta: "#ffffff", faixa: true, cat: "black" },
+  "bb-ourocard-nanquim": { fundo: ["#2c221f", "#1a1310"], linha: "#ffffff", op: 0.3, tinta: "#f1f1f1", faixa: true },
+};
+// os trilhos do fundo, iguais aos do cartão de verdade (grade de passo 32; os cantos se encontram exatos)
+const TRILHOS_BB = "M187.6 45.7L236.7 77.7M138.5 77.7L163 93.7M138.5 109.7L261.2 189.7M40.3 77.7L138.5 141.7M236.7 205.7L261.2 221.7M-33.9 61.3L40.3 109.7M114 157.7L163 189.7M15.8 125.7L40.3 141.7M138.5 205.7L219.6 258.6M40.3 173.7L89.4 205.7M40.3 205.7L121.4 258.6M15.8 93.7L40.3 77.7M-33.9 158.1L114 61.7M7.9 162.9L187.6 45.7M118.4 122.8L236.7 45.7M40.3 173.7L98.3 135.9M178.7 115.5L236.7 77.7M7.9 226.9L163 125.7M187.6 141.7L236.7 109.7M7.4 259.2L187.6 141.7M138.5 205.7L212.1 157.7M178.5 211.6L236.7 173.7M105.8 259L163 221.7M203.9 259L261.2 221.7";
+
 registrarCartoes({
   layouts: {
+    ourocard: (p) => {
+      const { k, tier, tem, logo, chipSvg, nfc, info, band, bandeira, e, LOGO } = p;
+      const o = OUROCARD[k.modelo] || OURO_DOURADO, id = e(k.id), t = o.tinta;
+      const mc = k.bandeira === "Mastercard";  // no Mastercard a categoria fica escrita à direita, e não embaixo da bandeira
+      // o Elo dos Ourocard é em degradê lilás, com a categoria espaçada embaixo (MAIS, GRAFITE, Nanquim)
+      const elo = k.bandeira === "Elo" ? `<span class="v3f-band v3f-oelo"><i class="v3f-logo v3f-oelol" style="--logo:url('${LOGO("band-elo")}')" role="img" aria-label="Elo"></i>${tier ? `<small>${e(tier)}</small>` : ""}</span>` : "";
+      return `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="og${id}" x1="0" y1="0" x2="1" y2="1">`
+        + `<stop offset="0" stop-color="${o.fundo[0]}"/><stop offset="1" stop-color="${o.fundo[1]}"/></linearGradient></defs><rect width="380" height="240" fill="url(#og${id})"/>`
+        + `<path d="${TRILHOS_BB}" stroke="${o.linha}" stroke-width="1.6" opacity="${o.op}" fill="none"/>${o.faixa ? '<path d="M0 168L7.9 162.8V240H0z" fill="#ffd400"/>' : ""}</svg>
+        <span class="v3f-ow" style="color:${t};--ct:${t};--obb:${t}">${tem.has("bb") ? `<span class="v3f-bbs">${logo("bb", "bb bbo")}</span>` : ""}<span class="v3f-marca dir"><b class="v3f-ourod">ourocard</b></span>
+        ${o.cat ? `<span class="v3f-ocat">${e(o.cat)}</span>` : ""}<span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${elo || (mc && bandeira ? `<span class="v3f-band">${bandeira}</span>` : band())}</span>`;
+    },
     bb: (p) => {
       const { prod, semTier, arte, tem, logo, chipSvg, nfc, info, band, e } = p;
       const ouroNome = /OUROCARD/.test(prod) ? "ourocard" : "Banco do Brasil", resto = semTier(prod.replace("OUROCARD", ""));
       return `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="M0 150C120 150 120 132 220 104 300 80 340 62 380 50" stroke="#d4b26a" stroke-width="1.6" fill="none"/></svg>
         ${tem.has("bb") ? `<span class="v3f-bbs">${logo("bb")}</span>` : ""}<span class="v3f-marca dir"><b>${e(ouroNome)}</b>${resto ? `<small>${e(resto)}</small>` : ""}</span><span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
     },
-    bbd: (p) => {
-      const { arte, tem, logo, chipSvg, nfc, info, band } = p;
-      // Ourocard débito: preto, tudo branco, linhas finas em trilhos (como no cartão), faixa amarela na borda esquerda
-      const tre = "M187.6 45.7L236.7 77.7M138.5 77.7L163 93.7M138.5 109.7L261.2 189.7M40.3 77.7L138.5 141.7M236.7 205.7L261.2 221.7M-33.9 61.3L40.3 109.7M114 157.7L163 189.7M15.8 125.7L40.3 141.7M138.5 205.7L219.6 258.6M40.3 173.7L89.4 205.7M40.3 205.7L121.4 258.6M15.8 93.7L40.3 77.7M-33.9 158.1L114 61.7M7.9 162.9L187.6 45.7M118.4 122.8L236.7 45.7M40.3 173.7L98.3 135.9M178.7 115.5L236.7 77.7M7.9 226.9L163 125.7M187.6 141.7L236.7 109.7M7.4 259.2L187.6 141.7M138.5 205.7L212.1 157.7M178.5 211.6L236.7 173.7M105.8 259L163 221.7M203.9 259L261.2 221.7";  // linhas do fundo, iguais às do cartão de verdade (grade de passo 32; os cantos se encontram exatos)
-      return `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="${tre}" stroke="#fff" stroke-width="1.2" opacity=".45" fill="none"/><path d="M0 168L7.9 162.8V240H0z" fill="#ffd400"/></svg>
-        ${tem.has("bb") ? `<span class="v3f-bbs">${logo("bb", "bb bbw")}</span>` : ""}<span class="v3f-marca dir"><b class="v3f-ourod">ourocard</b></span>
-        <span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
-    },
   },
   modelos: {
-    "bb-ourocard-infinite": "bb",
-    "bb-ourocard-debito": "bbd",
-    "bb-ourocard-mastercard-black": "bbd",  // BB-016: o mesmo cartão preto com os trilhos e a faixa amarela
+    ...Object.fromEntries(Object.keys(OUROCARD).map((m) => [m, "ourocard"])),
   },
   bancos: ["bb"],
   css: `
-    .v3 .fcface.v3f.preto.bbd{--halo:#1b1815}
     .v3f.bb .v3f-marca b{font-size:6.2cqw}
     .v3f.bb .v3f-chipw{top:42%}
     .v3f-logo.bb.bbw{background:#f4f4f5}
     .v3f-ourod{font-weight:600!important;font-size:7.6cqw!important;letter-spacing:-.02em;color:#f4f4f5}
-    .v3 .fcface.v3f.preto.bbd{background:linear-gradient(160deg,#2a2622 0%,#1b1815 55%,#0f0d0b 100%)}
-    .v3f.bbd .v3f-chipw{top:40%}
-    .v3f.bbd .v3f-band small{text-transform:lowercase}
     .v3f-bbs{left:6%;top:9%}
     .v3f-logo.bb{width:9cqw;height:9cqw;background:linear-gradient(160deg,#f3dc9a,#c9a453 60%,#9c7a2c)}
+    .v3f-ow{position:absolute;inset:0;z-index:1}.v3f-ow>span{position:absolute}
+    .v3 .fcface.v3f.ourocard{background:none}.v3 .fcface.v3f.ourocard::before{display:none}
+    .v3f.ourocard .v3f-logo.bb.bbo{background:var(--obb)}
+    .v3f.ourocard .v3f-ourod{color:inherit;font:900 7.6cqw/1 "Arial Rounded MT Bold","Arial Black",Arial,sans-serif!important;letter-spacing:-.02em}
+    .v3f.ourocard .v3f-chipw{top:38%}.v3f-ow .v3f-nfc{color:var(--ct)!important;opacity:1}
+    .v3f-oelo small{font:600 2.6cqw/1 Manrope,sans-serif!important;letter-spacing:.35em;text-transform:uppercase;margin-top:.8cqw}
+    .v3f.ourocard .v3f-logo.v3f-oelol{width:19cqw;height:8cqw;background:linear-gradient(90deg,#a98fe0,#d79ad6 55%,#e7a7c4)!important;-webkit-mask-position:right center;mask-position:right center}
+    .v3f.ourocard :is(.v3f-visa,.v3f-logo.visa){background:currentColor!important;-webkit-text-fill-color:currentColor;color:inherit}
+    .v3f-ocat{right:6%;top:52%;font:600 4.2cqw/1 Manrope,system-ui,sans-serif;letter-spacing:.01em}
   `,
 });
 
@@ -8644,7 +8672,7 @@ registrarCartoes({
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.6";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.7";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
@@ -9440,6 +9468,7 @@ class ComprasV3Card extends BaseV2 {
   // a frente do cartão, montada como o cartão de verdade de cada banco (cada peça no lugar dela; logotipos não são copiados).
   // O benefício (Alelo, VR, Ticket, Pluxee…) é cartão da empresa dele: o desenho dela, com o saldo (refeição, alimentação) escrito.
   _finCartaoFace(k, x) {
+    if (k?.modelo && this._finModeloId?.(k.modelo) !== k.modelo) k = { ...k, modelo: this._finModeloId(k.modelo) };  // modelo que saiu do catálogo
     const mi = this._finModelo?.(k.modelo), c = this._finCartaoCor(k), hoje = this._fFin.hoje, prod = String(k.visual?.produto || mi?.rotulo || this._finBeneficio?.(k) || "").toUpperCase();
     const tier = this._finCategoria(k), semTier = (s) => s.replace(/\b(INFINITE|BLACK|PLATINUM|SIGNATURE|GOLD|NANQUIM|GRAFITE|CLASSIC|STANDARD|INTERNACIONAL)\b/g, "").replace(/\s+/g, " ").trim();
     // o modelo escolhido no cadastro manda; sem ele, o padrão do banco (Bradesco Prime, Santander Unique, Ourocard crédito, Latam Pass)
