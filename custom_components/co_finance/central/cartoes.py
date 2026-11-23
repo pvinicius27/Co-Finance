@@ -8,7 +8,7 @@ from datetime import datetime
 from datetime import timedelta
 from typing import Any
 
-from .config import BANCOS_EMISSORES, BANDEIRAS_CARTAO, MARCO_ZERO, PAGOS_NA_HORA, T_PAG
+from .config import BENEFICIOS, BANCOS_EMISSORES, BANDEIRAS_CARTAO, MARCO_ZERO, PAGOS_NA_HORA, T_PAG
 from .base import Falha, fmt_brl, nome_loja, norm_txt, now_iso
 from .dados import compradores, file_lock, load_db, save_db
 from .pagamentos import _data_compra, _pgs_fin, _tipo_pag, _valor_pg, aceita, cartao_na_hora, data_efetiva, dividir, rotulo_cartao
@@ -192,17 +192,17 @@ def financeiro(_: dict[str, Any]) -> dict[str, Any]:
            for c in db["compras"] if (data_efetiva(c) or "")[:10] >= db.get("marco", MARCO_ZERO)
            for pg in _pgs_fin(c) if _tipo_pag(pg) == "Crédito" and not pg.get("cartao")
            and any(c.get("quem") in k.get("usam", []) for k in db.get("cartoes") or [])]  # quem não tem cartão aqui paga com o próprio
-    # débito e vale saem na hora (sem fatura): cada um no cartão dele, para ver o que saiu de cada conta e quando
+    # débito, pré-pago e benefício saem na hora (sem fatura): cada um no cartão dele, para ver o que saiu de cada conta e quando
     na_hora, deb_sem = [], []
     for c in db["compras"]:
         if c.get("moeda") and not c.get("valor_pago"):
             continue
         for i, pg in enumerate(_pgs_fin(c)):
             t, dia = _tipo_pag(pg), _data_compra(c, pg)
-            if t not in ("Débito", "Alelo") or not dia or dia.isoformat() < db.get("marco", MARCO_ZERO):
+            if t not in ("Débito", "Benefício") or not dia or dia.isoformat() < db.get("marco", MARCO_ZERO):
                 continue
             x = {"compra": c["id"], "i": i, "data": dia.isoformat(), "loja": nome_loja(c["loja"]), "quem": c.get("quem"), "valor": _valor_pg(c, pg), "tipo": t,
-                 **({"saldo": _saldo_vale(c, pg)} if t == "Alelo" else {})}
+                 **({"saldo": _saldo_vale(c, pg)} if t == "Benefício" else {})}
             if (k := cartao_na_hora(c, pg)):
                 na_hora.append({**x, "cartao": k["id"]})
             elif t == "Débito" and (op := candidatos(db, c, pg, False)):  # qual cartão? vai para o sino
@@ -214,7 +214,7 @@ def financeiro(_: dict[str, Any]) -> dict[str, Any]:
 
 
 def _saldo_vale(c: dict[str, Any], pg: dict[str, Any]) -> str:
-    """Alelo: de qual saldo saiu. A nota manda quando diz (Vale Refeição / Vale Alimentação); senão o tipo de loja,
+    """Benefício: de qual saldo saiu. A nota manda quando diz (Vale Refeição / Vale Alimentação); senão o tipo de loja,
     como a própria Alelo faz: Comer fora (restaurante, lanchonete, padaria) é refeição; o resto (mercado) é alimentação."""
     f = str(pg.get("forma") or "").strip()
     f = norm_txt(T_PAG.get(f.zfill(2), f) if f.isdigit() else f)
@@ -261,7 +261,9 @@ def pagar(p: dict[str, Any]) -> dict[str, Any]:
 
 def cartao(p: dict[str, Any]) -> dict[str, Any]:
     """Cadastro de cartões pela tela: {id?, nome, bandeira, dono, usam, fecha, vence, no_fechamento, tipo, ativo} ou {id, apagar}.
-    Tipo: credito, debito, ambos ou vale (Alelo, VR…: sai na hora, como o débito). Sem os dias de fechamento e vencimento o cartão fica só como registro (não monta fatura)."""
+    Função (tipo): credito, debito, ambos, prepago (sai na hora, como o débito) ou beneficio (Alelo, VR…; "vale" é o nome antigo),
+    com "beneficio_de": refeicao, alimentacao, ambos ou multi. Bandeira é só a rede (Visa, Elo…; "Sem bandeira" na rede própria).
+    Sem os dias de fechamento e vencimento o cartão fica só como registro (não monta fatura)."""
     with file_lock():
         db = load_db()
         lst = db.setdefault("cartoes", [])
@@ -270,7 +272,7 @@ def cartao(p: dict[str, Any]) -> dict[str, Any]:
         if cid and not k:
             raise Falha("Cartão não encontrado.")
         if p.get("apagar"):
-            if any(pg.get("cartao") == cid or (_tipo_pag(pg) == "Alelo" and (cartao_na_hora(c, pg) or {}).get("id") == cid)
+            if any(pg.get("cartao") == cid or (_tipo_pag(pg) == "Benefício" and (cartao_na_hora(c, pg) or {}).get("id") == cid)
                    for c in db["compras"] for pg in (c.get("pagamentos") or []) + _pgs_fin(c)):
                 raise Falha(f"O {rotulo_cartao(k, db.get('cartoes') or [])} já tem compras. Desmarque \"Em uso\" em vez de apagar.")
             lst.remove(k)
@@ -306,8 +308,9 @@ def cartao(p: dict[str, Any]) -> dict[str, Any]:
                 raise Falha("Dia do fechamento/vencimento: de 1 a 31.")
             return n
         tipo = p.get("tipo") or ("ambos" if p.get("debito") else "credito")
-        if tipo not in ("credito", "debito", "ambos", "vale"):
-            raise Falha("Tipo do cartão: crédito, débito, crédito e débito ou vale.")
+        tipo = "beneficio" if tipo == "vale" else tipo
+        if tipo not in ("credito", "debito", "ambos", "prepago", "beneficio"):
+            raise Falha("Função do cartão: crédito, débito, crédito e débito, pré-pago ou benefício.")
         fecha, vence = (dia(p.get("fecha")), dia(p.get("vence"))) if tipo in ("credito", "ambos") else (None, None)
         if (fecha is None) != (vence is None):
             raise Falha("Preencha o fechamento e o vencimento (ou deixe os dois em branco).")
@@ -397,11 +400,19 @@ def cartao(p: dict[str, Any]) -> dict[str, Any]:
                 k.pop("visual", None)
         k.update({"nome": nome, "bandeira": band, "dono": dono, "usam": usam, "fecha": fecha, "vence": vence,
                   "no_fechamento": "atual" if p.get("no_fechamento") == "atual" else "proxima",
-                  "credito": tipo in ("credito", "ambos"), "debito": tipo in ("debito", "ambos"), "ativo": bool(p.get("ativo", True))})
-        if tipo == "vale":
+                  "credito": tipo in ("credito", "ambos"), "debito": tipo in ("debito", "ambos", "prepago"), "ativo": bool(p.get("ativo", True))})
+        if tipo == "beneficio":  # "vale" por dentro: sai na hora, no saldo de refeição ou alimentação
             k["vale"] = True
+            k["beneficio_de"] = p.get("beneficio_de") if p.get("beneficio_de") in BENEFICIOS else k.get("beneficio_de") or "ambos"
         else:
             k.pop("vale", None)
+            k.pop("beneficio_de", None)
+        if tipo == "beneficio":
+            k.pop("categoria", None)  # benefício não tem categoria (Gold, Black…)
+        if tipo == "prepago":
+            k["prepago"] = True
+        else:
+            k.pop("prepago", None)
         save_db(db)
     return {"ok": True, "status": "cartao", "id": cid, "mensagem": f"Cartão {nome} salvo."}
 

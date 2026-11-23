@@ -71,6 +71,8 @@ def load_db() -> dict[str, Any]:
             _migracoes().migrar_v5(db)  # Casa › Elétrica e iluminação
         if (db.get("versao") or 1) < 6:
             _migracoes().migrar_v6(db)  # Veículos: sem chassi e sem placa inteira
+        if (db.get("versao") or 1) < 7:
+            _migracoes().migrar_v7(db)  # bandeira só a rede; Alelo, VR… são emissores; forma "Alelo" → "Benefício"
         for k, v in fresh_db().items():
             db.setdefault(k, v)
     db["categorias"] = [a["nome"] for a in db["arvore"]]
@@ -110,9 +112,12 @@ def apelidos_de(x: dict[str, Any]) -> set[str]:
     return {norm_txt(x["nome"]).split(" ")[0], *(norm_txt(a) for a in x.get("apelidos") or [])} - {""}
 
 
-def vale_de(quem: str | None) -> dict[str, Any] | None:
-    """Cartão de vale (Alelo, VR…) de quem comprou: o dele (titular ou quem usa); senão, o único vale da casa."""
+def vale_de(quem: str | None, emissor: str | None = None) -> dict[str, Any] | None:
+    """Cartão de benefício (Alelo, VR…) de quem comprou: o dele (titular ou quem usa); senão, o único da casa. Com a
+    empresa que a nota disser (Alelo, VR, Ticket, Pluxee), só os cartões dela, quando houver algum."""
     vs = [k for k in _CARTOES.values() if k.get("vale")]
+    if emissor and any(k.get("emissor") == emissor for k in vs):
+        vs = [k for k in vs if k.get("emissor") == emissor]
     return (next((k for k in vs if k.get("dono") == quem), None) or next((k for k in vs if quem in (k.get("usam") or [])), None)
             or (vs[0] if len(vs) == 1 else None))
 

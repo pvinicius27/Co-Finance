@@ -1,4 +1,4 @@
-"""Migrações do arquivo de dados (v2 categorias, v3 cartões, v4 Bebê, v5 Elétrica). Cada uma guarda o arquivo antes."""
+"""Migrações do arquivo de dados (v2 categorias, v3 cartões, v4 Bebê, v5 Elétrica, v7 bandeira × benefício). Cada uma guarda o arquivo antes."""
 from __future__ import annotations
 
 import json
@@ -127,4 +127,36 @@ def migrar_v6(db: dict[str, Any]) -> None:
         b.pop("chassi", None)
         b["placa_final"] = sorted({re.sub(r"[^A-Z0-9]", "", str(x).upper())[-3:] for x in placas} | set(b.get("placa_final") or []))
     db["versao"] = 6
+    save_db(db)
+
+
+def migrar_v7(db: dict[str, Any]) -> None:
+    """v6 → v7: bandeira é só a rede (Visa, Elo…). Alelo, VR, Ticket e Pluxee passam a ser a empresa (emissor) do cartão
+    de benefício, com "Sem bandeira"; a forma de pagamento "Alelo" passa a se chamar "Benefício". Guarda o arquivo antes."""
+    antigo = DATA_DIR / "compras.antes-v7.json"
+    if DB_PATH.exists() and not antigo.exists():
+        shutil.copy2(DB_PATH, antigo)
+    for k in db.get("cartoes") or []:
+        if k.get("bandeira") in ("Alelo", "VR", "Ticket", "Pluxee"):
+            k["vale"] = True
+            if not k.get("emissor"):
+                k["emissor"] = k["bandeira"].lower()
+            k["bandeira"] = "Sem bandeira"
+        if k.get("vale"):
+            k["credito"], k["debito"] = False, False
+            k.setdefault("beneficio_de", "ambos")
+            k.pop("categoria", None)
+
+    def forma(x: Any) -> None:
+        if isinstance(x, dict):
+            for ch, v in x.items():
+                if ch in ("tipo", "_tipo", "forma_escolhida") and v == "Alelo":
+                    x[ch] = "Benefício"
+                else:
+                    forma(v)
+        elif isinstance(x, list):
+            for v in x:
+                forma(v)
+    forma({ch: v for ch, v in db.items() if ch != "cartoes"})
+    db["versao"] = 7
     save_db(db)

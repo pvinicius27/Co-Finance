@@ -13,26 +13,153 @@ const F_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "ju
 const F_DIAS = ["D", "S", "T", "Q", "Q", "S", "S"];
 const F_ICONES_CONTA = ["🌐", "🏛️", "⚡", "💧", "🔥", "📺", "📱", "🏠", "🚗", "🛡️", "🏋️", "🎓", "🏥", "📦"];  // os mesmos do script (ICONES_CONTA)
 const F_PALETA = ["#3b82f6", "#d9467a", "#0f9f8f", "#f59e0b", "#8b5cf6", "#ef4444", "#64748b"];  // a mesma do script (PALETA_PESSOAS)
-const F_BANDEIRAS = ["Visa", "Mastercard", "Elo", "Amex", "Hipercard", "Alelo", "VR", "Ticket", "Pluxee", "Outra"];
+// bandeira é a rede do cartão (quem passa a compra); Alelo, VR, Ticket e Pluxee são empresas de benefício (emissores)
+const F_BANDEIRAS = ["Visa", "Mastercard", "Elo", "Amex", "Hipercard", "Diners", "Discover", "JCB", "UnionPay", "Maestro", "Outra", "Sem bandeira"];
+const F_BANDEIRAS_BANCO = F_BANDEIRAS;
+// categoria de cada bandeira (a do banco aparece primeiro; nenhuma some)
+const F_CATEGORIAS = { Visa: ["Classic", "Internacional", "Gold", "Platinum", "Signature", "Infinite"], Mastercard: ["Standard", "Internacional", "Gold", "Platinum", "Black"],
+  Elo: ["Mais", "Grafite", "Nanquim"], Amex: ["Green", "Gold", "Platinum", "Centurion"], "": ["Nacional", "Internacional", "Gold", "Platinum", "Black"] };
+const F_CAT_RE = /\b(CLASSIC|INTERNACIONAL|NACIONAL|GOLD|PLATINUM|SIGNATURE|INFINITE|STANDARD|BLACK|MAIS|GRAFITE|NANQUIM|GREEN|CENTURION)\b/i;
+// função do cartão e, no benefício, de que é o saldo
+const F_FUNCOES = [["credito", "Crédito"], ["debito", "Débito"], ["ambos", "Crédito e débito"], ["prepago", "Pré-pago"], ["beneficio", "Benefício (Alelo, VR…)"]];
+const F_BENEFICIOS = { refeicao: "Refeição", alimentacao: "Alimentação", ambos: "Refeição e alimentação", multi: "Multibenefício" };
+const F_EMISSORES_BENEF = ["alelo", "vr", "ticket", "pluxee", "flash", "caju", "ifood", "swile"];
 const F_PAINEL_ENERGIA = "/co-energy";  // o item da barra lateral do CoEnergy (quando instalado)
 const F_BANCOS = { santander: "Santander", bb: "Banco do Brasil", bradesco: "Bradesco", itau: "Itaú", brb: "BRB", btg: "BTG Pactual", caixa: "Caixa", inter: "Inter", nubank: "Nubank" };
-const F_EMISSORES = {bb: ["Banco do Brasil", "#fcfc30", "#1d3f9b"], bradesco: ["Bradesco", "#cc092f", "#ffffff"], itau: ["Itaú", "#ec7000", "#ffffff"], santander: ["Santander", "#ec0000", "#ffffff"], caixa: ["Caixa", "#005ca9", "#ffffff"], nubank: ["Nubank", "#820ad1", "#ffffff"], inter: ["Inter", "#ff7a00", "#ffffff"], c6: ["C6 Bank", "#242424", "#ffffff"], btg: ["BTG Pactual", "#0d2240", "#ffffff"], xp: ["XP", "#111111", "#f5c518"], sicredi: ["Sicredi", "#3fa110", "#ffffff"], sicoob: ["Sicoob", "#003641", "#7db61c"], banrisul: ["Banrisul", "#00519e", "#ffffff"], brb: ["BRB", "#0a3d91", "#ffffff"], pan: ["Banco Pan", "#00aeef", "#ffffff"], bv: ["Banco BV", "#1b2a5c", "#ffffff"], safra: ["Safra", "#00205b", "#c9a45c"], porto: ["Porto Bank", "#0046c0", "#ffffff"], picpay: ["PicPay", "#21c25e", "#ffffff"], mercadopago: ["Mercado Pago", "#00b1ea", "#ffffff"], neon: ["Neon", "#0e1a3f", "#2de0ff"], next: ["Next", "#00ff5f", "#111111"], will: ["Will Bank", "#ffe500", "#111111"], original: ["Original", "#00a335", "#ffffff"], wise: ["Wise", "#7beb7f", "#163300"], infinitepay: ["InfinitePay", "#111111", "#ffffff"], alelo: ["Alelo", "#bad355", "#1f5136"]};  // banco do cartão: nome, fundo e tinta
+const F_EMISSORES = {bb: ["Banco do Brasil", "#fcfc30", "#1d3f9b"], bradesco: ["Bradesco", "#cc092f", "#ffffff"], itau: ["Itaú", "#ec7000", "#ffffff"], santander: ["Santander", "#ec0000", "#ffffff"], caixa: ["Caixa", "#005ca9", "#ffffff"], nubank: ["Nubank", "#820ad1", "#ffffff"], inter: ["Inter", "#ff7a00", "#ffffff"], c6: ["C6 Bank", "#242424", "#ffffff"], btg: ["BTG Pactual", "#0d2240", "#ffffff"], xp: ["XP", "#111111", "#f5c518"], sicredi: ["Sicredi", "#3fa110", "#ffffff"], sicoob: ["Sicoob", "#003641", "#7db61c"], banrisul: ["Banrisul", "#00519e", "#ffffff"], brb: ["BRB", "#0a3d91", "#ffffff"], pan: ["Banco Pan", "#00aeef", "#ffffff"], bv: ["Banco BV", "#1b2a5c", "#ffffff"], safra: ["Safra", "#00205b", "#c9a45c"], porto: ["Porto Bank", "#0046c0", "#ffffff"], picpay: ["PicPay", "#21c25e", "#ffffff"], mercadopago: ["Mercado Pago", "#00b1ea", "#ffffff"], neon: ["Neon", "#0e1a3f", "#2de0ff"], next: ["Next", "#00ff5f", "#111111"], will: ["Will Bank", "#ffe500", "#111111"], original: ["Original", "#00a335", "#ffffff"], wise: ["Wise", "#7beb7f", "#163300"], infinitepay: ["InfinitePay", "#111111", "#ffffff"], alelo: ["Alelo", "#bad355", "#1f5136"], vr: ["VR", "#00a650", "#ffe600"], ticket: ["Ticket", "#e2231a", "#ffffff"], pluxee: ["Pluxee", "#221c46", "#00eb5e"], flash: ["Flash", "#f5317f", "#ffffff"], caju: ["Caju", "#ff6a3d", "#ffffff"], ifood: ["iFood Benefícios", "#ea1d2c", "#ffffff"], swile: ["Swile", "#6d4aff", "#ffffff"]};  // banco do cartão: nome, fundo e tinta
 // modelos de cartão (desenho na V3): id → [banco, nome]. Cada foto de cartão nova vira um modelo aqui
 const F_MODELOS = { "bradesco-prime": ["bradesco", "Bradesco Prime · preto"], "santander-unique": ["santander", "Santander Unique · preto"],
   "bb-ourocard-infinite": ["bb", "Ourocard Infinite crédito · preto e dourado"], "bb-ourocard-debito": ["bb", "Ourocard débito · preto, linhas brancas"],
   "itau-latam-black": ["itau", "Itaú Latam Pass Black · preto"], "wise-verde": ["wise", "Wise · verde"], "alelo-refeicao": ["alelo", "Alelo refeição e alimentação · verde-limão"],
-  "caixa-platinum": ["caixa", "Caixa Platinum · prata"], "btg-ultrablue": ["btg", "BTG Pactual Ultrablue · azul escovado"], "brb-connect": ["brb", "BRB Connect · azul"],
+  "caixa-sim": ["caixa", "Caixa Sim · azul"], "caixa-universitario": ["caixa", "Caixa Universitário · verde"],
+  "caixa-gold": ["caixa", "Caixa Gold · azul-petróleo"], "caixa-elo-mais": ["caixa", "Caixa Elo Mais · azul-petróleo"],
+  "caixa-platinum": ["caixa", "Caixa Platinum / Elo Grafite · prata"], "caixa-infinite": ["caixa", "Caixa Infinite · preto"],
+  "caixa-icone": ["caixa", "Caixa Ícone · azul-marinho"], "caixa-nanquim": ["caixa", "Caixa Elo Nanquim · preto"],
+  "caixa-diners": ["caixa", "Caixa Diners Club · preto e cobre"], "btg-ultrablue": ["btg", "BTG Pactual Ultrablue · azul escovado"], "brb-connect": ["brb", "BRB Connect · azul"],
   "inter-laranja": ["inter", "Inter · laranja"], "amazon-bradesco": ["bradesco", "Amazon (Bradesco) · branco"], "c6-carbon": ["c6", "C6 Carbon Black · preto fibra de carbono"] };
 // cor de cada modelo (fundo, tinta, e o degradê do cartão de verdade); sem modelo, a cor do banco
 const F_MODELO_COR = {
   "bradesco-prime": { preto: true }, "santander-unique": { preto: true }, "itau-latam-black": { preto: true },
   "bb-ourocard-infinite": { preto: true, ouro: true }, "bb-ourocard-debito": { preto: true },
+  "caixa-sim": { fundo: "#0a5fb4", tinta: "#ffffff", cg: "linear-gradient(120deg,#2b9be0 0%,#0a62b6 60%,#0b4f9c 100%)" },
+  "caixa-universitario": { fundo: "#62c48a", tinta: "#ffffff", cg: "linear-gradient(120deg,#bfdc4a 0%,#66c58a 55%,#34b2a2 100%)" },
+  "caixa-gold": { fundo: "#05476e", tinta: "#ffffff", cg: "linear-gradient(200deg,rgba(255,255,255,.07) 0 40%,transparent 40%),linear-gradient(160deg,#0b6c95 0%,#05486f 60%,#033a5c 100%)" },
+  "caixa-elo-mais": { fundo: "#05476e", tinta: "#ffffff", cg: "linear-gradient(200deg,rgba(255,255,255,.07) 0 40%,transparent 40%),linear-gradient(160deg,#0b6c95 0%,#05486f 60%,#033a5c 100%)" },
+  "caixa-infinite": { fundo: "#0b0b0c", tinta: "#ffffff", cg: "radial-gradient(120% 55% at 45% 112%,rgba(255,255,255,.38),transparent 62%),linear-gradient(180deg,#1a1a1b,#050505)" },
+  "caixa-icone": { fundo: "#0d2b4c", tinta: "#ffffff", cg: "linear-gradient(140deg,transparent 47%,rgba(255,255,255,.4) 52%,transparent 58%),linear-gradient(160deg,#123459 0%,#0b2742 100%)" },
+  "caixa-nanquim": { fundo: "#111112", tinta: "#ffffff", cg: "radial-gradient(90% 60% at 20% 100%,rgba(255,255,255,.14),transparent 60%),linear-gradient(160deg,#2b2b2d 0%,#0b0b0c 100%)" },
+  "caixa-diners": { fundo: "#121212", tinta: "#e8c48a", cg: "linear-gradient(160deg,#262422 0%,#0d0c0b 100%)" },
   "caixa-platinum": { fundo: "#cfd3d6", tinta: "#3b3f43", cg: "linear-gradient(115deg,#e6e4dc 0%,#d6d8d8 48%,#c7ccd0 100%)" },
   "btg-ultrablue": { fundo: "#1d3c70", tinta: "#ffffff", cg: "repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 4px),linear-gradient(165deg,#2c5291 0%,#1a3768 55%,#0f2550 100%)" },
   "brb-connect": { fundo: "#0a63c9", tinta: "#ffffff", cg: "linear-gradient(200deg,#0b3c96 0%,#0a5fc4 50%,#169fe4 100%)" },
   "inter-laranja": { fundo: "#ff7a00", tinta: "#ffffff", cg: "linear-gradient(160deg,#ff8c22 0%,#ff7300 60%,#ff6a00 100%)" },
   "c6-carbon": { fundo: "#1b1b1d", tinta: "#f2f2f3", cg: "repeating-linear-gradient(135deg,rgba(255,255,255,.035) 0 2px,transparent 2px 5px),linear-gradient(160deg,#2a2a2d 0%,#141416 100%)" },
   "amazon-bradesco": { fundo: "#ffffff", tinta: "#232f3e", cg: "linear-gradient(160deg,#ffffff 0%,#f3f4f6 100%)" } };
+// biblioteca de modelos: [id, banco, nome, o que vai escrito no cartão, cor do alto, cor de baixo, tinta]. As cores foram medidas nas
+// imagens dos cartões de cada banco (só as cores: nenhuma imagem vem no pacote); o desenho é o do banco (logo, chip, bandeira)
+const F_BIBLIOTECA = [
+  ["bradesco-visa-gold", "bradesco", "Visa Gold", "Gold", "#bb8840", "#b4823c", "#ffffff"],
+  ["bradesco-universitario-visa-gold", "bradesco", "Universitário Visa Gold", "Universitário Gold", "#5b6163", "#5c5b5b", "#ffffff"],
+  ["bradesco-neo-visa-platinum", "bradesco", "Neo Visa Platinum", "Neo Platinum", "#a53e6b", "#90306c", "#ffffff"],
+  ["bradesco-visa-platinum", "bradesco", "Visa Platinum", "Platinum", "#7d7f7e", "#7c7c7c", "#ffffff"],
+  ["bradesco-like-visa", "bradesco", "Like Visa", "Like", "#9f345f", "#ab2950", "#ffffff"],
+  ["bradesco-visa-signature", "bradesco", "Visa Signature", "Signature", "#5b5d5f", "#555759", "#ffffff"],
+  ["bradesco-visa-infinite", "bradesco", "Visa Infinite", "Infinite", "#0e0f0f", "#060606", "#ffffff"],
+  ["bradesco-visa-aeternum", "bradesco", "Visa Aeternum", "Aeternum", "#0b0a0c", "#070507", "#ffffff"],
+  ["bradesco-gol-smiles-visa-gold", "bradesco", "Gol Smiles Visa Gold", "Gol Smiles Gold", "#8e4c15", "#7c3b10", "#ffffff"],
+  ["bradesco-gol-smiles-visa-platinum", "bradesco", "Gol Smiles Visa Platinum", "Gol Smiles Platinum", "#365b6f", "#2e4e60", "#ffffff"],
+  ["bradesco-gol-smiles-visa-infinite", "bradesco", "Gol Smiles Visa Infinite", "Gol Smiles Infinite", "#252524", "#252524", "#ffffff"],
+  ["bradesco-horizon-visa-infinite", "bradesco", "Horizon Visa Infinite", "Horizon Infinite", "#1d1d1e", "#121213", "#ffffff"],
+  ["bradesco-united-mileageplus-visa-infinit", "bradesco", "United MileagePlus Visa Infinite", "United MileagePlus Infinite", "#121619", "#0d1215", "#ffffff"],
+  ["bradesco-marriott-bonvoy-visa-infinite", "bradesco", "Marriott Bonvoy® Visa Infinite", "Marriott Bonvoy® Infinite", "#13120f", "#0e0d0a", "#ffffff"],
+  ["bradesco-agora-visa-infinite", "bradesco", "Ágora Visa Infinite", "Ágora Infinite", "#0b3233", "#00292a", "#ffffff"],
+  ["bradesco-visa-internacional", "bradesco", "Visa Internacional", "Internacional", "#11427f", "#184178", "#ffffff"],
+  ["bradesco-gol-smiles-visa-internacional", "bradesco", "Gol Smiles Visa Internacional", "Gol Smiles Internacional", "#6c153e", "#5f1033", "#ffffff"],
+  ["bradesco-seguros-visa-gold", "bradesco", "Seguros Visa Gold", "Seguros Gold", "#bb9f64", "#5c3d29", "#ffffff"],
+  ["bradesco-seguros-visa-platinum", "bradesco", "Seguros Visa Platinum", "Seguros Platinum", "#999b9c", "#6f7174", "#ffffff"],
+  ["bradesco-seguros-visa-signature", "bradesco", "Seguros Visa Signature", "Seguros Signature", "#606163", "#555759", "#ffffff"],
+  ["bradesco-visa-nacional", "bradesco", "Visa Nacional", "Nacional", "#31487c", "#354976", "#ffffff"],
+  ["bradesco-visa-universitario-nacional", "bradesco", "Visa Universitário Nacional", "Universitário Nacional", "#5f6264", "#5d5c5d", "#ffffff"],
+  ["bradesco-visa-nacional-mais", "bradesco", "Visa Nacional Mais", "Nacional Mais", "#9f1b28", "#a72d39", "#ffffff"],
+  ["bradesco-music-visa-platinum", "bradesco", "Music Visa Platinum", "Music Platinum", "#2f2728", "#14131b", "#ffffff"],
+  ["bradesco-visa-basico", "bradesco", "Visa Básico", "Básico", "#5887cd", "#6295c8", "#ffffff"],
+  ["bradesco-sos-mata-atlantica", "bradesco", "SOS Mata Atlântica", "SOS Mata Atlântica", "#508a4a", "#547752", "#ffffff"],
+  ["bb-ourocard-facil", "bb", "Ourocard Fácil", "Ourocard Fácil", "#ffe800", "#ffe600", "#1f2430"],
+  ["bb-ourocard-universitario", "bb", "Ourocard Universitário", "Ourocard Universitário", "#ffe800", "#ffe600", "#1f2430"],
+  ["bb-ourocard-visa-gold", "bb", "Ourocard Visa Gold", "Ourocard Gold", "#ccbb70", "#cbba70", "#1f2430"],
+  ["bb-ourocard-visa-platinum", "bb", "Ourocard Visa Platinum", "Ourocard Platinum", "#898b8e", "#898b8e", "#ffffff"],
+  ["bb-ourocard-elo", "bb", "Ourocard Elo", "Ourocard", "#ffe700", "#ffe600", "#1f2430"],
+  ["bb-ourocard-elo-mais", "bb", "Ourocard Elo Mais", "Ourocard Mais", "#cbba6f", "#cab96f", "#1f2430"],
+  ["bb-ourocard-grafite", "bb", "Ourocard Grafite", "Ourocard Grafite", "#88898d", "#87888c", "#ffffff"],
+  ["bb-ourocard-nanquim", "bb", "Ourocard Nanquim", "Ourocard Nanquim", "#20140f", "#221612", "#ffffff"],
+  ["bb-ourocard-platinum-mastercard", "bb", "Ourocard Platinum Mastercard", "Ourocard Platinum", "#88898d", "#898a8e", "#ffffff"],
+  ["bb-ourocard-mastercard-black", "bb", "Ourocard Mastercard Black", "Ourocard Black", "#020202", "#040405", "#ffffff"],
+  ["bb-ourocard-pre-pago", "bb", "Ourocard Pré-Pago", "Ourocard Pré-Pago", "#689ec0", "#1684c1", "#ffffff"],
+  ["bb-ourocard-travelmoney", "bb", "Ourocard TravelMoney", "Ourocard TravelMoney", "#7ba044", "#2a7934", "#ffffff"],
+  ["bb-smiles-gold", "bb", "Smiles Gold", "Smiles Gold", "#9b5933", "#8a4c31", "#ffffff"],
+  ["bb-smiles-platinum", "bb", "Smiles Platinum", "Smiles Platinum", "#416a7b", "#3f6371", "#ffffff"],
+  ["bb-smiles-infinite", "bb", "Smiles Infinite", "Smiles Infinite", "#0a0a0b", "#0a0a0a", "#ffffff"],
+  ["bb-dotz-international", "bb", "Dotz International", "Dotz International", "#264b9b", "#224797", "#ffffff"],
+  ["bb-dotz-platinum", "bb", "Dotz Platinum", "Dotz Platinum", "#a4a4a8", "#a3a1a4", "#1f2430"],
+  ["bb-ame", "bb", "AME", "AME", "#a82568", "#a72568", "#ffffff"],
+  ["santander-unlimited", "santander", "Santander Unlimited", "Unlimited", "#070808", "#000000", "#ffffff"],
+  ["santander-elite", "santander", "Santander Elite", "Elite", "#4b4d4f", "#424345", "#ffffff"],
+  ["santander-sx", "santander", "Santander SX", "SX", "#8c141b", "#3d0a13", "#ffffff"],
+  ["santander-aadvantage-black", "santander", "AAdvantage Black", "AAdvantage Black", "#4f4c49", "#3a3632", "#ffffff"],
+  ["santander-aadvantage-platinum", "santander", "AAdvantage Platinum", "AAdvantage Platinum", "#6e6a6b", "#605f5e", "#ffffff"],
+  ["santander-aadvantage-quantum", "santander", "AAdvantage Quantum", "AAdvantage Quantum", "#e3e0e4", "#fcfdfd", "#1f2430"],
+  ["santander-smiles-infinite", "santander", "Smiles Infinite", "Smiles Infinite", "#2b2728", "#292627", "#ffffff"],
+  ["santander-smiles-platinum", "santander", "Smiles Platinum", "Smiles Platinum", "#3f6a7c", "#3c6271", "#ffffff"],
+  ["santander-smiles-gold", "santander", "Smiles Gold", "Smiles Gold", "#914a15", "#7e3a0f", "#ffffff"],
+  ["btg-ultrablue-world-legend", "btg", "Ultrablue World Legend", "Ultrablue World Legend", "#204576", "#133460", "#ffffff"],
+  ["btg-black-visual", "btg", "Black · com visual", "Black", "#051c2c", "#051c2c", "#ffffff"],
+  ["btg-platinum", "btg", "Platinum · prata", "Platinum", "#465868", "#465868", "#ffffff"],
+  ["btg-gold", "btg", "Gold · azul", "Gold", "#092789", "#082689", "#ffffff"],
+  ["btg-tap-black", "btg", "TAP Black", "TAP Black", "#040404", "#020202", "#ffffff"],
+  ["btg-black", "btg", "Black · azul-noite", "Black", "#0e2536", "#0d2535", "#ffffff"],
+  ["nubank-roxo", "nubank", "Nubank Gold / Platinum · roxo", "", "#592591", "#7f2ecb", "#ffffff"],
+  ["nubank-croma", "nubank", "Nubank Croma", "", "#dedede", "#dcdbdc", "#1f2430"],
+  ["nubank-ultravioleta", "nubank", "Nubank Ultravioleta", "Ultravioleta", "#48246c", "#331a58", "#ffffff"],
+  ["itau-azul-infinite", "itau", "Azul Infinite", "Azul Infinite", "#f6f7fb", "#d9e1f0", "#1f2430"],
+  ["itau-azul-skyline", "itau", "Azul Skyline", "Azul Skyline", "#ffffff", "#e6eaf1", "#1f2430"],
+  ["itau-azul-platinum", "itau", "Azul Platinum", "Azul Platinum", "#3e5f9a", "#16244a", "#ffffff"],
+  ["itau-latam-pass-platinum", "itau", "Latam Pass Platinum", "Latam Pass Platinum", "#8b7563", "#53443a", "#ffffff"],
+  ["itau-passai-gold", "itau", "Passaí Gold", "Passaí Gold", "#d6b34a", "#a8862a", "#1f2430"],
+  ["itau-platinum", "itau", "Itaú Platinum", "Platinum", "#ff7a1a", "#e85d00", "#ffffff"],
+  ["itau-uniclass-signature", "itau", "Uniclass Signature", "Uniclass Signature", "#2347b3", "#132c78", "#ffffff"],
+  ["itau-personnalite", "itau", "Personnalité", "Personnalité", "#262628", "#0b0b0c", "#ffffff"],
+  ["mercadopago-mercado-pago", "mercadopago", "Mercado Pago", "", "#2a2a2c", "#0e0e0f", "#ffffff"],
+  ["infinitepay-infinitepay", "infinitepay", "InfinitePay", "", "#111111", "#111111", "#ffffff"],
+  ["c6-sunset", "c6", "C6 Sunset", "", "#f4a89d", "#ec5579", "#ffffff"],
+  ["c6-bubblegum", "c6", "C6 Bubblegum", "", "#f962b2", "#fc2280", "#ffffff"],
+  ["c6-red", "c6", "C6 Red", "", "#dc5c51", "#bd4138", "#ffffff"],
+  ["c6-gold", "c6", "C6 Gold", "", "#f2cf79", "#d2a54e", "#1f2430"],
+  ["c6-pink", "c6", "C6 Pink", "", "#ead3d3", "#e8c7c7", "#1f2430"],
+  ["c6-boreal-forest", "c6", "C6 Boreal Forest", "", "#b9bcae", "#6f776a", "#ffffff"],
+  ["c6-silver", "c6", "C6 Silver", "", "#ececec", "#cfcfcf", "#1f2430"],
+  ["c6-rainbow", "c6", "C6 Rainbow", "", "#ccd9e3", "#a3a5bd", "#1f2430"],
+  ["c6-acqua", "c6", "C6 Acqua", "", "#46b0b7", "#37aeb6", "#ffffff"],
+  ["c6-blue", "c6", "C6 Blue", "", "#6c7488", "#505769", "#ffffff"],
+  ["c6-platinum", "c6", "C6 Platinum", "Platinum", "#c2bfb7", "#888b82", "#1f2430"],
+  ["c6-black", "c6", "C6 Black", "Black", "#292928", "#0c0c0c", "#ffffff"],
+  ["c6-graphene", "c6", "C6 Graphene World Legend", "Graphene", "#b4b4b4", "#737373", "#1f2430"],
+  ["inter-platinum", "inter", "Inter Platinum", "Platinum", "#afaeae", "#888786", "#ffffff"],
+  ["inter-prime", "inter", "Inter Prime", "Prime", "#525252", "#3d3d3c", "#ffffff"],
+  ["inter-win", "inter", "Inter Win", "Win", "#2f415b", "#152842", "#ffffff"]
+];
+const F_MODELO_ROT = { "btg-ultrablue": "Ultrablue" };  // o que vai escrito no cartão, por modelo
+for (const [id, bco, nome, rot, a, b, tinta] of F_BIBLIOTECA) {
+  if (F_MODELOS[id]) continue;
+  F_MODELOS[id] = [bco, nome];
+  F_MODELO_COR[id] = { fundo: a, tinta, cg: `linear-gradient(160deg,${a} 0%,${b} 100%)` };
+  F_MODELO_ROT[id] = rot;
+}
+F_MODELO_COR["c6-rainbow"].cg = "linear-gradient(125deg,#dbe7f1 0%,#ecd6ec 28%,#cfe9df 52%,#bdb8dc 78%,#dfe5ee 100%)";  // furta-cor
+F_MODELO_COR["infinitepay-infinitepay"].cg = "linear-gradient(180deg,#b9f63c 0%,#8f6dff 38%,#1a1430 70%,#0d0d0f 100%)";  // as faixas verde e roxa no alto
+// cartão escuro: a bandeira vai em metal (prata); claro ou colorido: nas cores dela
+const F_LUZ = (hex) => { const m = /^#?([0-9a-f]{6})$/i.exec(hex || ""); if (!m) return 0.2; const n = parseInt(m[1], 16);
+  const l = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+  return 0.2126 * l(n >> 16) + 0.7152 * l((n >> 8) & 255) + 0.0722 * l(n & 255); };
 const F_COR_BANCO = { santander: ["#ec0000", "#ffffff"], bradesco: ["#cc092f", "#ffffff"], bb: ["#fcfc30", "#1d3f9b"], itau: ["#ec7000", "#ffffff"] };  // desenho do cartão: fundo e tinta  // leitores de fatura do script
 const F_TIPO_LINHA = { pagamento: "pagamento", estorno: "↩ estorno", iof: "IOF", juros: "juros/encargos", anuidade: "anuidade" };  // aba Energy do Dashboard (faturas da Equatorial)
 
@@ -363,7 +490,7 @@ function instalarFinancas(Classe) {
   P._finPagGrupo = function (pg) {
     if (!pg.tipo) return "Não informado";
     if (pg.carteira) return "Saldo em carteira";
-    if (pg.tipo === "Alelo") return pg.cartao_nome || (pg.cartao && pg.cartao !== "ALELO" ? `Vale ${pg.cartao}` : "Alelo");
+    if (pg.tipo === "Benefício") return pg.cartao_nome || (pg.cartao && pg.cartao !== "ALELO" ? `Benefício ${pg.cartao}` : "Benefício");
     if (pg.cartao) return pg.cartao_nome || `Cartão ${String(pg.cartao).toUpperCase()}`;
     return pg.tipo === "Crédito" ? "Crédito (cartão não informado)" : pg.tipo;
   };
@@ -446,10 +573,11 @@ function instalarFinancas(Classe) {
   // desenho do cartão (cadastro): cor do banco, ou preto com o nome do produto e detalhe prata/dourado
   P._finCartaoCor = function (k) {
     const mc = F_MODELO_COR[k?.modelo];
-    if (mc?.preto) return { fundo: "#151517", tinta: mc.ouro ? "#d4b26a" : "#d4d4d8", preto: true, ouro: !!mc.ouro };
-    if (mc) return { fundo: mc.fundo, tinta: mc.tinta, cg: mc.cg };
+    if (mc?.preto) return { fundo: "#151517", tinta: mc.ouro ? "#d4b26a" : "#d4d4d8", preto: true, ouro: !!mc.ouro, escuro: true };
+    if (mc) return { fundo: mc.fundo, tinta: mc.tinta, cg: mc.cg, escuro: F_LUZ(mc.fundo) < 0.06 };
     if (k?.visual?.estilo === "preto") { const ouro = k.visual.metal === "dourado"; return { fundo: "#151517", tinta: ouro ? "#d4b26a" : "#d4d4d8", preto: true, ouro }; }
     const e = F_EMISSORES[k?.emissor || k?.banco], c = e ? [e[1], e[2]] : null;
+    if (c) return { fundo: c[0], tinta: c[1], escuro: F_LUZ(c[0]) < 0.06 };
     return c ? { fundo: c[0], tinta: c[1] } : k?.vale ? { fundo: "#0b6e4f", tinta: "#ffffff" } : { fundo: "#334155", tinta: "#ffffff" };
   };
   P._finCartaoEstilo = function (c) { return `--cf:${c.fundo};--ct:${c.tinta}${c.preto ? ";--cg:linear-gradient(135deg,#232327,#0c0c0e)" : c.cg ? `;--cg:${c.cg}` : ""}`; };
@@ -464,8 +592,8 @@ function instalarFinancas(Classe) {
     if (!k) return "";
     if (k.rotulo) return k.rotulo;  // a lista de cartões da compra já vem com o nome pronto
     k = (this._fFin?.cartoes || []).find((x) => x.id === k.id) || k;
-    const base = (x) => x.apelido || F_EMISSORES[x.emissor || x.banco]?.[0] || (x.vale ? "Vale" : x.nome);
-    const tipo = (x) => (x.vale ? "vale" : x.credito === false ? "débito" : "");
+    const base = (x) => x.apelido || F_EMISSORES[x.emissor || x.banco]?.[0] || (x.vale ? "Benefício" : x.nome);
+    const tipo = (x) => (x.vale ? "benefício" : x.prepago ? "pré-pago" : x.credito === false ? "débito" : "");
     const nome = base(k), outros = (this._fFin?.cartoes || []).filter((x) => x.id !== k.id && base(x) === nome);
     if (!outros.length) return nome;
     if (tipo(k) && outros.every((x) => tipo(x) !== tipo(k))) return `${nome} · ${tipo(k)}`;
@@ -484,10 +612,22 @@ function instalarFinancas(Classe) {
   };
   // categoria da bandeira: a do cadastro; sem ela, a que o nome do produto disser (Ourocard Infinite, Latam Pass Black)
   P._finCategoria = function (k) {
+    if (k?.vale) return "";  // benefício não tem categoria
     if (k?.categoria) return k.categoria;
-    const m = String(k?.visual?.produto || "").match(/\b(INFINITE|BLACK|PLATINUM|SIGNATURE|GOLD|NANQUIM|GRAFITE|CLASSIC|STANDARD|INTERNACIONAL)\b/i);
-    return m ? m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase() : "";
+    const lista = F_CATEGORIAS[k?.bandeira] || F_CATEGORIAS[""];
+    for (const s of [k?.visual?.produto, F_MODELOS[k?.modelo]?.[1], F_MODELO_ROT[k?.modelo]]) {
+      const m = String(s || "").match(F_CAT_RE), v = m ? m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase() : "";
+      if (v && lista.includes(v)) return v;
+    }
+    return "";
   };
+  // a bandeira que o modelo diz no nome (Ourocard Nanquim → Elo, Visa Gold → Visa); sem pista, nenhuma
+  P._finModeloBandeira = function (id) {
+    const n = `${F_MODELOS[id]?.[1] || ""} ${F_MODELO_ROT[id] || ""}`, fixo = { "c6-carbon": "Mastercard", "caixa-diners": "Diners" }[id];
+    return fixo || (/\bvisa\b/i.test(n) ? "Visa" : /mastercard/i.test(n) ? "Mastercard" : /\b(elo|nanquim|grafite)\b/i.test(n) ? "Elo" : /\bamex|american express/i.test(n) ? "Amex" : /\bdiners\b/i.test(n) ? "Diners" : "");
+  };
+  P._finKcEhBenef = function (id) { return F_EMISSORES_BENEF.includes(id); };
+  P._finBeneficio = function (k) { return k?.vale ? F_BENEFICIOS[k.beneficio_de] || "" : ""; };
   // traço de cada banco no cartão preto (faixas, linha, brilho); no da cor do banco fica liso
   P._finCartaoArte = function (k) {
     const t = { itau: '<path d="M150 0h42l-62 150h-42zM218 0h42l-62 150h-42zM286 0h42l-62 150h-42z" fill="#fff" opacity=".07"/>',
@@ -509,7 +649,7 @@ function instalarFinancas(Classe) {
   };
 
   P._finCartaoFace = function (k, x) {
-    const c = this._finCartaoCor(k), hoje = this._fFin.hoje, banco = F_BANCOS[k.banco] || (k.vale ? "Vale" : k.credito === false ? "Débito" : k.nome), prod = c.preto ? k.visual.produto : "";
+    const c = this._finCartaoCor(k), hoje = this._fFin.hoje, banco = F_BANCOS[k.banco] || (k.vale ? "Benefício" : k.credito === false ? "Débito" : k.nome), prod = c.preto ? k.visual.produto : "";
     const st = !x ? "" : x.gasto ? `${x.n} ${x.n === 1 ? "compra" : "compras"}` : x.vence < hoje ? "atrasada" : x.vence === hoje ? "vence hoje" : x.banco ? "✓ conferida com o banco" : "soma das compras lançadas";
     const [chip, risco] = c.preto && !c.ouro ? ["#cfd2d6", "#8f959b"] : ["#e3c26f", "#a8862f"];
     const corpo = `${c.preto ? this._finCartaoArte(k) : ""}<span class="fcf-top"><span class="fcf-marca"><b>${this._e(banco)}</b>${prod ? `<span class="fcf-prod">${this._e(prod)}</span>` : ""}</span><span class="fcf-nome">${this._e(k.nome)}</span></span>
@@ -563,7 +703,7 @@ function instalarFinancas(Classe) {
     this._finGastos(k).forEach((x) => (g[x.data.slice(0, 7)] ||= []).push(x));
     const meses = Object.keys(g).sort().reverse();
     const mes = (m) => `<h3 class="fsec">${this._e(this._mesNome(m))} · ${this._brl(g[m].reduce((s, x) => s + x.valor, 0))}</h3>${g[m].map((x) => this._finLinhaGasto(x)).join("")}`;
-    return `<div class="fcard fpainel"><div class="fhd"><h2>${this._e(this._finNomeCartao(k))}${/ · (vale|débito)/.test(this._finNomeCartao(k)) ? "" : ` · ${k.vale ? "vale" : "débito"}`}</h2><small>sai na hora, sem fatura</small></div>${this._finFinais(k)}
+    return `<div class="fcard fpainel"><div class="fhd"><h2>${this._e(this._finNomeCartao(k))}${/ · (benefício|pré-pago|débito)/.test(this._finNomeCartao(k)) ? "" : ` · ${k.vale ? "benefício" : k.prepago ? "pré-pago" : "débito"}`}</h2><small>sai na hora, sem fatura</small></div>${this._finFinais(k)}
       ${meses.length ? meses.slice(0, 2).map(mes).join("") : `<div class="fs">Nenhum gasto desde ${this._dataCurta(this._fFin.marco + "T12:00")}.</div>`}
       ${meses.length > 2 ? `<details class="fmais"><summary>Meses anteriores (${meses.length - 2})</summary>${meses.slice(2).map(mes).join("")}</details>` : ""}</div>`;
   };
@@ -1613,19 +1753,69 @@ function instalarFinancas(Classe) {
   // cartão › banco (lista) e modelo: escolhido o banco, os modelos dele aparecem em miniatura (o mesmo desenho da tela)
   P._finKcBancoSel = function () {
     const b = this._fKcBanco || "";
-    return `<label>Banco<select id="kc-emissor"><option value="">—</option>${Object.entries(F_EMISSORES).sort((x, y) => x[1][0].localeCompare(y[1][0]))
-      .map(([v, e]) => `<option value="${v}" ${b === v ? "selected" : ""}>${this._e(e[0])}</option>`).join("")}</select></label>`;
+    const op = (benef) => Object.entries(F_EMISSORES).filter(([v]) => F_EMISSORES_BENEF.includes(v) === benef).sort((x, y) => x[1][0].localeCompare(y[1][0]))
+      .map(([v, e]) => `<option value="${v}" ${b === v ? "selected" : ""}>${this._e(e[0])}</option>`).join("");
+    return `<label>Instituição <small>(banco ou empresa do benefício)</small><select id="kc-emissor"><option value="">—</option><optgroup label="Bancos">${op(false)}</optgroup>
+      <optgroup label="Benefício (refeição, alimentação)">${op(true)}</optgroup></select></label>`;
   };
   P._finKcMods = function () {
     const b = this._fKcBanco || "", m = this._fKcModelo || "";
     const campo = `<input type="hidden" id="kc-modelo" value="${this._e(m)}">`;
     if (!b) return campo;
-    const band = this.shadowRoot?.getElementById("kc-band")?.value || "Visa";
+    const band = this.shadowRoot?.getElementById("kc-band")?.value || this._fKcK?.bandeira || "Visa";
     const lista = [["", "Padrão do banco"], ...Object.entries(F_MODELOS).filter(([, [mb]]) => mb === b).map(([mid, [, mn]]) => [mid, mn])];
     const face = (mid) => this._finCartaoFace ? this._finCartaoFace({ id: `kcm-${mid || b}`, emissor: b, modelo: mid, bandeira: band, categoria: "", visual: { produto: "" } }, null) : "";
     return `<span class="fl">Modelo <small>(o desenho do cartão)</small></span><div class="fkm-l" role="radiogroup" aria-label="Modelo do cartão">${lista.map(([mid, mn]) => `
       <button type="button" class="fkm${mid === m ? " on" : ""}" data-a="f-kc-mod" data-k="${mid}" role="radio" aria-checked="${mid === m}">
         <span class="fkm-f">${face(mid)}</span><small>${mid === m ? "✓ " : ""}${this._e(mn)}</small></button>`).join("")}</div>${campo}`;
+  };
+
+  // pedaço redesenhado sem redesenhar a tela: os botões novos precisam ganhar o toque (senão ficam mortos)
+  P._finTrocar = function (box, html) {
+    if (!box) return;
+    box.innerHTML = html;
+    box.querySelectorAll("[data-a]").forEach((el) => el.addEventListener("click", (ev) => this._clique(ev, el)));
+  };
+
+  P._finModelosIds = function () { return Object.keys(F_MODELOS); };
+  P._finModelo = function (id) { return id && F_MODELOS[id] ? { banco: F_MODELOS[id][0], nome: F_MODELOS[id][1], rotulo: F_MODELO_ROT[id] || "" } : null; };
+
+  P._finKcFuncao = function (k) { return k.vale ? "beneficio" : k.prepago ? "prepago" : k.credito === false ? "debito" : k.debito ? "ambos" : "credito"; };
+
+  // categoria: só as da bandeira; as que o banco tem (pelos modelos dele) primeiro. Benefício não tem
+  P._finKcCat = function (inicial) {
+    const k0 = this._fKcK || {}, g = (id) => (inicial ? null : this.shadowRoot?.getElementById(id));
+    const tipo = g("kc-tipo")?.value ?? this._finKcFuncao(k0);
+    if (tipo === "beneficio") return "";
+    const band = g("kc-band")?.value ?? k0.bandeira, atual = g("kc-cat") ? g("kc-cat").value : k0.categoria || "", b = this._fKcBanco || "";
+    const lista = F_CATEGORIAS[band] || F_CATEGORIAS[""];
+    const doBanco = new Set(Object.entries(F_MODELOS).filter(([, [mb]]) => mb === b).map(([mid, [, mn]]) => {
+      const m = `${mn} ${F_MODELO_ROT[mid] || ""}`.match(F_CAT_RE); return m ? m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase() : ""; }));
+    const deles = lista.filter((v) => doBanco.has(v)), outras = lista.filter((v) => !doBanco.has(v)), extra = atual && !lista.includes(atual) ? [atual] : [];
+    const auto = this._finCategoria({ ...k0, bandeira: band, modelo: this._fKcModelo || "", categoria: "", vale: false,
+      visual: { produto: g("kc-prod") ? g("kc-prod").value : k0.visual?.produto || "" } });
+    const op = (l) => l.map((v) => `<option ${v === atual ? "selected" : ""}>${this._e(v)}</option>`).join("");
+    const nb = F_EMISSORES[b]?.[0];
+    return `Categoria <small>(${this._e(band && band !== "Outra" && band !== "Sem bandeira" ? `as do ${band}` : "Gold, Black…")})</small><select id="kc-cat">
+      <option value="">${this._e(auto ? `automática (${auto})` : "—")}</option>
+      ${deles.length && outras.length ? `<optgroup label="${this._e(`No ${nb}`)}">${op(deles)}</optgroup><optgroup label="${this._e(`Outras do ${band || "cartão"}`)}">${op(outras)}</optgroup>` : op(lista)}${op(extra)}</select>`;
+  };
+
+  P._finKcPrevia = function (inicial) {
+    const k0 = this._fKcK || {}, g = (id) => (inicial ? null : this.shadowRoot?.getElementById(id));
+    const tipo = g("kc-tipo")?.value ?? this._finKcFuncao(k0);
+    const kk = { ...k0, id: "kc-previa", emissor: this._fKcBanco || "", banco: "", modelo: this._fKcModelo || "",
+      bandeira: g("kc-band")?.value ?? k0.bandeira, categoria: g("kc-cat") ? g("kc-cat").value : k0.categoria || "",
+      apelido: g("kc-apelido") ? g("kc-apelido").value : k0.apelido || "",
+      visual: { ...(k0.visual || {}), produto: g("kc-prod") ? g("kc-prod").value : k0.visual?.produto || "" },
+      vale: tipo === "beneficio", prepago: tipo === "prepago", credito: tipo === "credito" || tipo === "ambos", debito: tipo === "ambos" || tipo === "debito" || tipo === "prepago",
+      beneficio_de: g("kc-benef")?.value ?? k0.beneficio_de };
+    return this._finCartaoFace ? this._finCartaoFace(kk, null) : "";
+  };
+
+  P._finKcBandeira = function (vale, atual) {
+    const l = F_BANDEIRAS, v = l.includes(atual) ? atual : vale ? "Sem bandeira" : l[0];
+    return `Bandeira<select id="kc-band">${l.map((x) => `<option ${x === v ? "selected" : ""}>${this._e(x)}</option>`).join("")}</select>`;
   };
 
   // cadastro de cartões (aba A pagar › Cartões): toque no cartão abre o formulário aqui mesmo
@@ -1639,14 +1829,16 @@ function instalarFinancas(Classe) {
     const pessoas = this._dados?.compradores || [];
     const op = (l, a) => l.map((v) => `<option ${v === a ? "selected" : ""}>${this._e(v)}</option>`).join("");
     if (this._fKcDe !== id) { this._fKcDe = id; this._fKcBanco = k.emissor || k.banco || ""; this._fKcModelo = k.modelo || ""; }
-    const cats = ["Classic", "Gold", "Platinum", "Signature", "Infinite", "Standard", "Black", "Grafite", "Nanquim", "Internacional"];
+    this._fKcK = k;
     return `<div class="form fcartform">
       <div class="fs fkc-sec">O cartão</div>
+      <div class="fkc-prev"><div id="kc-prev">${this._finKcPrevia(true)}</div><small>Assim vai ficar o cartão</small></div>
       ${this._finKcBancoSel()}<div id="kc-mods">${this._finKcMods()}</div>
       <label>Nome no cartão <small>(o modelo escrito nele: Prime, Unique, Ourocard, Latam Pass…)</small><input id="kc-prod" type="text" maxlength="24" value="${this._e(k.visual?.produto || "")}" autocomplete="off"></label>
-      <div class="duas" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"><label>Bandeira<select id="kc-band">${op(F_BANDEIRAS, k.bandeira)}</select></label>
-        <label>Categoria <small>(Infinite, Black…)</small><input id="kc-cat" type="text" maxlength="20" list="kc-cats" value="${this._e(k.categoria || "")}" placeholder="${this._e(this._finCategoria({ ...k, categoria: "" }) || "ex.: Infinite")}" autocomplete="off"><datalist id="kc-cats">${cats.map((v) => `<option value="${v}">`).join("")}</datalist></label></div>
-      <label>Tipo<select id="kc-tipo">${[["credito", "Crédito"], ["debito", "Débito"], ["ambos", "Crédito e débito"], ["vale", "Vale (Alelo, VR…)"]].map(([v, n]) => `<option value="${v}" ${(k.vale ? "vale" : k.credito === false ? "debito" : k.debito ? "ambos" : "credito") === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+      <div class="duas" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"><label id="kc-band-l">${this._finKcBandeira(k.vale, k.bandeira)}</label>
+        <label id="kc-cat-l"${k.vale ? ' style="display:none"' : ""}>${this._finKcCat(true)}</label></div>
+      <div class="duas" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"><label>Função<select id="kc-tipo">${F_FUNCOES.map(([v, n]) => `<option value="${v}" ${this._finKcFuncao(k) === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+        <label id="kc-benef-l"${k.vale ? "" : ' style="display:none"'}>Saldo de<select id="kc-benef">${Object.entries(F_BENEFICIOS).map(([v, n]) => `<option value="${v}" ${(k.beneficio_de || "ambos") === v ? "selected" : ""}>${n}</option>`).join("")}</select></label></div>
       <div class="fs fkc-sec">De quem e quando vence</div>
       <label>Titular<select id="kc-dono">${op(pessoas, k.dono)}</select></label>
       <div><div class="fs">Quem usa (adicional entra na mesma fatura)</div><div class="fkc-usam">${pessoas.map((p) => `<label class="chk"><input type="checkbox" data-kc-usa="${this._e(p)}" ${(k.usam || []).includes(p) ? "checked" : ""}> ${this._e(p)}</label>`).join("")}</div></div>
@@ -1661,7 +1853,7 @@ function instalarFinancas(Classe) {
       <label class="chk"><input type="checkbox" id="kc-ativo" ${k.ativo !== false ? "checked" : ""}> Em uso (aparece para escolher nas compras)</label>
       <div class="fpe"><button class="btn prim" data-a="f-cart-salvar">Salvar</button><button class="btn" data-a="f-cart-ed" data-k="${this._e(id)}">Cancelar</button>
         ${id === "novo" ? "" : this._fCartApagar ? `<span class="fs">Apagar o ${this._e(this._finNomeCartao(k))}?</span><button class="btn perigo" data-a="f-cart-apagar">Apagar</button>` : `<button class="lnk perigo" data-a="f-cart-apagar">Apagar</button>`}</div>
-      <div class="fs">Débito e vale (Alelo, VR…): não têm fatura (os dias ficam em branco); os gastos aparecem na pilha, mês a mês. Compra paga com vale fica no vale de quem comprou (ou no único vale da casa). Crédito sem os dias: fica só como registro, sem fatura. Mudar os dias recalcula as faturas dele.</div></div>`;
+      <div class="fs">Débito, pré-pago e benefício (Alelo, VR…): não têm fatura (os dias ficam em branco); os gastos aparecem na pilha, mês a mês. Compra paga com benefício fica no cartão de benefício de quem comprou (o da empresa que a nota disser, ou o único da casa). Crédito sem os dias: fica só como registro, sem fatura. Mudar os dias recalcula as faturas dele.</div></div>`;
   };
 
   // uma linha por final: número, de quem, tipo e se está em uso (parado: desde quando; some das escolhas de cartão)
@@ -1683,7 +1875,7 @@ function instalarFinancas(Classe) {
       acao: "cartao", id, nome: g("kc-nome")?.value || "", apelido: g("kc-apelido")?.value || "", categoria: g("kc-cat")?.value || "", bandeira: g("kc-band")?.value, dono: g("kc-dono")?.value,
       usam: [...this.shadowRoot.querySelectorAll("[data-kc-usa]")].filter((x) => x.checked).map((x) => x.getAttribute("data-kc-usa")),
       fecha: g("kc-fecha")?.value || "", vence: g("kc-vence")?.value || "", no_fechamento: g("kc-nf")?.value,
-      tipo: g("kc-tipo")?.value || "credito", ativo: !!g("kc-ativo")?.checked, modelo: g("kc-modelo")?.value || "",
+      tipo: g("kc-tipo")?.value || "credito", beneficio_de: g("kc-benef")?.value || "", ativo: !!g("kc-ativo")?.checked, modelo: g("kc-modelo")?.value || "",
       emissor: g("kc-emissor")?.value || F_MODELOS[g("kc-modelo")?.value]?.[0] || "", banco: g("kc-ler")?.checked ? g("kc-emissor")?.value || "" : "",
       finais: [...this.shadowRoot.querySelectorAll(".fkf")].map((r) => { const v = (n) => r.querySelector(`[data-kf="${n}"]`); const uso = v("uso").checked;
         return { final: v("final").value.trim(), quem: v("quem").value, tipo: v("tipo").value, parado: uso ? "" : v("parado").value || this._fFin?.hoje || "" }; }),
@@ -2016,8 +2208,12 @@ function instalarFinancas(Classe) {
     if (a === "f-corrigir") { this._fCorrigir = !this._fCorrigir; this._fPgEd = null; this._fCartEd = null; this._aviso = null; return this._render(); }
     if (a === "f-kc-mod") {  // só troca as miniaturas: o resto do formulário não perde o que já foi digitado
       this._fKcModelo = k;
-      const box = this.shadowRoot.getElementById("kc-mods");
-      if (box) box.innerHTML = this._finKcMods(); else this._render();
+      const kb = this.shadowRoot.getElementById("kc-band"), bm = this._finModeloBandeira(k);  // o modelo diz a bandeira: ela acompanha
+      if (kb && bm && kb.value !== bm) kb.value = bm;
+      const box = this.shadowRoot.getElementById("kc-mods"), pv = this.shadowRoot.getElementById("kc-prev");
+      if (box) this._finTrocar(box, this._finKcMods()); else this._render();
+      this._finKcCatTrocar?.();
+      if (pv) pv.innerHTML = this._finKcPrevia();
       return;
     }
     if (a === "f-cart-ed") { this._fCartEd = this._fCartEd === k ? null : k; this._fCartApagar = false; this._aviso = null; return this._render(); }
@@ -2220,6 +2416,8 @@ function instalarFinancas(Classe) {
     .fcfg-l:hover,.fcfg-g.on .fcfg-l{background:color-mix(in srgb,var(--c-txt) 5%,transparent)}
     .fcfg-t{font-weight:600}.fcfg-r{color:var(--c-sub);font-size:13px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .fcfg-s{color:var(--c-sub);font-size:18px;line-height:1;transition:transform .15s}.fcfg-g.on .fcfg-s{transform:rotate(90deg)}
+    .fkc-prev{display:grid;justify-items:center;gap:6px;margin:2px 0 12px}.fkc-prev>div{width:min(320px,100%)}.fkc-prev small{color:var(--c-sub);font-size:12px}
+    .fkc-prev .fcface{width:100%;pointer-events:none}.fkc-prev .v3f-info{display:none}
     .fkm-l{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:4px 0 12px}
     .fkm{display:grid;gap:6px;border:0;background:none;padding:4px;border-radius:14px;cursor:pointer;color:var(--c-txt);font:inherit;text-align:center}
     .fkm small{font-size:12px;line-height:1.3}.fkm.on{box-shadow:0 0 0 2.5px var(--c-acc)}.fkm.on small{color:var(--c-acc);font-weight:600}
@@ -2407,7 +2605,7 @@ const COMPRAS_IC = {
   sino: "M21,19V20H3V19L5,17V11C5,7.9 7.03,5.17 10,4.29C10,4.19 10,4.1 10,4A2,2 0 0,1 12,2A2,2 0 0,1 14,4C14,4.1 14,4.19 14,4.29C16.97,5.17 19,7.9 19,11V17L21,19M14,21A2,2 0 0,1 12,23A2,2 0 0,1 10,21",
 };
 const COMPRAS_SVG = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${COMPRAS_IC[k]}"/></svg>`;
-const COMPRAS_TIPOS_PAG = ["Crédito", "Débito", "Alelo", "Pix", "Saldo em carteira", "Dinheiro", "Boleto", "Outro"];
+const COMPRAS_TIPOS_PAG = ["Crédito", "Débito", "Benefício", "Pix", "Saldo em carteira", "Dinheiro", "Boleto", "Outro"];
 const COMPRAS_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho",
   "agosto", "setembro", "outubro", "novembro", "dezembro"];
 
@@ -5594,7 +5792,7 @@ class ComprasCard extends HTMLElement {
       ${this._rodape(d)}`;
   }
 
-  _pagNome(pg) { return !pg.tipo ? "Não informado" : pg.carteira ? `Saldo ${pg.carteira}` : pg.tipo === "Alelo" ? (pg.cartao_nome || (pg.cartao && pg.cartao !== "ALELO" ? `Vale ${pg.cartao}` : "Alelo")) : pg.cartao ? `${String(pg.cartao_nome || "").includes(`· ${String(pg.tipo).toLowerCase()}`) ? "" : `${pg.tipo} `}${pg.cartao_nome || pg.cartao}${pg.parcelas > 1 ? ` ${pg.parcelas}x` : ""}` : pg.tipo === "Alelo" || !pg.dono ? pg.tipo : `${pg.tipo} · ${pg.dono}`; }
+  _pagNome(pg) { return !pg.tipo ? "Não informado" : pg.carteira ? `Saldo ${pg.carteira}` : pg.tipo === "Benefício" ? (pg.cartao_nome || (pg.cartao && pg.cartao !== "ALELO" ? `Benefício ${pg.cartao}` : "Benefício")) : pg.cartao ? `${String(pg.cartao_nome || "").includes(`· ${String(pg.tipo).toLowerCase()}`) ? "" : `${pg.tipo} `}${pg.cartao_nome || pg.cartao}${pg.parcelas > 1 ? ` ${pg.parcelas}x` : ""}` : pg.tipo === "Benefício" || !pg.dono ? pg.tipo : `${pg.tipo} · ${pg.dono}`; }
 
   _linhaVar(s, datas) {
     return `<button class="sub ${s.variacao < 0 ? "baixou" : ""}" data-a="produto" data-k="${this._e(s.produto)}"><span class="t">${this._e(s.descricao)}</span>
@@ -5677,7 +5875,7 @@ class ComprasCard extends HTMLElement {
       <div class="fh"><div><div class="ft">${this._e(c.loja_curta)}</div><div class="fs">${c.data_compra ? `comprada em ${this._dia(c.data_compra).data} · nota de ${t.data} às ${t.hora}` : `${t.data} às ${t.hora}`}${c.loja?.cidade ? ` · ${this._e(c.loja.cidade)}` : ""}</div></div>
         <button class="ico" data-a="fechar" aria-label="Fechar">✕</button></div>
       ${c.bem ? `<div class="fs">🚗 ${this._e((d.bens || []).find((b) => b.id === c.bem)?.nome || c.bem)}</div>` : ""}
-      <div class="pagocom"><span class="fs">Pago com</span>${pago.map((pg) => `<span class="pgc"><b>${this._e(this._pagNome(pg))}</b>${pg.deduzido ? ` <span class="fs" title="A nota diz débito sem bandeira: tratado como Alelo. Troque em Editar compra se não foi.">(deduzido)</span>` : ""} ${this._semReal(c) ? this._moeda(c.moeda) : this._brl(pg.valor)}</span>`).join("")}</div>
+      <div class="pagocom"><span class="fs">Pago com</span>${pago.map((pg) => `<span class="pgc"><b>${this._e(this._pagNome(pg))}</b>${pg.deduzido ? ` <span class="fs" title="A nota diz débito sem bandeira: tratado como benefício (Alelo, VR…). Troque em Editar compra se não foi.">(deduzido)</span>` : ""} ${this._semReal(c) ? this._moeda(c.moeda) : this._brl(pg.valor)}</span>`).join("")}</div>
       ${c.cobrado ? `<div class="cobr">Nota ${this._brl(c.valor_pago)} · <b>cobrado ${this._brl(c.cobrado.valor)}</b> (${this._e((c.cobrado.motivo || "").toLowerCase())} ${c.cobrado.valor <= c.valor_pago ? "−" : "+"}${this._brl(Math.abs(c.valor_pago - c.cobrado.valor))})${c.cobrado.obs ? ` · ${this._e(c.cobrado.obs)}` : ""}</div>` : ""}
       ${this._blocoCartao(c)}
       ${this._hass?.user?.is_admin && (c.tem_nota || c.tem_qr || nfe || nfseNac) ? `<div class="links">${c.tem_nota ? `<button class="lnk" data-a="ver-nota">${c.origem === "manual" ? "Ver cupom" : "Ver nota fiscal"}</button>` : ""}${c.tem_qr ? `<button class="lnk" data-a="ver-qr">${this._qr ? "Fechar QR Code" : `QR Code / consultar na SEFAZ-${uf}`}</button>` : ""}${nfe ? `<button class="lnk" data-a="portal-nfe">${this._chaveCopiada ? "Chave copiada · abrir o portal de novo" : "Consultar no portal da NF-e"}</button>` : ""}${nfseNac ? `<a class="lnk" href="${this._e(nfseNac)}" target="_blank" rel="noopener noreferrer">Consultar no portal da NFS-e</a>` : ""}</div>` : ""}
@@ -5765,10 +5963,10 @@ class ComprasCard extends HTMLElement {
       const l = vale ? vales.slice() : cards.filter((k) => (deb ? k.debito && k.dono === c.quem : k.credito !== false && !k.vale));  // débito é da conta: só os do titular
       const atual = (c.cartoes || []).find((k) => k.id === (pg.cartao || (!vale && c.cartao_sugerido)));
       if (atual && !l.includes(atual)) l.push(atual);
-      return `<option value="">${vale ? "— o vale de quem comprou —" : deb ? "— não informar —" : "— escolher —"}</option>${l.map((k) => `<option value="${k.id}" ${(pg.cartao || (!vale && c.cartao_sugerido)) === k.id ? "selected" : ""}>${this._e(this._finNomeCartao(k))} · ${this._e(k.bandeira || "")}</option>`).join("")}`;
+      return `<option value="">${vale ? "— o benefício de quem comprou —" : deb ? "— não informar —" : "— escolher —"}</option>${l.map((k) => `<option value="${k.id}" ${(pg.cartao || (!vale && c.cartao_sugerido)) === k.id ? "selected" : ""}>${this._e(this._finNomeCartao(k))} · ${this._e(k.bandeira || "")}</option>`).join("")}`;
     };
     const linha = (pg) => {
-      const t = pg.tipo || "", deb = pg._tipo === "Débito", cred = pg._tipo === "Crédito", vale = pg._tipo === "Alelo";
+      const t = pg.tipo || "", deb = pg._tipo === "Débito", cred = pg._tipo === "Crédito", vale = pg._tipo === "Benefício";
       const forma = `<label>Forma${varios ? ` ${pg.i + 1}` : ""}<select data-fcartao="tipo" data-i="${pg.i}"><option value="" ${!t ? "selected" : ""}>${pg.forma ? `Da nota (${this._e(pg._tipo || pg.forma)})` : "Não informada"}</option>${COMPRAS_TIPOS_PAG.map((x) => `<option ${t === x ? "selected" : ""}>${x}</option>`).join("")}</select></label>`;
       const valor = divide && varios ? `<label>Valor<input type="text" inputmode="decimal" data-fcartao="valor" data-i="${pg.i}" value="${this._e(Number(pg.valor || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 }))}"></label>` : "";
       const cart = pg._tipo === "Saldo em carteira" ? `<label>Qual carteira<select data-fcartao="carteira" data-i="${pg.i}"><option value="">— escolher —</option>${(c.carteiras || []).map((w) => `<option ${pg.carteira === w ? "selected" : ""}>${this._e(w)}</option>`).join("")}</select></label>` : "";
@@ -5916,9 +6114,27 @@ class ComprasCard extends HTMLElement {
     const upArq = root.getElementById("up-arq");
     if (upArq) upArq.addEventListener("change", () => this._addArquivos(upArq.files));
     const kcE = root.getElementById("kc-emissor"), kcMods = root.getElementById("kc-mods");  // trocar o banco mostra os modelos dele em miniatura
-    if (kcE && kcMods) kcE.addEventListener("change", () => { this._fKcBanco = kcE.value; this._fKcModelo = ""; kcMods.innerHTML = this._finKcMods(); });
-    const kcB = root.getElementById("kc-band");  // a bandeira aparece nas miniaturas
-    if (kcB && kcMods) kcB.addEventListener("change", () => { kcMods.innerHTML = this._finKcMods(); });
+    const kcT = root.getElementById("kc-tipo"), kcCL = root.getElementById("kc-cat-l"), kcBen = root.getElementById("kc-benef-l");
+    const kcPrev = () => { const pv = root.getElementById("kc-prev"); if (pv) pv.innerHTML = this._finKcPrevia(); };  // o cartão em tempo real
+    // categoria: muda com a bandeira, a instituição, o modelo e a função (benefício não tem)
+    this._finKcCatTrocar = () => { if (!kcCL) return; kcCL.style.display = kcT?.value === "beneficio" ? "none" : ""; kcCL.innerHTML = this._finKcCat();
+      root.getElementById("kc-cat")?.addEventListener("change", kcPrev); };
+    if (kcE && kcMods) kcE.addEventListener("change", () => {
+      this._fKcBanco = kcE.value; this._fKcModelo = "";
+      if (kcT && !!this._finKcEhBenef(kcE.value) !== (kcT.value === "beneficio")) {  // empresa de benefício → função Benefício (e o contrário)
+        kcT.value = this._finKcEhBenef(kcE.value) ? "beneficio" : "credito"; kcT.dispatchEvent(new Event("change"));
+      }
+      this._finTrocar(kcMods, this._finKcMods()); this._finKcCatTrocar(); kcPrev(); });
+    root.getElementById("kc-cat")?.addEventListener("change", kcPrev);
+    for (const [idc, ev] of [["kc-prod", "input"], ["kc-apelido", "input"], ["kc-benef", "change"]]) root.getElementById(idc)?.addEventListener(ev, kcPrev);
+    root.getElementById("kc-prod")?.addEventListener("change", () => this._finKcCatTrocar());
+    root.getElementById("kc-band")?.addEventListener("change", () => { if (kcMods) this._finTrocar(kcMods, this._finKcMods()); this._finKcCatTrocar(); kcPrev(); });
+    if (kcT) kcT.addEventListener("change", () => {
+      if (kcBen) kcBen.style.display = kcT.value === "beneficio" ? "" : "none";
+      const kb = root.getElementById("kc-band");
+      if (kb && kcT.value === "beneficio" && this._fCartEd === "novo") kb.value = "Sem bandeira";  // benefício novo: rede própria (troca se o cartão tiver Elo, Visa…)
+      this._finKcCatTrocar(); kcPrev();
+    });
     const upSolta = root.getElementById("up-solta");
     if (upSolta && dlg) {
       const sobre = (on) => upSolta.classList.toggle("sobre", on);
@@ -5953,19 +6169,19 @@ class ComprasCard extends HTMLElement {
       const todos = ((this._fFin?.cartoes) || []).filter((k) => k.ativo !== false), usa = (k) => (k.usam_hoje || k.usam || []).includes(nq.value);
       const opcoes = (forma) => forma === "Crédito" ? todos.filter((k) => k.credito !== false && !k.vale && usa(k))
         : forma === "Débito" ? todos.filter((k) => !k.vale && (k.debito || k.credito === false) && k.dono === nq.value)  // débito é da conta: só os do titular
-        : forma === "Alelo" ? (todos.filter((k) => k.vale && usa(k)).length ? todos.filter((k) => k.vale && usa(k)) : todos.filter((k) => k.vale)) : [];
+        : forma === "Benefício" ? (todos.filter((k) => k.vale && usa(k)).length ? todos.filter((k) => k.vale && usa(k)) : todos.filter((k) => k.vale)) : [];
       const linhas = () => [...npgs.querySelectorAll(".npg")];
       const num = (s) => Number(String(s || "").replace(/\./g, "").replace(",", ".")) || 0;
       const linha = (el) => {
         const forma = el.querySelector(".np-forma").value, sel = el.querySelector(".np-cartao"), ant = sel.value, l = opcoes(forma);
         sel.innerHTML = l.map((k) => `<option value="${this._e(k.id)}">${this._e(this._finNomeCartao(k))} · ${this._e(k.bandeira || "")}</option>`).join("") + (forma === "Débito" && l.length ? `<option value="">não informar</option>` : "");
         if (l.some((k) => k.id === ant)) sel.value = ant;
-        const comCartao = ["Crédito", "Débito", "Alelo"].includes(forma);
+        const comCartao = ["Crédito", "Débito", "Benefício"].includes(forma);
         el.querySelector(".np-card").hidden = !comCartao || !l.length;
         el.querySelector(".np-parc-l").hidden = forma !== "Crédito";
         const fs = el.querySelector(".np-fs");
         fs.hidden = !comCartao || !!l.length;
-        fs.textContent = forma === "Crédito" ? `Cartão próprio de ${nq.value} — fica fora das faturas.` : forma === "Débito" ? `${nq.value} não tem cartão de débito cadastrado.` : forma === "Alelo" ? "Nenhum vale cadastrado." : "";
+        fs.textContent = forma === "Crédito" ? `Cartão próprio de ${nq.value} — fica fora das faturas.` : forma === "Débito" ? `${nq.value} não tem cartão de débito cadastrado.` : forma === "Benefício" ? "Nenhum cartão de benefício cadastrado." : "";
       };
       const soma = () => {
         const ls = linhas(), varias = ls.length > 1;
@@ -6862,7 +7078,7 @@ class ComprasV2Card extends Base {
     const doDia = (d) => modo === "ano" ? d.slice(0, 4) === this._fAno : modo === "mes" ? d.slice(0, 7) === this._mes : true;
     const gastos = k.credito === false || k.debito ? this._finGastos(k, doDia) : [], somaG = gastos.reduce((s, x) => s + x.valor, 0);
     const linhaG = (x) => `<button class="v-it" data-a="abrir" data-id="${this._e(x.compra)}"><span class="v-data"><b>${x.data.slice(8, 10)}</b>${V2_MESES[Number(x.data.slice(5, 7)) - 1].slice(0, 3)}</span>
-        <span class="v-t"><b>${this._e(x.loja)}</b><small>${this._e(x.quem || "")} · ${x.tipo === "Alelo" ? (x.saldo ? `vale ${x.saldo === "refeicao" ? "refeição" : "alimentação"}` : "vale") : "débito"}</small></span><span class="v-val">${this._brl(x.valor)}</span></button>`;
+        <span class="v-t"><b>${this._e(x.loja)}</b><small>${this._e(x.quem || "")} · ${x.tipo === "Benefício" ? (x.saldo ? `benefício ${x.saldo === "refeicao" ? "refeição" : "alimentação"}` : "benefício") : "débito"}</small></span><span class="v-val">${this._brl(x.valor)}</span></button>`;
     // vale com dois saldos (Alelo refeição e alimentação): um bloco para cada, com o total dele
     const saldos = k.vale && gastos.some((x) => x.saldo) ? [["refeicao", "Refeição"], ["alimentacao", "Alimentação"]].map(([s, n]) => [n, gastos.filter((x) => x.saldo === s)]).filter(([, l]) => l.length) : null;
     const listaG = saldos ? saldos.map(([n, l]) => `<h3 class="v-sub">${n} · ${this._brl(l.reduce((s, x) => s + x.valor, 0))}</h3><div class="v-lista">${l.map(linhaG).join("")}</div>`).join("")
@@ -7638,12 +7854,12 @@ console.info(`%c COMPRAS-V2 %c ${V2_VERSION} `, "background:#0b6bcb;color:#fff",
 // compras-v2-card: incluído acima
 const BaseNova = ComprasCard;  // mesmo arquivo
 
-const V3_VERSION = "0.0.2";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.3";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
 const V3_BANCOS = { santander: "Santander", bb: "Banco do Brasil", bradesco: "Bradesco", itau: "Itaú" };
-const V3_NA_HORA = ["Débito", "Pix", "Alelo", "Dinheiro", "Saldo em carteira", "Boleto"];
+const V3_NA_HORA = ["Débito", "Pix", "Benefício", "Dinheiro", "Saldo em carteira", "Boleto"];
 const V3_MENU = [["inicio", "Resumo", "grade"], ["contas", "A pagar", "cartao"], ["gastos", "Áreas", "areas"], ["compras", "Compras", "sacola"], ["produtos", "Produtos", "etiqueta"]];
 
 // ícones de traço (24×24); a engrenagem é cheia
@@ -7696,6 +7912,40 @@ const V3_LOGOS = ["bradesco", "santander", "bb", "itau", "visa"];
 // Sem o arquivo, o nome aparece escrito.
 const V3_LOGOS_BASE = new URL("./logos/", import.meta.url).href;
 const V3_LOGO = (n) => `${V3_LOGOS_BASE}${n}.svg`;
+// bandeiras além de Visa e Mastercard: desenho simples de cada marca (formas e letras), para o canto do cartão
+// bandeiras desenhadas no formato do logo de verdade (referência: os logos nos sites dos bancos). Como o Mastercard: cor = true
+// (cartão claro ou colorido) nas cores da bandeira; cor = false (cartão escuro) numa cor só, a das letras do cartão (prata nos pretos)
+const V3_C = (cor, oficial) => (cor ? oficial : "currentColor");
+const V3_BANDEIRA = {
+  Elo: (cor) => `<svg class="v3f-bd elo" viewBox="0 0 120 40" aria-label="Elo">
+    ${cor ? `<path d="M31 20A13 13 0 0 0 8.8 10.8" fill="none" stroke="#ffcb05" stroke-width="6.5"/><path d="M8.8 10.8A13 13 0 0 0 8.8 29.2" fill="none" stroke="#00a4e0" stroke-width="6.5"/><path d="M8.8 29.2A13 13 0 0 0 27.2 29.2" fill="none" stroke="#ef4123" stroke-width="6.5"/>`
+      : `<path d="M31 20A13 13 0 1 0 27.2 29.2" fill="none" stroke="currentColor" stroke-width="6.5"/>`}
+    <path d="M1 20h30" stroke="${V3_C(cor, "#1d1d1b")}" stroke-width="6.5"/><path d="M47 4v32" stroke="${V3_C(cor, "#1d1d1b")}" stroke-width="6.5"/>
+    <circle cx="80" cy="20" r="13" fill="none" stroke="${V3_C(cor, "#1d1d1b")}" stroke-width="6.5"/><path d="M93 20h26" stroke="${V3_C(cor, "#1d1d1b")}" stroke-width="6.5"/></svg>`,
+  Amex: (cor) => `<svg class="v3f-bd amex" viewBox="0 0 60 40" aria-label="American Express">
+    <rect x="1" y="1" width="58" height="38" rx="3" fill="${cor ? "#016fd0" : "none"}" stroke="${cor ? "#016fd0" : "currentColor"}" stroke-width="2"/>
+    <g font-family="Arial Black,Arial,Helvetica,sans-serif" font-weight="900" font-size="13" fill="${cor ? "#fff" : "currentColor"}">
+    <text x="30" y="18.5" text-anchor="middle" textLength="50" lengthAdjust="spacingAndGlyphs">AMERICAN</text>
+    <text x="30" y="32.5" text-anchor="middle" textLength="46" lengthAdjust="spacingAndGlyphs">EXPRESS</text></g></svg>`,
+  Hipercard: (cor) => `<svg class="v3f-bd hiper" viewBox="0 0 96 34" aria-label="Hipercard">
+    ${cor ? `<path d="M10 1h84l-8 32H2z" fill="#b3131b"/>` : ""}
+    <text x="48" y="23.5" text-anchor="middle" textLength="76" lengthAdjust="spacingAndGlyphs" font-family="Arial,Helvetica,sans-serif" font-style="italic" font-weight="700" font-size="19" fill="${cor ? "#fff" : "currentColor"}">Hipercard</text></svg>`,
+  Diners: (cor) => `<svg class="v3f-bd diners" viewBox="0 0 40 40" aria-label="Diners Club">
+    ${cor ? `<circle cx="20" cy="20" r="19" fill="#0079be"/>` : ""}
+    <circle cx="20" cy="20" r="${cor ? 13.5 : 17}" fill="none" stroke="${cor ? "#fff" : "currentColor"}" stroke-width="${cor ? 4 : 2.4}"/>
+    <path d="M15 ${cor ? 10 : 7}v${cor ? 20 : 26}M25 ${cor ? 10 : 7}v${cor ? 20 : 26}" stroke="${cor ? "#fff" : "currentColor"}" stroke-width="${cor ? 3.5 : 2.4}"/></svg>`,
+  Discover: (cor) => `<svg class="v3f-bd" viewBox="0 0 110 22" aria-label="Discover"><g font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="21" fill="${V3_C(cor, "#231f20")}">
+    <text x="0" y="18.5" textLength="44" lengthAdjust="spacingAndGlyphs">DISC</text><text x="65" y="18.5" textLength="45" lengthAdjust="spacingAndGlyphs">VER</text></g>
+    <circle cx="55" cy="11.2" r="9.2" fill="#f47216"/></svg>`,
+  JCB: (cor) => `<svg class="v3f-bd jcb" viewBox="0 0 66 40" aria-label="JCB">
+    ${[["#0b4ea2", "J", 1], ["#d71e28", "C", 23], ["#009c4a", "B", 45]].map(([c, l, x]) => `<rect x="${x}" y="1" width="20" height="38" rx="6" fill="${cor ? c : "none"}" stroke="${cor ? c : "currentColor"}" stroke-width="2"/>
+    <text x="${x + 10}" y="28" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="20" fill="${cor ? "#fff" : "currentColor"}">${l}</text>`).join("")}</svg>`,
+  UnionPay: (cor) => `<svg class="v3f-bd jcb" viewBox="0 0 76 44" aria-label="UnionPay">
+    ${[["#e21836", 1, 1], ["#00447c", 26, 0.75], ["#007b84", 51, 0.5]].map(([c, x, o]) => `<path d="M${x + 6} 1h20l-6 42H${x}z" fill="${cor ? c : "currentColor"}" ${cor ? "" : `opacity="${o}"`}/>`).join("")}
+    <text x="38" y="27" text-anchor="middle" textLength="66" lengthAdjust="spacingAndGlyphs" font-family="Arial,Helvetica,sans-serif" font-style="italic" font-weight="900" font-size="15" fill="${cor ? "#fff" : "var(--cf,#000)"}">UnionPay</text></svg>`,
+};
+
+const V3_BANDEIRAS_LOGO = ["elo", "amex", "hipercard", "diners", "discover", "jcb", "unionpay", "maestro"];  // logos/band-<nome>.svg
 const v3LogosTem = new Set(), v3LogosVistos = new Set();
 function v3Logos(nomes, depois) {  // procura cada arquivo uma vez; quando algum aparece, redesenha
   const novos = [...new Set([...V3_LOGOS, ...nomes])].filter((n) => n && !v3LogosVistos.has(n));
@@ -7942,7 +8192,7 @@ class ComprasV3Card extends BaseV2 {
   _v3PgNome(p) {
     const k = p.cartao ? (this._fFin?.cartoes || []).find((x) => (p.cartao_id ? x.id === p.cartao_id : x.nome === p.cartao)) : null;
     if (!k) return this._pagNome(p);
-    return p.tipo === "Alelo" ? this._finNomeCartao(k) : `${this._finNomeCartao(k).includes(`· ${String(p.tipo).toLowerCase()}`) ? "" : `${p.tipo} `}${this._finNomeCartao(k)}${p.parcelas > 1 ? ` ${p.parcelas}x` : ""}`;
+    return p.tipo === "Benefício" ? this._finNomeCartao(k) : `${this._finNomeCartao(k).includes(`· ${String(p.tipo).toLowerCase()}`) ? "" : `${p.tipo} `}${this._finNomeCartao(k)}${p.parcelas > 1 ? ` ${p.parcelas}x` : ""}`;
   }
 
   _v3PagTxt(c) {
@@ -8398,17 +8648,18 @@ class ComprasV3Card extends BaseV2 {
   }
 
   // a frente do cartão, montada como o cartão de verdade de cada banco (cada peça no lugar dela; logotipos não são copiados).
-  // O vale (Alelo, VR…) fica com o cartão da v2, menos o Alelo, que tem o desenho dele.
+  // O benefício (Alelo, VR, Ticket, Pluxee…) é cartão da empresa dele: o desenho dela, com o saldo (refeição, alimentação) escrito.
   _finCartaoFace(k, x) {
-    if (k.vale && k.modelo !== "alelo-refeicao" && this._finBancoId(k) !== "alelo") return super._finCartaoFace(k, x);
-    const c = this._finCartaoCor(k), hoje = this._fFin.hoje, prod = String(k.visual?.produto || "").toUpperCase();
+    const mi = this._finModelo?.(k.modelo), c = this._finCartaoCor(k), hoje = this._fFin.hoje, prod = String(k.visual?.produto || mi?.rotulo || this._finBeneficio?.(k) || "").toUpperCase();
     const tier = this._finCategoria(k), semTier = (s) => s.replace(/\b(INFINITE|BLACK|PLATINUM|SIGNATURE|GOLD|NANQUIM|GRAFITE|CLASSIC|STANDARD|INTERNACIONAL)\b/g, "").replace(/\s+/g, " ").trim();
     // o modelo escolhido no cadastro manda; sem ele, o padrão do banco (Bradesco Prime, Santander Unique, Ourocard crédito, Latam Pass)
     const MOD = { "bradesco-prime": "bradesco", "santander-unique": "santander", "bb-ourocard-infinite": "bb", "bb-ourocard-debito": "bbd", "itau-latam-black": "itau", "wise-verde": "wise", "alelo-refeicao": "alelo",
-      "caixa-platinum": "caixa", "btg-ultrablue": "btg", "brb-connect": "brb", "inter-laranja": "inter", "amazon-bradesco": "amazon", "c6-carbon": "c6" };
-    const bid = this._finBancoId(k), b = MOD[k.modelo] || (["santander", "bradesco", "bb", "itau", "wise", "alelo", "btg", "brb", "inter", "c6"].includes(bid) ? bid : "outro"), ouro = c.ouro && b !== "bbd" || (b === "bb" && c.preto);
+      "caixa-platinum": "caixa", "caixa-sim": "caixa", "caixa-universitario": "caixa", "caixa-gold": "caixa", "caixa-elo-mais": "caixa",
+      "caixa-infinite": "caixa", "caixa-icone": "caixa", "caixa-nanquim": "caixa", "caixa-diners": "caixa", "btg-ultrablue": "btg", "brb-connect": "brb", "inter-laranja": "inter", "amazon-bradesco": "amazon", "c6-carbon": "c6" };
+    const LAY = ["santander", "bradesco", "bb", "itau", "wise", "alelo", "btg", "brb", "inter", "c6"];  // bancos com desenho próprio
+    const bid = this._finBancoId(k), b = MOD[k.modelo] || (mi ? (LAY.includes(mi.banco) ? mi.banco : "outro") : LAY.includes(bid) ? bid : "outro"), ouro = c.ouro && b !== "bbd" || (b === "bb" && c.preto);
     const arte = { wise: "wise-verde", alelo: "alelo-refeicao" }[b];  // desenho inteiro do cartão (arquivo em logos/, opcional)
-    const tem = v3Logos([bid, arte], () => this._render()), logo = (n, cls) => `<i class="v3f-logo ${cls || n}" style="--logo:url('${V3_LOGO(n)}')" aria-hidden="true"></i>`;
+    const tem = v3Logos([bid, arte, ...V3_BANDEIRAS_LOGO.map((n) => `band-${n}`)], () => this._render()), logo = (n, cls) => `<i class="v3f-logo ${cls || n}" style="--logo:url('${V3_LOGO(n)}')" aria-hidden="true"></i>`;
     // peças
     const chip = (ouro ? ["#e9cd85", "#a8862f", "#f6e2a6"] : ["#d7d9dc", "#8f959b", "#f1f2f4"]);
     const chipSvg = `<svg class="v3f-chip" viewBox="0 0 40 30" aria-hidden="true"><defs><linearGradient id="g${this._e(k.id)}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${chip[2]}"/><stop offset="1" stop-color="${chip[0]}"/></linearGradient></defs><rect x="1" y="1" width="38" height="28" rx="5" fill="url(#g${this._e(k.id)})" stroke="${chip[1]}"/><path d="M1 10h12M1 20h12M27 10h12M27 20h12M13 1v28M27 1v28M13 15h14" stroke="${chip[1]}" fill="none"/></svg>`;
@@ -8416,15 +8667,19 @@ class ComprasV3Card extends BaseV2 {
     const mc = `<span class="v3f-mcw"><svg class="v3f-mc" viewBox="0 0 48 30" aria-hidden="true"><defs><linearGradient id="m${this._e(k.id)}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8d8f93"/><stop offset="1" stop-color="#4c4e52"/></linearGradient><linearGradient id="n${this._e(k.id)}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e3e4e6"/><stop offset="1" stop-color="#a7a9ad"/></linearGradient></defs>
       <circle cx="16" cy="15" r="13" fill="url(#m${this._e(k.id)})" stroke="#e8e9eb" stroke-width=".9"/><circle cx="32" cy="15" r="13" fill="url(#n${this._e(k.id)})" fill-opacity=".85" stroke="#f4f4f5" stroke-width=".9"/></svg><b class="v3f-mcn">mastercard</b></span>`;
     const mcCor = `<span class="v3f-mcw"><svg class="v3f-mc" viewBox="0 0 48 30" aria-hidden="true"><circle cx="16" cy="15" r="13" fill="#eb001b"/><circle cx="32" cy="15" r="13" fill="#f79e1b"/><path d="M24 4.8a13 13 0 0 1 0 20.4 13 13 0 0 1 0-20.4z" fill="#ff5f00"/></svg></span>`;
-    const colorido = ["brb", "inter", "amazon"].includes(b);
-    const bandeira = k.bandeira === "Mastercard" ? (colorido ? mcCor : mc) : k.bandeira === "Visa" ? (tem.has("visa") ? `${logo("visa", "visa")}<b class="v3f-sr">VISA</b>` : `<b class="v3f-visa">VISA</b>`) : k.bandeira === "Elo" ? `<b class="v3f-visa">elo</b>` : k.bandeira === "Amex" ? `<b class="v3f-visa">AMEX</b>` : k.bandeira && k.bandeira !== "Outra" ? `<b class="v3f-mcn">${this._e(k.bandeira)}</b>` : "";
+    const colorido = !c.escuro && !c.preto;  // bandeira nas cores dela no cartão claro ou colorido; em metal no escuro
+    const bn = String(k.bandeira || "").toLowerCase(), temB = V3_BANDEIRAS_LOGO.includes(bn) && tem.has(`band-${bn}`);
+    const bandLogo = !temB ? "" : colorido ? `<img class="v3f-bdl ${bn}" src="${V3_LOGO(`band-${bn}`)}" alt="${this._e(k.bandeira)}">`
+      : ["elo", "discover"].includes(bn) ? `<i class="v3f-logo v3f-bdm ${bn}" style="--logo:url('${V3_LOGO(`band-${bn}`)}')" role="img" aria-label="${this._e(k.bandeira)}"></i>` : "";
+    const maestro = colorido ? mcCor.replace('fill="#eb001b"', 'fill="#0099df"').replace('fill="#f79e1b"', 'fill="#ed0006"').replace('fill="#ff5f00"', 'fill="#6c6bbd"') : mc.replace(">mastercard<", ">maestro<");
+    const bandeira = k.bandeira === "Mastercard" ? (colorido ? mcCor : mc) : k.bandeira === "Maestro" ? maestro : k.bandeira === "Visa" ? (tem.has("visa") ? `${logo("visa", "visa")}<b class="v3f-sr">VISA</b>` : `<b class="v3f-visa">VISA</b>`) : bandLogo ? bandLogo : V3_BANDEIRA[k.bandeira] ? V3_BANDEIRA[k.bandeira](colorido) : k.bandeira && k.bandeira !== "Outra" && k.bandeira !== "Sem bandeira" ? `<b class="v3f-mcn">${this._e(k.bandeira)}</b>` : "";
     const sit = !x || x.gasto ? "" : x.pago ? "✓ paga" : x.vence < hoje ? "atrasada" : x.vence === hoje ? "vence hoje" : "";
     const info = `<span class="v3f-info"><small>${x?.gasto ? this._e(x.rotulo) : x ? `Fatura · vence ${this._dataCurta(x.vence + "T12:00")}` : k.credito === false ? "Nenhum gasto este mês" : "Nenhuma fatura em aberto"}</small><b>${x ? this._brl(x.total) : "—"}</b>${sit ? `<em class="${sit === "✓ paga" ? "" : "atr"}">${sit}</em>` : x?.gasto ? `<em>${x.n} ${x.n === 1 ? "compra" : "compras"}</em>` : ""}</span>`;
     const band = (cls = "") => bandeira ? `<span class="v3f-band ${cls}">${bandeira}${tier ? `<small>${this._e(k.bandeira === "Mastercard" ? tier.toLowerCase() : tier)}</small>` : ""}</span>` : "";
     let corpo;
     if (b === "santander") {
       corpo = `<span class="v3f-marca">${tem.has("santander") ? `${logo("santander")}<b class="v3f-sr">Santander</b>` : "<b>Santander</b>"}</span><span class="v3f-chipw">${chipSvg}</span>
-        ${semTier(prod) ? `<span class="v3f-modelo">${this._e(semTier(prod))}</span>` : ""}<span class="v3f-nfcw">${nfc}</span>${info}${band()}`;
+        ${semTier(prod) ? `<span class="v3f-modelo${semTier(prod).length > 7 ? " longo" : ""}">${this._e(semTier(prod))}</span>` : ""}<span class="v3f-nfcw">${nfc}</span>${info}${band()}`;
     } else if (b === "bradesco") {
       corpo = `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="M262 0 300 0 232 128z" fill="#fff" opacity=".10"/><path d="M380 30v14L250 120z" fill="#fff" opacity=".12"/><path d="M380 150v8L190 190z" fill="#fff" opacity=".08"/></svg>
         <span class="v3f-marca">${tem.has("bradesco") ? `${logo("bradesco")}<b class="v3f-sr">Bradesco</b>` : "<b>bradesco</b>"}${semTier(prod) ? `<small>${this._e(semTier(prod).toLowerCase())}</small>` : ""}</span><span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
@@ -8443,31 +8698,37 @@ class ComprasV3Card extends BaseV2 {
         <span class="v3f-itop">${tem.has("itau") ? `<img src="${V3_LOGO("itau")}" alt="Itaú">` : `<b>itaú</b>`}${tier ? `<b class="v3f-itier">${this._e(tier.toLowerCase())}</b>` : ""}</span>
         <span class="v3f-marca dir lp">${lp ? `<small>LATAM</small><b>PASS</b>` : `<b>${this._e(semTier(prod) || "")}</b>`}</span>
         <span class="v3f-chipw itc">${chipSvg}${nfc}</span>${info}${bandeira ? `<span class="v3f-band">${bandeira}</span>` : ""}`;
-    } else if (b === "caixa") {  // Caixa Platinum: prata, o X grafite no alto à direita, o nível no alto à esquerda
-      corpo = `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="M0 240 380 0V240z" fill="#fff" opacity=".16"/><path d="M0 52h380" stroke="#000" stroke-opacity=".05"/></svg>
-        <svg class="v3f-cx" viewBox="0 0 60 50" aria-hidden="true"><path d="M2 2h18l38 46H40z" fill="#3d3f42"/><path d="M58 2H40L2 48h18z" fill="#6d7074"/></svg>
-        <span class="v3f-marca"><small class="v3f-nivel">${this._e((tier || semTier(prod) || "platinum").toUpperCase())}</small></span><span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
+    } else if (b === "caixa") {  // Caixa: o X no alto à direita (laranja e branco nos coloridos, prata nos pretos, grafite no prata) e o nome no alto à esquerda
+      const cm = { "caixa-platinum": [["#3d3f42", "#6d7074"], (tier || semTier(prod) || "platinum").toUpperCase(), "nivel"], "caixa-sim": [["#ffffff", "#f39200"], "Sim", "sim"],
+        "caixa-universitario": [["#ffffff", "#f39200"], "UNIVERSITÁRIO", "fino"], "caixa-gold": [["#ffffff", "#f39200"], ""], "caixa-elo-mais": [["#ffffff", "#f39200"], ""],
+        "caixa-infinite": [["#f2f2f3", "#9da0a5"], ""], "caixa-icone": [["#f2f2f3", "#9da0a5"], "ÍCONE", "fino"], "caixa-nanquim": [["#f2f2f3", "#9da0a5"], ""],
+        "caixa-diners": [["#c8743a", "#eba66a"], "Diners Club", "diners"] }[k.modelo] || [["#ffffff", "#f39200"], semTier(prod)];
+      const [xc, rot, est] = cm;
+      corpo = `${k.modelo === "caixa-platinum" ? `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="M0 240 380 0V240z" fill="#fff" opacity=".16"/><path d="M0 52h380" stroke="#000" stroke-opacity=".05"/></svg>` : ""}
+        <svg class="v3f-cx" viewBox="0 0 60 50" aria-hidden="true"><path d="M2 2h18l38 46H40z" fill="${xc[0]}"/><path d="M58 2H40L2 48h18z" fill="${xc[1]}"/></svg>
+        ${rot ? `<span class="v3f-marca"><small class="v3f-cxr ${est || ""}">${this._e(rot)}${est === "diners" ? "<i>INTERNATIONAL</i>" : ""}</small></span>` : ""}<span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
     } else if (b === "btg") {  // BTG Ultrablue: azul escovado, "btg pactual" no alto à direita com o arco, o produto à esquerda
-      corpo = `<span class="v3f-btg"><b><i aria-hidden="true"></i>btg</b><small>pactual</small></span>
-        <span class="v3f-marca"><b class="v3f-btgp">${this._e(semTier(prod) ? semTier(prod).toLowerCase().replace(/^./, (s) => s.toUpperCase()) : "Ultrablue")}</b></span><span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
+      corpo = `${tem.has("btg") ? `<span class="v3f-btgl">${logo("btg", "btgl")}<b class="v3f-sr">BTG Pactual</b></span>` : `<span class="v3f-btg"><b><i aria-hidden="true"></i>btg</b><small>pactual</small></span>`}
+        <span class="v3f-marca"><b class="v3f-btgp">${this._e(semTier(prod) ? semTier(prod).toLowerCase().replace(/^./, (s) => s.toUpperCase()) : "")}</b></span><span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
     } else if (b === "brb") {  // BRB Connect: azul em degradê, BRB em pé à direita, "connect" à esquerda, bandeira no alto à direita
       corpo = `<span class="v3f-vert dir"><small>banco</small><b>BRB</b></span><span class="v3f-chipw brbc">${nfc}${chipSvg}</span>
         <span class="v3f-brbn">${this._e(semTier(prod) ? semTier(prod).toLowerCase() : "connect")}</span>${info}${bandeira ? `<span class="v3f-band topo">${bandeira}</span>` : ""}`;
     } else if (b === "inter") {  // Inter: laranja, "inter" em pé à direita, chip no alto à esquerda, bandeira no alto à direita
-      corpo = `<span class="v3f-vert dir int"><b>inter</b></span><span class="v3f-chipw intc">${nfc}${chipSvg}</span>${info}${bandeira ? `<span class="v3f-band topo">${bandeira}</span>` : ""}`;
+      corpo = `<span class="v3f-vert dir int">${tem.has("inter") ? `<span class="v3f-intl">${logo("inter", "intl")}</span><b class="v3f-sr">inter</b>` : "<b>inter</b>"}${semTier(prod) ? `<small class="v3f-intp">${this._e(semTier(prod).toLowerCase())}</small>` : ""}</span><span class="v3f-chipw intc">${nfc}${chipSvg}</span>${info}${bandeira ? `<span class="v3f-band topo">${bandeira}</span>` : ""}`;
     } else if (b === "amazon") {  // Amazon (Bradesco): branco, "amazon.com.br" em pé à direita com o sorriso, a seta clara ao fundo
       corpo = `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="M150 230C190 150 192 80 170 10" stroke="#c9d8f2" stroke-width="5" fill="none" opacity=".7"/><path d="M158 26 170 8 186 22" stroke="#c9d8f2" stroke-width="5" fill="none" opacity=".7"/></svg>
         <span class="v3f-vert dir amz"><b>amazon<small>.com.br</small></b><i aria-hidden="true"></i></span><span class="v3f-chipw amzc">${nfc}${chipSvg}</span>${info}${bandeira ? `<span class="v3f-band amzb">${bandeira}</span>` : ""}`;
     } else if (b === "c6") {  // C6 Carbon: fibra de carbono, "C6 BANK" em pé à direita, o nível em pé à esquerda, bandeira embaixo à direita
-      corpo = `<span class="v3f-vert dir c6"><b>C6</b><small>BANK</small></span><span class="v3f-chipw c6c">${nfc}${chipSvg}</span>
-        <span class="v3f-vert c6n"><b>${this._e(semTier(prod) || "Carbon")}</b><small>${this._e(tier ? tier.toLowerCase().replace(/^./, (s) => s.toUpperCase()) : "Black")}</small></span>${info}${band("c6b")}`;
+      corpo = `${tem.has("c6") ? `<span class="v3f-c6l">${logo("c6", "c6l")}<b class="v3f-sr">C6 Bank</b></span>` : `<span class="v3f-vert dir c6"><b>C6</b><small>BANK</small></span>`}<span class="v3f-chipw c6c">${nfc}${chipSvg}</span>
+        ${k.modelo === "c6-carbon" ? `<span class="v3f-vert c6n"><b>${this._e(semTier(prod) || "Carbon")}</b><small>${this._e(tier ? tier.toLowerCase().replace(/^./, (s) => s.toUpperCase()) : "Black")}</small></span>`
+          : prod ? `<span class="v3f-vert c6n"><small>${this._e(prod.toLowerCase().replace(/^./, (s) => s.toUpperCase()))}</small></span>` : ""}${info}${band("c6b")}`;
     } else if (b === "wise") {  // Wise: verde, a marca grande no alto, sem chip, VISA embaixo
       corpo = `${tem.has(arte) ? `<img class="v3f-arte" src="${V3_LOGO(arte)}" alt="">` : `<b class="v3f-wisen">wise</b>`}${info}${band()}`;
     } else if (b === "alelo") {  // Alelo: verde-limão, linhas com talheres e copo, mancha do logo e os saldos embaixo dela
-      corpo = `${tem.has(arte) ? `<img class="v3f-arte" src="${V3_LOGO(arte)}" alt="">` : `<b class="v3f-alelon">alelo</b>`}<span class="v3f-alprod">${this._e(String(k.visual?.produto || "refeição · alimentação").toLowerCase())}</span>${info}`;
+      corpo = `${tem.has(arte) ? `<img class="v3f-arte" src="${V3_LOGO(arte)}" alt="">` : `<b class="v3f-alelon">alelo</b>`}<span class="v3f-alprod">${this._e(String(k.visual?.produto || { refeicao: "refeição", alimentacao: "alimentação", multi: "multibenefício" }[k.beneficio_de] || "refeição · alimentação").toLowerCase())}</span>${info}`;
     } else {
-      const nb = this._finBancoNome(k) || k.apelido || k.nome;  // outros bancos: logo (se o arquivo existir) ou o nome, e o modelo embaixo
-      corpo = `<span class="v3f-marca">${bid && tem.has(bid) ? `${logo(bid, "gen")}<b class="v3f-sr">${this._e(nb)}</b>` : `<b>${this._e(nb)}</b>`}${semTier(prod) ? `<small>${this._e(semTier(prod))}</small>` : ""}</span><span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
+      const nb = bid === "nubank" && !tem.has("nubank") ? "nu" : this._finBancoNome(k) || k.apelido || k.nome;  // outros bancos: logo (se o arquivo existir) ou o nome, e o modelo embaixo
+      corpo = `<span class="v3f-marca">${bid && tem.has(bid) ? `${logo(bid, "gen")}<b class="v3f-sr">${this._e(nb)}</b>` : `<b${bid === "nubank" ? ' class="v3f-nu"' : ""}>${this._e(nb)}</b>`}${semTier(prod) ? `<small>${this._e(semTier(prod))}</small>` : ""}</span><span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
     }
     const cls = `fcface v3f ${b}${c.preto ? " preto" : ""}${ouro ? " ouro" : ""}`, est = this._finCartaoEstilo(c), nm = this._finNomeCartao(k);
     if (x?.gasto) return x.acao ? `<button class="${cls}" data-a="${x.acao}" data-k="${this._e(k.id)}" style="${est}" aria-label="${this._e(`${nm}: ${x.rotulo}, ${this._brl(x.total)}`)}">${corpo}</button>` : `<div class="${cls}" style="${est}">${corpo}</div>`;
@@ -9074,6 +9335,15 @@ class ComprasV3Card extends BaseV2 {
     .v3f.santander .v3f-chipw{top:33%}.v3f.santander .v3f-chip{width:13cqw}.v3f-nfcw{right:6%;top:35%}.v3f.santander .v3f-nfc{width:8cqw;height:8cqw}
     .v3f-modelo{left:0;right:0;top:39%;text-align:center;font-size:3.9cqw;font-weight:700;letter-spacing:1.4em;padding-left:1.4em;opacity:.9}
     .v3f.bb .v3f-chipw{top:42%}
+    .v3f-intp{font:500 3.6cqw/1 Manrope,sans-serif!important;font-style:normal!important;margin:0 0 0 .8cqw!important}
+    .v3f-bdl{display:block;height:7.4cqw;width:auto;max-width:24cqw;object-fit:contain}.v3f-bdl.amex,.v3f-bdl.jcb,.v3f-bdl.unionpay{height:9.5cqw}
+    .v3f-bdl.diners{height:6.4cqw;max-width:30cqw}.v3f-bdl.hipercard{height:8.6cqw}.v3f-bdl.maestro{height:10cqw}
+    .v3f-bdm{width:16cqw;height:6.6cqw;-webkit-mask-position:right center;mask-position:right center}.v3f-bdm.discover{width:24cqw;height:4.4cqw}
+    .v3f-btgl{right:5%;top:5%}.v3f-logo.btgl{width:40cqw;height:11cqw;-webkit-mask-position:right center;mask-position:right center}
+    .v3f-c6l{right:2%;top:24%;transform:rotate(-90deg);transform-origin:center}.v3f-logo.c6l{width:30cqw;height:6cqw}
+    .v3f-intl{display:block;transform:rotate(180deg)}.v3f-logo.intl{width:9cqw;height:20cqw;transform:rotate(-90deg)}
+    .v3f-nu{font:800 11cqw/1 Manrope,sans-serif!important;letter-spacing:-.06em!important}
+    .v3f-modelo.longo{top:55%;left:6%;right:auto;text-align:left;padding-left:0;letter-spacing:.32em;font-size:3.2cqw}
     .v3f-info{left:6%;bottom:8%;display:grid;line-height:1.15;max-width:60%}.v3f-info small{font-size:3.2cqw;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .v3f-info b{font:700 6.4cqw/1.15 Sora,Manrope,sans-serif;letter-spacing:-.01em}.v3f-info em{font-style:normal;font-size:3.1cqw;opacity:.8}.v3f-info em.atr{opacity:1;font-weight:700}
     .v3f-band{right:6%;bottom:7%;display:grid;justify-items:end;line-height:1;text-align:right}
@@ -9102,7 +9372,9 @@ class ComprasV3Card extends BaseV2 {
     .v3f-logo.visa{width:19cqw;height:6.2cqw;-webkit-mask-position:right center;mask-position:right center;background:linear-gradient(180deg,#f7f7f8 0%,#c3c5c9 55%,#8e9095 100%)}
     .v3f.ouro .v3f-logo.visa{background:linear-gradient(180deg,#f3dc9a 0%,#d4b26a 55%,#a8862f 100%)}.v3f:not(.preto) .v3f-logo{background:var(--ct)}
     .v3f-cx{position:absolute;right:6%;top:7%;width:17cqw;height:auto;z-index:1}
-    .v3f.caixa .v3f-marca{top:12%}.v3f-nivel{font:500 3.4cqw/1 Manrope,sans-serif!important;letter-spacing:.06em;color:#3b3f43}
+    .v3f.caixa .v3f-marca{top:12%}.v3f-cxr{font:500 3.4cqw/1 Manrope,sans-serif!important;letter-spacing:.06em}.v3f-cxr.nivel{color:#3b3f43}
+    .v3f-cxr.sim{font:italic 500 7cqw/1 "Brush Script MT","Segoe Script",cursive!important;letter-spacing:0}.v3f-cxr.fino{font-size:2.8cqw!important;letter-spacing:.18em;opacity:.9}
+    .v3f-cxr.diners{display:grid;font:600 4.6cqw/1 Georgia,"Times New Roman",serif!important;letter-spacing:0;color:#e3b877}.v3f-cxr.diners i{font:500 2.2cqw/1.4 Georgia,serif;font-style:normal;letter-spacing:.12em}
     .v3f-btg{right:6%;top:8%;display:flex;align-items:baseline;gap:1.2cqw;color:#fff}.v3f-btg b{position:relative;font:500 8cqw/1 Manrope,sans-serif;letter-spacing:-.02em;padding:0 1cqw}
     .v3f-btg b i{position:absolute;left:-1.6cqw;top:-2.4cqw;width:13cqw;height:13cqw;border:.5cqw solid #fff;border-radius:50%;border-left-color:transparent;transform:rotate(-30deg)}
     .v3f-btg small{font:400 6cqw/1 Manrope,sans-serif;letter-spacing:-.01em}.v3f-btgp{font:500 4.6cqw/1 Manrope,sans-serif!important;letter-spacing:.01em}.v3f.btg .v3f-marca{top:22%}
@@ -9114,10 +9386,11 @@ class ComprasV3Card extends BaseV2 {
     .v3f-chipw.brbc,.v3f-chipw.intc,.v3f-chipw.amzc{flex-direction:column;align-items:flex-start;top:9%;gap:1.4cqw}.v3f-chipw.brbc{top:16%;left:13%}.v3f-chipw.amzc{top:10%}
     .v3f-brbn{left:6%;top:56%;font:500 4cqw/1 Manrope,sans-serif;letter-spacing:.02em}
     .v3f-band.topo{right:5%;top:6%;bottom:auto}.v3f-band.amzb{right:22%;bottom:7%}
-    .v3f.amazon .v3f-info{color:#232f3e}.v3f.caixa .v3f-info{color:#2f3236}
+    .v3f.amazon .v3f-info{color:#232f3e}
     .v3f-vert.c6{top:7%;bottom:auto;display:flex;align-items:center;gap:1cqw}.v3f-vert.c6 b{font:900 8cqw/1 Manrope,sans-serif;font-style:normal;letter-spacing:-.04em}.v3f-vert.c6 small{font:300 6.4cqw/1 Manrope,sans-serif;font-style:normal;letter-spacing:.02em;margin:0}
     .v3f-chipw.c6c{flex-direction:column;align-items:flex-start;top:18%;left:13%;gap:1.4cqw}
     .v3f-vert.c6n{left:4%;top:auto;bottom:34%;display:flex;gap:.6cqw}.v3f-vert.c6n b{font:700 3.6cqw/1 Manrope,sans-serif}.v3f-vert.c6n small{font:300 3.6cqw/1 Manrope,sans-serif;font-style:italic;margin:0}
+    .v3f-bd{display:block;height:6cqw;width:auto;color:inherit;overflow:visible}.v3f-bd.amex{height:9.5cqw}.v3f-bd.diners{height:9.5cqw}.v3f-bd.elo{height:7.6cqw}.v3f-bd.hiper{height:8.4cqw}.v3f-bd.jcb{height:9cqw}
     .v3f-itaul{right:6%;bottom:7%}.v3f-itaul img{display:block;width:9cqw;height:auto;filter:grayscale(1) invert(1) brightness(1.05);border-radius:1.6cqw}
     .v3f-itau{right:6%;bottom:8%;font:700 5.4cqw/1 Manrope,sans-serif;letter-spacing:-.02em;opacity:.9}
     .v3 .v3-pilha{display:block;width:100%;max-width:340px;margin:4px auto 0}.v3 .v3-pilha .fpilha{max-width:none}

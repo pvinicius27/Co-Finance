@@ -14,7 +14,7 @@ from .dados import file_lock, load_db, save_db
 from .pagamentos import _pgs_fin, _tipo_pag, aceita, data_efetiva, rotulo_cartao, valor_efetivo
 from .cartoes import candidatos, usam_hoje
 
-FORMA_COD = {"C": "Crédito", "D": "Débito", "A": "Alelo", "P": "Pix", "$": "Dinheiro"}
+FORMA_COD = {"C": "Crédito", "D": "Débito", "A": "Benefício", "P": "Pix", "$": "Dinheiro"}
 COD_FORMA = {v: k for k, v in FORMA_COD.items()}
 MAX_BOTOES = 10  # o iPhone mostra até 10 botões no aviso
 
@@ -79,7 +79,7 @@ def opcoes_cartao(db: dict[str, Any], c: dict[str, Any], trocar: bool = False) -
     for k in db.get("cartoes") or []:
         if c.get("quem") not in usam_hoje(k) or not k.get("ativo", True):
             continue
-        for t in ("Crédito", "Débito", "Alelo"):
+        for t in ("Crédito", "Débito", "Benefício"):
             if aceita(k, t) and (t == "Crédito" or k.get("dono") == c.get("quem")):
                 ops.append((_rotulo(db, k, t), k["id"], COD_FORMA[t]))
     if not ops:

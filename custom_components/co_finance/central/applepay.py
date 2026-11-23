@@ -291,7 +291,7 @@ def _lancar_ap(aid: str, item: str = "") -> dict[str, Any]:
     suposta = bool(k_ap) and not forma_do_cartao(k_ap) and k_ap.get("credito", True) and not k_ap.get("vale")
     r = manual({"quem": x["quem"], "loja": nome_loja, "valor": x["valor"], "data": x["em"][:10],
                 "forma": "Crédito" if suposta else forma_do_cartao(k_ap) if k_ap  # crédito e débito: crédito suposto
-                else "Alelo" if "ALELO" in norm_txt(x.get("cartao_nome") or "") else "",
+                else "Benefício" if re.search(r"\b(ALELO|VR|TICKET|PLUXEE|SODEXO|FLASH|CAJU|SWILE)\b", norm_txt(x.get("cartao_nome") or "")) else "",
                 "cartao": x.get("cartao") or "", "parcelas": 1,
                 "categoria": cat, "subcategoria": sub, "item": item, "observacao": f"Pelo telefone{(' · ' + x['cartao_nome']) if x.get('cartao_nome') else ''}"})
     x["compra"] = r["id"]

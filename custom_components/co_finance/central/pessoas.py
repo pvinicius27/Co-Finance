@@ -1,5 +1,5 @@
 """Configurações › Pessoas: quem compra, a cor de cada um, como vem no Atalho do iPhone, quem paga do próprio bolso
-(reembolso) e "Devemos à/ao". O vale (Alelo, VR…) é cartão: fica em Cartões. O nome não muda depois de criado: as compras guardam o nome."""
+(reembolso) e "Devemos à/ao". O benefício (Alelo, VR…) é cartão: fica em Cartões. O nome não muda depois de criado: as compras guardam o nome."""
 from __future__ import annotations
 
 import re

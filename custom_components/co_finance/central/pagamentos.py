@@ -5,7 +5,7 @@ import re
 from datetime import date
 from typing import Any
 
-from .config import BANCOS_EMISSORES, BANDEIRAS, TIPOS_PAG, T_PAG
+from .config import BENEFICIO_DA_NOTA, BANCOS_EMISSORES, BANDEIRAS, TIPOS_PAG, T_PAG
 from .base import norm_txt
 from .dados import _CARTOES, vale_de
 
@@ -74,17 +74,17 @@ def nome_bandeira(s: str | None) -> str | None:
 
 def _alelo_deduzido(pg: dict[str, Any]) -> bool:
     """Débito sem bandeira ou com "Outros" na nota: cartão de banco quase sempre vem Visa/Mastercard/Elo,
-    então é vale (Alelo). Só depois de consultada a versão detalhada (chave "bandeira" presente)."""
+    então é benefício (Alelo, VR…). Só depois de consultada a versão detalhada (chave "bandeira" presente)."""
     return (pg.get("tipo") not in TIPOS_PAG and "DEBITO" in norm_txt(pg.get("forma") or "")
             and "bandeira" in pg and pg["bandeira"] in (None, "", "Outros"))
 
 
 def rotulo_cartao(k: dict[str, Any], todos: list[dict[str, Any]] | None = None) -> str:
     """Nome do cartão na tela: o "Nome para mostrar", senão o banco; se outro cartão ficar com o mesmo nome, entra o tipo
-    (débito, vale) e, se ainda repetir, o titular. A sigla fica só por dentro. (A tela faz igual: _finNomeCartao.)"""
+    (débito, pré-pago, benefício) e, se ainda repetir, o titular. A sigla fica só por dentro. (A tela faz igual: _finNomeCartao.)"""
     todos = list(_CARTOES.values()) if todos is None else todos
-    base = lambda x: x.get("apelido") or BANCOS_EMISSORES.get(x.get("emissor") or x.get("banco") or "") or ("Vale" if x.get("vale") else x.get("nome") or "")
-    tipo = lambda x: "vale" if x.get("vale") else "débito" if x.get("credito") is False else ""
+    base = lambda x: x.get("apelido") or BANCOS_EMISSORES.get(x.get("emissor") or x.get("banco") or "") or ("Benefício" if x.get("vale") else x.get("nome") or "")
+    tipo = lambda x: "benefício" if x.get("vale") else "pré-pago" if x.get("prepago") else "débito" if x.get("credito") is False else ""
     nome = base(k)
     outros = [x for x in todos if x.get("id") != k.get("id") and base(x) == nome]
     if not outros:
@@ -97,18 +97,20 @@ def rotulo_cartao(k: dict[str, Any], todos: list[dict[str, Any]] | None = None) 
 
 
 def _tipo_pag(pg: dict[str, Any]) -> str:
+    if pg.get("tipo") == "Alelo":  # nome antigo da forma (antes da 0.0.3)
+        return "Benefício"
     if pg.get("tipo") in TIPOS_PAG:  # escolhido no card
         return pg["tipo"]
     f = str(pg.get("forma") or "").strip()
     if f.isdigit():  # a página do portal às vezes traz só o código oficial (tPag): "20" = Pix estático
         f = T_PAG.get(f.zfill(2), f)
     f = norm_txt(f)
-    if pg.get("bandeira") == "Alelo" or "ALIMENTACAO" in f or "REFEICAO" in f:
-        return "Alelo"  # o mercado às vezes registra Alelo como débito: a bandeira manda
+    if pg.get("bandeira") in BENEFICIO_DA_NOTA or "ALIMENTACAO" in f or "REFEICAO" in f:
+        return "Benefício"  # o mercado às vezes registra o benefício como débito: a bandeira (Alelo, VR…) manda
     if "CREDITO" in f and "LOJA" not in f:
         return "Crédito"
     if "DEBITO" in f:
-        return "Alelo" if _alelo_deduzido(pg) else "Débito"
+        return "Benefício" if _alelo_deduzido(pg) else "Débito"
     if "PIX" in f or "INSTANTANEO" in f:
         return "Pix"
     if "BOLETO" in f:
@@ -119,17 +121,17 @@ def _tipo_pag(pg: dict[str, Any]) -> str:
 
 
 def aceita(k: dict[str, Any], t: str) -> bool:
-    """O cartão aceita essa forma? Crédito, débito ou vale (Alelo, VR…), conforme o cadastro."""
-    return bool(t == "Crédito" and k.get("credito", True) and not k.get("vale") or t == "Débito" and k.get("debito") or t == "Alelo" and k.get("vale"))
+    """O cartão aceita essa forma? Crédito, débito ou benefício (Alelo, VR…), conforme o cadastro."""
+    return bool(t == "Crédito" and k.get("credito", True) and not k.get("vale") or t == "Débito" and k.get("debito") or t == "Benefício" and k.get("vale"))
 
 
 def forma_do_cartao(k: dict[str, Any] | None) -> str:
-    """A forma que o cartão da Carteira garante sozinho: vale → Alelo; só crédito → Crédito; só débito → Débito.
+    """A forma que o cartão da Carteira garante sozinho: benefício → Benefício; só crédito → Crédito; só débito → Débito.
     Cartão com crédito e débito: "" (o Apple Pay não diz qual foi; não se chuta)."""
     if not k:
         return ""
     if k.get("vale"):
-        return "Alelo"
+        return "Benefício"
     cred, deb = k.get("credito", True) and not k.get("vale"), bool(k.get("debito"))
     return "Crédito" if cred and not deb else "Débito" if deb and not cred else ""
 
@@ -170,7 +172,7 @@ def cartao_da_carteira(db: dict[str, Any], c: dict[str, Any], cid: str | None, p
     else:
         alvo = pgs[0] if len(pgs) == 1 else None
     t = _tipo_pag(alvo) if alvo else None
-    if alvo and t in ("Crédito", "Débito", "Alelo") and aceita(k, t):
+    if alvo and t in ("Crédito", "Débito", "Benefício") and aceita(k, t):
         if not alvo.get("cartao"):
             alvo["cartao"], alvo["cartao_via"] = k["id"], "applepay"
             _nota_com_outra_bandeira(db, c, alvo, k, t)
@@ -187,8 +189,8 @@ def cartao_na_hora(c: dict[str, Any], pg: dict[str, Any]) -> dict[str, Any] | No
     t, k = _tipo_pag(pg), _CARTOES.get(pg.get("cartao"))
     if t == "Débito":
         return k if k and aceita(k, t) else None
-    if t == "Alelo":
-        return k if k and aceita(k, t) else vale_de(c.get("quem"))
+    if t == "Benefício":
+        return k if k and aceita(k, t) else vale_de(c.get("quem"), BENEFICIO_DA_NOTA.get(pg.get("bandeira") or ""))
     return None
 
 
@@ -203,8 +205,8 @@ def pago_com(c: dict[str, Any]) -> list[dict[str, Any]]:
     out = []
     for pg in pgs:
         t = _tipo_pag(pg)
-        dono = c.get("quem") if t == "Alelo" else (c.get("cartao_de") or c.get("quem")) if t in ("Crédito", "Débito") else None
-        k = cartao_na_hora(c, pg) if t == "Alelo" else _CARTOES.get(pg.get("cartao")) if t in ("Crédito", "Débito") else None
+        dono = c.get("quem") if t == "Benefício" else (c.get("cartao_de") or c.get("quem")) if t in ("Crédito", "Débito") else None
+        k = cartao_na_hora(c, pg) if t == "Benefício" else _CARTOES.get(pg.get("cartao")) if t in ("Crédito", "Débito") else None
         if k:
             dono = k.get("dono") or dono
         out.append({"tipo": t, "dono": dono, "valor": pg.get("valor") or (c.get("valor_pago") if len(pgs) == 1 else None), "bandeira": pg.get("bandeira"),

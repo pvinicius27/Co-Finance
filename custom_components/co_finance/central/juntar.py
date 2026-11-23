@@ -108,7 +108,7 @@ def juntar(db: dict[str, Any], compra: dict[str, Any]) -> dict[str, Any] | None:
         npg = compra.get("pagamentos") or []
         if not npg:
             compra["pagamentos"] = copy.deepcopy(mpg)
-        elif len(npg) == 1 and _tipo_pag(npg[0]) not in ("Crédito", "Débito", "Alelo", "Pix", "Dinheiro"):
+        elif len(npg) == 1 and _tipo_pag(npg[0]) not in ("Crédito", "Débito", "Benefício", "Pix", "Dinheiro"):
             npg[0].update({k: mpg[0][k] for k in ("tipo", "cartao", "cartao_via", "parcelas", "forma_suposta") if mpg[0].get(k)})
         mpg = []
     if not mpg and m.get("cartao_sugerido"):  # Apple Pay sem forma: a nota decide; o cartão da Carteira vem junto
@@ -119,7 +119,7 @@ def juntar(db: dict[str, Any], compra: dict[str, Any]) -> dict[str, Any] | None:
         alvo = npg[0] if len(npg) == 1 else next((p for p in npg if _tipo_pag(p) == mpg[0]["tipo"]), None)
         if alvo is not None:
             da_nota = _tipo_pag(alvo)
-            if da_nota in ("Crédito", "Débito", "Alelo", "Pix", "Dinheiro") and da_nota != mpg[0]["tipo"]:
+            if da_nota in ("Crédito", "Débito", "Benefício", "Pix", "Dinheiro") and da_nota != mpg[0]["tipo"]:
                 _divergencia(db, compra, m, mpg[0], alvo, da_nota)
             alvo["tipo"] = mpg[0]["tipo"]
             for k in ("cartao", "cartao_via", "parcelas", "carteira"):

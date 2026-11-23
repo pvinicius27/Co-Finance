@@ -47,6 +47,7 @@ def manual(p: dict[str, Any]) -> dict[str, Any]:
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", data):
         raise Falha("Informe a data da compra.")
     forma = p.get("forma") or ""
+    forma = "Benefício" if forma == "Alelo" else forma  # nome antigo (tela de antes da 0.0.3)
     if forma and forma not in TIPOS_PAG:
         raise Falha("Forma de pagamento desconhecida.")
     itens = item_manual(p.get("item"), brl)
@@ -71,6 +72,7 @@ def manual(p: dict[str, Any]) -> dict[str, Any]:
         for n, x in enumerate(partes, 1):
             x = x if isinstance(x, dict) else {}
             f = x.get("forma") or ""
+            f = "Benefício" if f == "Alelo" else f
             if f not in TIPOS_PAG:
                 raise Falha(f"Escolha como foi paga a forma {n}.")
             v = round(_valor_txt(x.get("valor")) or 0.0, 2)

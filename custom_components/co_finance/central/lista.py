@@ -291,6 +291,7 @@ def _editar_fn(p: dict[str, Any]):
     valor_brl = None if p.get("valor_brl") is None else round(_valor_txt(p.get("valor_brl")) or 0.0, 2)  # "" = tira a conversão
     if cartao_de not in (None, "") and cartao_de not in compradores():
         raise Falha("De quem é o cartão?")
+    forma = "Benefício" if forma == "Alelo" else forma  # nome antigo (tela de antes da 0.0.3)
     if forma not in (None, "") and forma not in TIPOS_PAG:
         raise Falha("Forma de pagamento desconhecida.")
 
@@ -374,6 +375,7 @@ def _editar_fn(p: dict[str, Any]):
             pg = pgs[i]
             if "tipo" in cart:  # a nota impressa não muda; vale para os totais e faturas
                 t = cart.get("tipo") or ""
+                t = cart["tipo"] = "Benefício" if t == "Alelo" else t
                 if t and t not in TIPOS_PAG:
                     raise Falha("Forma de pagamento desconhecida.")
                 if t:
@@ -402,11 +404,11 @@ def _editar_fn(p: dict[str, Any]):
                     raise Falha("Cartão desconhecido.")
                 if kk:
                     t = _tipo_pag(pg)
-                    if t not in ("Crédito", "Débito", "Alelo"):  # forma que não usa cartão: o cartão escolhido decide
-                        pg["tipo"] = t = "Alelo" if kk.get("vale") else "Crédito" if kk.get("credito", True) else "Débito"
+                    if t not in ("Crédito", "Débito", "Benefício"):  # forma que não usa cartão: o cartão escolhido decide
+                        pg["tipo"] = t = "Benefício" if kk.get("vale") else "Crédito" if kk.get("credito", True) else "Débito"
                     if not aceita(kk, t):
-                        raise Falha(f"O {rotulo_cartao(kk, db.get('cartoes') or [])} é vale. Troque a forma para Alelo." if kk.get("vale")
-                                    else f"O {rotulo_cartao(kk, db.get('cartoes') or [])} não é cartão de vale." if t == "Alelo"
+                        raise Falha(f"O {rotulo_cartao(kk, db.get('cartoes') or [])} é de benefício. Troque a forma para Benefício." if kk.get("vale")
+                                    else f"O {rotulo_cartao(kk, db.get('cartoes') or [])} não é cartão de benefício." if t == "Benefício"
                                     else f"O {rotulo_cartao(kk, db.get('cartoes') or [])} é só de débito. Troque a forma para Débito." if t == "Crédito"
                                     else f"O {rotulo_cartao(kk, db.get('cartoes') or [])} não está marcado como débito (⚙ › Cartões).")
                     pg["cartao"], pg["cartao_via"] = kk["id"], "você"

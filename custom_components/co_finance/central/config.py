@@ -227,11 +227,15 @@ ENERGIA_DIR = Path(os.environ.get("COMPRAS_ENERGIA_DIR", str(BASE_DIR.parent / "
 # Contas da casa (luz, água, mensais sem boleto, carnês): cadastro em db["contas_casa"], pela tela ⚙ Configurações.
 
 
-PAGOS_NA_HORA = ("Pix", "Débito", "Alelo", "Dinheiro", "Boleto", "Saldo em carteira")  # saem da conta no dia da compra
+PAGOS_NA_HORA = ("Pix", "Débito", "Benefício", "Dinheiro", "Boleto", "Saldo em carteira")  # saem da conta no dia da compra
 
 
-BANCOS_EMISSORES = {"bb": "Banco do Brasil", "bradesco": "Bradesco", "itau": "Itaú", "santander": "Santander", "caixa": "Caixa", "nubank": "Nubank", "inter": "Inter", "c6": "C6 Bank", "btg": "BTG Pactual", "xp": "XP", "sicredi": "Sicredi", "sicoob": "Sicoob", "banrisul": "Banrisul", "brb": "BRB", "pan": "Banco Pan", "bv": "Banco BV", "safra": "Safra", "porto": "Porto Bank", "picpay": "PicPay", "mercadopago": "Mercado Pago", "neon": "Neon", "next": "Next", "will": "Will Bank", "original": "Original", "wise": "Wise", "infinitepay": "InfinitePay", "alelo": "Alelo"}  # banco do cartão (desenho e nome); leitor de PDF à parte
-BANDEIRAS_CARTAO = ["Visa", "Mastercard", "Elo", "Amex", "Hipercard", "Alelo", "VR", "Ticket", "Pluxee", "Outra"]  # v27: cadastro de cartões pela tela
+BANCOS_EMISSORES = {"bb": "Banco do Brasil", "bradesco": "Bradesco", "itau": "Itaú", "santander": "Santander", "caixa": "Caixa", "nubank": "Nubank", "inter": "Inter", "c6": "C6 Bank", "btg": "BTG Pactual", "xp": "XP", "sicredi": "Sicredi", "sicoob": "Sicoob", "banrisul": "Banrisul", "brb": "BRB", "pan": "Banco Pan", "bv": "Banco BV", "safra": "Safra", "porto": "Porto Bank", "picpay": "PicPay", "mercadopago": "Mercado Pago", "neon": "Neon", "next": "Next", "will": "Will Bank", "original": "Original", "wise": "Wise", "infinitepay": "InfinitePay", "alelo": "Alelo", "vr": "VR", "ticket": "Ticket", "pluxee": "Pluxee", "flash": "Flash", "caju": "Caju", "ifood": "iFood Benefícios", "swile": "Swile"}  # banco do cartão (desenho e nome); leitor de PDF à parte
+BANDEIRAS_CARTAO = ["Visa", "Mastercard", "Elo", "Amex", "Hipercard", "Diners", "Discover", "JCB", "UnionPay", "Maestro", "Outra", "Sem bandeira"]  # só as redes; Alelo, VR, Ticket e Pluxee são emissores (cartão de benefício), não bandeira
+EMISSORES_BENEFICIO = ("alelo", "vr", "ticket", "pluxee", "flash", "caju", "ifood", "swile")  # quem emite cartão de benefício
+BENEFICIOS = {"refeicao": "Refeição", "alimentacao": "Alimentação", "ambos": "Refeição e alimentação", "multi": "Multibenefício"}
+# NFC-e: o código da "bandeira" que na verdade é a empresa do benefício (tabela tBand: 10, 23, 26, 27)
+BENEFICIO_DA_NOTA = {"Alelo": "alelo", "Sodexo": "pluxee", "Pluxee": "pluxee", "VR": "vr", "Ticket": "ticket"}
 
 
 # Categoria sugerida pela loja (raiz do CNPJ, 8 dígitos): começa vazia; a loja fica lembrada quando a casa escolhe.
@@ -239,18 +243,18 @@ CATEGORIA_LOJA_INICIAL: dict = {}
 
 
 # Pagamento: a nota diz o meio (crédito, débito, vale...) e, na versão detalhada, a bandeira do cartão
-# (tabela da NF-e: 10 = Alelo). Não diz de quem é o cartão: crédito/débito ficam com quem comprou, ou com
-# quem o card disser ("cartao_de"); vale (Alelo, VR…) fica com o cartão de vale de quem comprou (ou o único vale da casa).
+# (tabela da NF-e; 10, 23, 26 e 27 são empresas de benefício: Alelo, Pluxee, VR, Ticket). Não diz de quem é o cartão: crédito/débito ficam com quem comprou, ou com
+# quem o card disser ("cartao_de"); benefício (Alelo, VR…) fica com o cartão de benefício de quem comprou (o da mesma empresa, se a nota disser; senão o único da casa).
 MOEDAS = {"BRL": "R$", "USD": "US$", "EUR": "€"}  # compra lançada à mão pode ser em outra moeda (viagem)
 
 
-TIPOS_PAG = ["Crédito", "Débito", "Alelo", "Pix", "Saldo em carteira", "Dinheiro", "Boleto", "Outro"]  # carteira: Mercado Pago, PicPay…
+TIPOS_PAG = ["Crédito", "Débito", "Benefício", "Pix", "Saldo em carteira", "Dinheiro", "Boleto", "Outro"]  # carteira: Mercado Pago, PicPay…
 
 
 BANDEIRAS = {"01": "Visa", "02": "Mastercard", "03": "American Express", "04": "Sorocred", "05": "Diners Club",
              "06": "Elo", "07": "Hipercard", "08": "Aura", "09": "Cabal", "10": "Alelo", "11": "Banescard",
              "12": "CalCard", "13": "Credz", "14": "Discover", "15": "GoodCard", "16": "GreenCard", "17": "Hiper",
-             "18": "JCB", "19": "Mais", "20": "MaxVan", "21": "Policard", "22": "RedeCompras", "23": "Sodexo",
+             "18": "JCB", "19": "Mais", "20": "MaxVan", "21": "Policard", "22": "RedeCompras", "23": "Pluxee",
              "24": "ValeCard", "25": "Verocheque", "26": "VR", "27": "Ticket", "99": "Outros"}
 
 

@@ -127,7 +127,7 @@ def registrar(payload: dict[str, Any]) -> dict[str, Any]:
     if do_pedido:
         msg += texto_do_pedido(do_pedido, compra)
     if any(p["deduzido"] for p in pago_com(compra)):
-        msg += " · Alelo (deduzido: débito sem bandeira na nota)"
+        msg += " · Benefício (deduzido: débito sem bandeira na nota)"
     if not nota["conferencia"]["bate"]:
         msg += " · ⚠ soma dos itens não bate com o total"
     return {"ok": True, "status": "nova", "id": chave, "quem": quem, "loja": loja,
