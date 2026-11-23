@@ -107,7 +107,7 @@ const F_BIBLIOTECA = [
   ["santander-sx", "santander", "Santander SX", "SX", "#8c141b", "#3d0a13", "#ffffff"],
   ["santander-aadvantage-black", "santander", "AAdvantage Black", "AAdvantage Black", "#4f4c49", "#3a3632", "#ffffff"],
   ["santander-aadvantage-platinum", "santander", "AAdvantage Platinum", "AAdvantage Platinum", "#6e6a6b", "#605f5e", "#ffffff"],
-  ["santander-aadvantage-quantum", "santander", "AAdvantage Quantum", "AAdvantage Quantum", "#e3e0e4", "#fcfdfd", "#1f2430"],
+  ["santander-aadvantage-quantum", "santander", "AAdvantage Quartz", "AAdvantage Quartz", "#e3e0e4", "#fcfdfd", "#1f2430"],
   ["santander-smiles-infinite", "santander", "Smiles Infinite", "Smiles Infinite", "#2b2728", "#292627", "#ffffff"],
   ["santander-smiles-platinum", "santander", "Smiles Platinum", "Smiles Platinum", "#3f6a7c", "#3c6271", "#ffffff"],
   ["santander-smiles-gold", "santander", "Smiles Gold", "Smiles Gold", "#914a15", "#7e3a0f", "#ffffff"],
@@ -145,7 +145,95 @@ const F_BIBLIOTECA = [
   ["c6-graphene", "c6", "C6 Graphene World Legend", "Graphene", "#b4b4b4", "#737373", "#1f2430"],
   ["inter-platinum", "inter", "Inter Platinum", "Platinum", "#afaeae", "#888786", "#ffffff"],
   ["inter-prime", "inter", "Inter Prime", "Prime", "#525252", "#3d3d3c", "#ffffff"],
-  ["inter-win", "inter", "Inter Win", "Win", "#2f415b", "#152842", "#ffffff"]
+  ["inter-win", "inter", "Inter Win", "Win", "#2f415b", "#152842", "#ffffff"],
+  ["bb-saraiva", "bb", "Saraiva", "Saraiva", "#59595a", "#58585a", "#ffffff"],
+  ["bb-petrobras", "bb", "Petrobras", "Petrobras", "#ffffff", "#ffffff", "#1f2430"],
+  ["bradesco-disney-visa-infinite-magia", "bradesco", "Disney Visa Infinite Magia", "Disney Infinite Magia", "#002146", "#01254d", "#ffffff"],
+  ["bradesco-disney-visa-infinite-star-wars", "bradesco", "Disney Visa Infinite Star Wars", "Disney Infinite Star Wars", "#070707", "#100f10", "#ffffff"],
+  ["bradesco-disney-visa-infinite-amigos", "bradesco", "Disney Visa Infinite Amigos", "Disney Infinite Amigos", "#e72446", "#e62f45", "#ffffff"],
+  ["bradesco-disney-visa-signature-amigos", "bradesco", "Disney Visa Signature Amigos", "Disney Signature Amigos", "#e72446", "#e62f45", "#ffffff"],
+  ["bradesco-disney-visa-signature-star-wars", "bradesco", "Disney Visa Signature Star Wars", "Disney Signature Star Wars", "#070707", "#101010", "#ffffff"],
+  ["bradesco-visa-platinum-sem-anuidade", "bradesco", "Visa Platinum sem anuidade", "Platinum", "#737474", "#767776", "#ffffff"],
+  ["bradesco-harley-davidson-visa-platinum", "bradesco", "Harley Davidson Visa Platinum", "Harley Davidson Platinum", "#2d2c2c", "#222222", "#ffffff"],
+  ["bradesco-harley-davidson-visa-signature", "bradesco", "Harley Davidson Visa Signature", "Harley Davidson Signature", "#35342e", "#30302a", "#ffffff"],
+  ["bradesco-sos-visa-gold", "bradesco", "SOS Mata Atlântica Visa Gold", "SOS Mata Atlântica Gold", "#4f8649", "#4c8047", "#ffffff"],
+  ["bradesco-sos-visa-platinum", "bradesco", "SOS Mata Atlântica Visa Platinum", "SOS Mata Atlântica Platinum", "#4f8649", "#4c8047", "#ffffff"],
+  ["bradesco-amex-green", "bradesco", "American Express Green", "Green", "#8fc5b3", "#90c6b3", "#1f2430"],
+  ["bradesco-amex-gold-card", "bradesco", "American Express Gold Card", "Gold Card", "#b1a05f", "#b1a060", "#ffffff"],
+  ["bradesco-the-platinum-card", "bradesco", "The Platinum Card", "", "#cdcdcc", "#cacaca", "#1f2430"],
+  ["bradesco-amex-credit", "bradesco", "American Express Credit", "Credit", "#e7e8e9", "#e1e3e4", "#1f2430"],
+  ["bradesco-amex-credit-2", "bradesco", "American Express Credit", "Credit", "#85b2dc", "#8bb6de", "#1f2430"],
+  ["bradesco-amex-blue", "bradesco", "American Express Blue", "Blue", "#85b2dc", "#8bb6de", "#1f2430"],
+  ["bradesco-amex-gold-credit", "bradesco", "American Express Gold Credit", "Gold Credit", "#cdbf86", "#c5b67e", "#1f2430"],
+  ["bradesco-seguros-amex-gold", "bradesco", "Seguros American Express Gold", "Seguros Gold", "#c2ae4d", "#4c0d0e", "#ffffff"],
+  ["bradesco-amex-gold-credit-2", "bradesco", "American Express Gold Credit", "Gold Credit", "#cdbf86", "#c5b67e", "#1f2430"],
+  ["bradesco-gold-amex", "bradesco", "Gold American Express", "Gold", "#b9954a", "#b7944a", "#ffffff"],
+  ["bradesco-seguros-amex-platinum", "bradesco", "Seguros American Express Platinum", "Seguros Platinum", "#b1b3b5", "#6d6b5c", "#ffffff"],
+  ["bradesco-platinum-amex", "bradesco", "Platinum American Express", "Platinum", "#7d7c7c", "#6e7171", "#ffffff"],
+  ["bradesco-amex-platinum-credit", "bradesco", "American Express Platinum Credit", "Platinum Credit", "#b4bbbf", "#b3bcc2", "#1f2430"],
+  ["bradesco-elo-consignado-inss-internacional", "bradesco", "Elo Consignado INSS Internacional", "Consignado INSS Internacional", "#752326", "#7a2527", "#ffffff"],
+  ["bradesco-elo-consignado-internacional", "bradesco", "Elo Consignado Internacional", "Consignado Internacional", "#053e61", "#08446c", "#ffffff"],
+  ["bradesco-elo-internacional", "bradesco", "Elo Internacional", "Internacional", "#223c7a", "#243e79", "#ffffff"],
+  ["bradesco-elo-mais-internacional", "bradesco", "Elo Mais Internacional", "Mais Internacional", "#a0875c", "#987f50", "#ffffff"],
+  ["bradesco-elo-grafite", "bradesco", "Elo Grafite", "Grafite", "#5f5e5e", "#5f5f5f", "#ffffff"],
+  ["bradesco-elo-nanquim", "bradesco", "Elo Nanquim", "Nanquim", "#000000", "#000000", "#ffffff"],
+  ["bradesco-elo-diners-club", "bradesco", "Elo Diners Club", "Diners Club", "#070308", "#070308", "#ffffff"],
+  ["bradesco-elo-nacional", "bradesco", "Elo Nacional", "Nacional", "#223c7a", "#243e79", "#ffffff"],
+  ["bradesco-seguros-elo-nacional", "bradesco", "Seguros Elo Nacional", "Seguros Nacional", "#0060af", "#003d73", "#ffffff"],
+  ["bradesco-music-elo-nacional", "bradesco", "Music Elo Nacional", "Music Nacional", "#0b0001", "#000624", "#ffffff"],
+  ["bradesco-elo-plus", "bradesco", "Elo Plus", "Plus", "#6b1d1d", "#611719", "#ffffff"],
+  ["bradesco-elo-mais", "bradesco", "Elo Mais", "Mais", "#b19053", "#b29153", "#ffffff"],
+  ["bradesco-elo-universitario-funcao-credito", "bradesco", "Elo Universitário Função Crédito", "Universitário", "#24210c", "#24210c", "#ffffff"],
+  ["bradesco-music-elo-internacional", "bradesco", "Music Elo Internacional", "Music Internacional", "#0b0001", "#000624", "#ffffff"],
+  ["bradesco-elo-plus-internacional", "bradesco", "Elo Plus Internacional", "Plus Internacional", "#6b1d1d", "#611719", "#ffffff"],
+  ["bradesco-seguros-elo-internacional", "bradesco", "Seguros Elo Internacional", "Seguros Internacional", "#355b9f", "#223d6c", "#ffffff"],
+  ["bradesco-seguros-elo-mais", "bradesco", "Seguros Elo Mais", "Seguros Mais", "#a48f53", "#4b3324", "#ffffff"],
+  ["bradesco-seguros-elo-grafite", "bradesco", "Seguros Elo Grafite", "Seguros Grafite", "#929295", "#666664", "#ffffff"],
+  ["bradesco-seguros-elo-nanquim", "bradesco", "Seguros Elo Nanquim", "Seguros Nanquim", "#000000", "#000000", "#ffffff"],
+  ["bradesco-elo-consignado-inss", "bradesco", "Elo Consignado INSS", "Consignado INSS", "#891e22", "#8c1f22", "#ffffff"],
+  ["bradesco-elo-consignado", "bradesco", "Elo Consignado", "Consignado", "#264162", "#29476c", "#ffffff"],
+  ["bradesco-elo-internacional-basico", "bradesco", "Elo Internacional Básico", "Internacional Básico", "#0a89cc", "#0583c7", "#ffffff"],
+  ["bradesco-fas-elo-internacional", "bradesco", "Amazonas Sustentável Elo Internacional", "Amazonas Sustentável Internacional", "#5d553d", "#58483c", "#ffffff"],
+  ["bradesco-elo-internacional-funcao-credito", "bradesco", "Elo Internacional - Função crédito", "Internacional", "#721b24", "#721c24", "#ffffff"],
+  ["bradesco-sos-elo-internacional", "bradesco", "SOS Mata Atlântica Elo internacional", "SOS Mata Atlântica internacional", "#50874a", "#4c7f47", "#ffffff"],
+  ["bradesco-elo-nacional-funcao-credito", "bradesco", "Elo Nacional - Função Crédito", "Nacional", "#721b24", "#721c24", "#ffffff"],
+  ["bradesco-mastercard-nacional", "bradesco", "Mastercard Nacional", "Nacional", "#243e7b", "#263f72", "#ffffff"],
+  ["bradesco-mastercard-internacional", "bradesco", "Mastercard Internacional", "Internacional", "#223c7a", "#253d72", "#ffffff"],
+  ["bradesco-mastercard-gold", "bradesco", "Mastercard Gold", "Gold", "#b68034", "#b87e33", "#ffffff"],
+  ["bradesco-mastercard-platinum", "bradesco", "Mastercard Platinum", "Platinum", "#727372", "#797672", "#ffffff"],
+  ["bradesco-mastercard-black", "bradesco", "Mastercard Black", "Black", "#000000", "#000000", "#ffffff"],
+  ["bradesco-gol-smiles-mastercard-internacional", "bradesco", "Gol Smiles Mastercard Internacional", "Gol Smiles Internacional", "#f5f0ca", "#f5d783", "#1f2430"],
+  ["bradesco-gol-smiles-mastercard-gold", "bradesco", "Gol Smiles Mastercard Gold", "Gol Smiles Gold", "#aba038", "#95741c", "#ffffff"],
+  ["bradesco-gol-smiles-mastercard-platinum", "bradesco", "Gol Smiles Mastercard Platinum", "Gol Smiles Platinum", "#d0d3d5", "#b2b2b4", "#1f2430"],
+  ["bradesco-fas-mastercard-gold", "bradesco", "Amazonas Sustentável Mastercard Gold", "Amazonas Sustentável Gold", "#5b603b", "#634433", "#ffffff"],
+  ["bradesco-fas-mastercard-internacional", "bradesco", "Amazonas Sustentável Mastercard Internacional", "Amazonas Sustentável Internacional", "#5d553a", "#603f33", "#ffffff"],
+  ["bradesco-fas-mastercard-nacional", "bradesco", "Amazonas Sustentável Mastercard Nacional", "Amazonas Sustentável Nacional", "#5b553a", "#603f33", "#ffffff"],
+  ["bradesco-debito-visa-internacional", "bradesco", "Débito Visa Internacional", "Débito Internacional", "#7c141d", "#881520", "#ffffff"],
+  ["bradesco-debito-visa", "bradesco", "Débito Visa", "Débito", "#9796a2", "#d61c22", "#ffffff"],
+  ["bradesco-multiplo-universitario-visa", "bradesco", "Múltiplo Universitário Visa", "Múltiplo Universitário", "#241903", "#241903", "#ffffff"],
+  ["bradesco-debito-click-conta-visa", "bradesco", "Débito Click Conta Visa", "Débito Click Conta", "#21236f", "#232572", "#ffffff"],
+  ["bradesco-debito-poupcard-visa", "bradesco", "Débito Poupcard Visa", "Débito Poupcard", "#197bae", "#1b79ab", "#ffffff"],
+  ["bradesco-debito-conta-salario-visa", "bradesco", "Débito Conta salário Visa", "Débito Conta salário", "#807e8b", "#a50c0f", "#ffffff"],
+  ["bradesco-debito-inss-visa", "bradesco", "Débito INSS Visa", "Débito INSS", "#b4151c", "#663a3c", "#ffffff"],
+  ["bradesco-debito-bpc-visa", "bradesco", "Débito BPC Visa", "Débito BPC", "#cdd7cb", "#bcbbb6", "#1f2430"],
+  ["bradesco-debito-elo-internacional", "bradesco", "Débito Elo Internacional", "Débito Internacional", "#6a1a22", "#711b24", "#ffffff"],
+  ["bradesco-multiplo-elo", "bradesco", "Múltiplo Elo", "Múltiplo", "#721b24", "#721c24", "#ffffff"],
+  ["bradesco-multiplo-universitario-elo", "bradesco", "Múltiplo Universitário Elo", "Múltiplo Universitário", "#24210c", "#24210c", "#ffffff"],
+  ["bradesco-debito-universitario-elo", "bradesco", "Débito Universitário Elo", "Débito Universitário", "#24210c", "#24210c", "#ffffff"],
+  ["bradesco-debito-click-conta-elo", "bradesco", "Débito Click Conta Elo", "Débito Click Conta", "#252a83", "#262983", "#ffffff"],
+  ["bradesco-debito-poupcard-elo", "bradesco", "Débito Poupcard Elo", "Débito Poupcard", "#1577aa", "#1575a7", "#ffffff"],
+  ["bradesco-debito-conta-salario-elo", "bradesco", "Débito Conta salário Elo", "Débito Conta salário", "#807e8b", "#a10c0f", "#ffffff"],
+  ["bradesco-debito-inss-elo", "bradesco", "Débito INSS Elo", "Débito INSS", "#a01a1f", "#9f4f51", "#ffffff"],
+  ["bradesco-debito-bpc-elo", "bradesco", "Débito BPC Elo", "Débito BPC", "#d0d7cb", "#b7b6b2", "#1f2430"],
+  ["brb-visa-infinite", "brb", "Visa Infinite", "Infinite", "#4f4e4e", "#191919", "#ffffff"],
+  ["brb-mastercard-black", "brb", "Mastercard Black", "Black", "#504f4f", "#1a1a1a", "#ffffff"],
+  ["brb-visa-platinum", "brb", "Visa Platinum", "Platinum", "#a8a7a7", "#807f7f", "#ffffff"],
+  ["brb-visa-gold", "brb", "Visa Gold", "Gold", "#b29f5b", "#816724", "#ffffff"],
+  ["brb-nacao-brb-fla", "brb", "Nação BRB Fla", "Nação BRB Fla", "#5e1627", "#471827", "#ffffff"],
+  ["santander-free", "santander", "Santander FREE", "Santander FREE", "#671111", "#030305", "#ffffff"],
+  ["brb-mastercard-platinum", "brb", "Mastercard Platinum", "Platinum", "#a9a3a2", "#807f7f", "#ffffff"],
+  ["brb-mastercard-gold", "brb", "Mastercard Gold", "Gold", "#b29953", "#816725", "#ffffff"],
+  ["brb-mastercard-connect", "brb", "Mastercard Connect", "Connect", "#004f8b", "#0090d3", "#ffffff"]
 ];
 const F_MODELO_ROT = { "btg-ultrablue": "Ultrablue" };  // o que vai escrito no cartão, por modelo
 for (const [id, bco, nome, rot, a, b, tinta] of F_BIBLIOTECA) {
@@ -154,6 +242,11 @@ for (const [id, bco, nome, rot, a, b, tinta] of F_BIBLIOTECA) {
   F_MODELO_COR[id] = { fundo: a, tinta, cg: `linear-gradient(160deg,${a} 0%,${b} 100%)` };
   F_MODELO_ROT[id] = rot;
 }
+// bandeira de cada modelo (da lista dos sites dos bancos; sem ela, o nome do modelo dá a pista) e a função dos que não são de crédito
+const F_MODELO_BAND = {"bb-ourocard-facil": "Visa", "bb-ourocard-universitario": "Visa", "bb-ourocard-visa-gold": "Visa", "bb-ourocard-visa-platinum": "Visa", "bb-ourocard-infinite": "Visa", "bb-ourocard-elo": "Elo", "bb-ourocard-elo-mais": "Elo", "bb-ourocard-grafite": "Elo", "bb-ourocard-nanquim": "Elo", "bb-ourocard-platinum-mastercard": "Mastercard", "bb-ourocard-mastercard-black": "Mastercard", "bb-ourocard-pre-pago": "Visa", "bb-ourocard-travelmoney": "Visa", "bb-smiles-gold": "Visa", "bb-smiles-platinum": "Visa", "bb-smiles-infinite": "Visa", "bb-saraiva": "Visa", "bb-petrobras": "Visa", "bb-dotz-international": "Visa", "bb-dotz-platinum": "Visa", "bb-ame": "Mastercard", "bradesco-visa-gold": "Visa", "bradesco-universitario-visa-gold": "Visa", "bradesco-neo-visa-platinum": "Visa", "bradesco-visa-platinum": "Visa", "bradesco-like-visa": "Visa", "bradesco-visa-signature": "Visa", "bradesco-visa-infinite": "Visa", "bradesco-visa-aeternum": "Visa", "bradesco-gol-smiles-visa-gold": "Visa", "bradesco-gol-smiles-visa-platinum": "Visa", "bradesco-gol-smiles-visa-infinite": "Visa", "bradesco-disney-visa-infinite-magia": "Visa", "bradesco-disney-visa-infinite-star-wars": "Visa", "bradesco-disney-visa-infinite-amigos": "Visa", "bradesco-disney-visa-signature-amigos": "Visa", "bradesco-disney-visa-signature-star-wars": "Visa", "bradesco-horizon-visa-infinite": "Visa", "bradesco-united-mileageplus-visa-infinit": "Visa", "bradesco-marriott-bonvoy-visa-infinite": "Visa", "bradesco-agora-visa-infinite": "Visa", "bradesco-visa-platinum-sem-anuidade": "Visa", "bradesco-visa-internacional": "Visa", "bradesco-gol-smiles-visa-internacional": "Visa", "bradesco-harley-davidson-visa-platinum": "Visa", "bradesco-harley-davidson-visa-signature": "Visa", "bradesco-seguros-visa-gold": "Visa", "bradesco-seguros-visa-platinum": "Visa", "bradesco-seguros-visa-signature": "Visa", "bradesco-visa-nacional": "Visa", "bradesco-visa-universitario-nacional": "Visa", "bradesco-visa-nacional-mais": "Visa", "bradesco-music-visa-platinum": "Visa", "bradesco-visa-basico": "Visa", "bradesco-sos-mata-atlantica": "Visa", "bradesco-sos-visa-gold": "Visa", "bradesco-sos-visa-platinum": "Visa", "bradesco-amex-green": "Amex", "bradesco-amex-gold-card": "Amex", "bradesco-the-platinum-card": "Amex", "bradesco-amex-credit": "Amex", "bradesco-amex-credit-2": "Amex", "bradesco-amex-blue": "Amex", "bradesco-amex-gold-credit": "Amex", "bradesco-seguros-amex-gold": "Amex", "bradesco-amex-gold-credit-2": "Amex", "bradesco-gold-amex": "Amex", "bradesco-seguros-amex-platinum": "Amex", "bradesco-platinum-amex": "Amex", "bradesco-amex-platinum-credit": "Amex", "bradesco-elo-consignado-inss-internacional": "Elo", "bradesco-elo-consignado-internacional": "Elo", "bradesco-elo-internacional": "Elo", "bradesco-elo-mais-internacional": "Elo", "bradesco-elo-grafite": "Elo", "bradesco-elo-nanquim": "Elo", "bradesco-elo-diners-club": "Elo", "bradesco-elo-nacional": "Elo", "bradesco-seguros-elo-nacional": "Elo", "bradesco-music-elo-nacional": "Elo", "bradesco-elo-plus": "Elo", "bradesco-elo-mais": "Elo", "bradesco-elo-universitario-funcao-credito": "Elo", "bradesco-music-elo-internacional": "Elo", "bradesco-elo-plus-internacional": "Elo", "bradesco-seguros-elo-internacional": "Elo", "bradesco-seguros-elo-mais": "Elo", "bradesco-seguros-elo-grafite": "Elo", "bradesco-seguros-elo-nanquim": "Elo", "bradesco-elo-consignado-inss": "Elo", "bradesco-elo-consignado": "Elo", "bradesco-elo-internacional-basico": "Elo", "bradesco-fas-elo-internacional": "Elo", "bradesco-elo-internacional-funcao-credito": "Elo", "bradesco-sos-elo-internacional": "Elo", "bradesco-elo-nacional-funcao-credito": "Elo", "bradesco-mastercard-nacional": "Mastercard", "bradesco-mastercard-internacional": "Mastercard", "bradesco-mastercard-gold": "Mastercard", "bradesco-mastercard-platinum": "Mastercard", "bradesco-mastercard-black": "Mastercard", "bradesco-gol-smiles-mastercard-internacional": "Mastercard", "bradesco-gol-smiles-mastercard-gold": "Mastercard", "bradesco-gol-smiles-mastercard-platinum": "Mastercard", "bradesco-fas-mastercard-gold": "Mastercard", "bradesco-fas-mastercard-internacional": "Mastercard", "bradesco-fas-mastercard-nacional": "Mastercard", "bradesco-debito-visa-internacional": "Visa", "bradesco-debito-visa": "Visa", "bradesco-multiplo-universitario-visa": "Visa", "bradesco-debito-click-conta-visa": "Visa", "bradesco-debito-poupcard-visa": "Visa", "bradesco-debito-conta-salario-visa": "Visa", "bradesco-debito-inss-visa": "Visa", "bradesco-debito-bpc-visa": "Visa", "bradesco-debito-elo-internacional": "Elo", "bradesco-multiplo-elo": "Elo", "bradesco-multiplo-universitario-elo": "Elo", "bradesco-debito-universitario-elo": "Elo", "bradesco-debito-click-conta-elo": "Elo", "bradesco-debito-poupcard-elo": "Elo", "bradesco-debito-conta-salario-elo": "Elo", "bradesco-debito-inss-elo": "Elo", "bradesco-debito-bpc-elo": "Elo", "amazon-bradesco": "Mastercard", "bradesco-amazon-prime": "Mastercard", "brb-visa-infinite": "Visa", "brb-mastercard-black": "Mastercard", "brb-visa-platinum": "Visa", "brb-visa-gold": "Visa", "brb-connect": "Visa", "brb-nacao-brb-fla": ["Visa", "Mastercard"], "btg-ultrablue-world-legend": "Mastercard", "btg-ultrablue": "Mastercard", "btg-black": "Mastercard", "btg-platinum": "Mastercard", "btg-gold": "Mastercard", "btg-tap-black": "Mastercard", "c6-carbon": "Mastercard", "c6-black": "Mastercard", "c6-platinum": "Mastercard", "c6-graphene": "Mastercard", "c6-sunset": "Mastercard", "c6-bubblegum": "Mastercard", "c6-red": "Mastercard", "c6-gold": "Mastercard", "c6-pink": "Mastercard", "c6-boreal-forest": "Mastercard", "c6-silver": "Mastercard", "c6-rainbow": "Mastercard", "c6-acqua": "Mastercard", "c6-blue": "Mastercard", "infinitepay-infinitepay": "Mastercard", "inter-laranja": "Mastercard", "inter-platinum": "Mastercard", "inter-prime": "Mastercard", "inter-win": "Mastercard", "itau-azul-infinite": "Visa", "itau-latam-black": "Mastercard", "itau-azul-platinum": "Visa", "itau-platinum": "Visa", "itau-uniclass-signature": "Visa", "itau-personnalite": "Mastercard", "nubank-roxo": "Mastercard", "nubank-croma": "Mastercard", "nubank-ultravioleta": "Mastercard", "santander-aadvantage-black": "Mastercard", "santander-aadvantage-platinum": "Mastercard", "santander-aadvantage-quantum": "Mastercard", "santander-smiles-infinite": "Visa", "santander-smiles-platinum": "Visa", "santander-smiles-gold": "Visa", "bb-ourocard-debito": "Visa", "bradesco-prime": "Visa", "brb-mastercard-platinum": "Mastercard", "brb-mastercard-gold": "Mastercard", "brb-mastercard-connect": "Mastercard", "c6-basico": "Mastercard", "c6-business": "Mastercard", "itau-azul-gold-visa": "Visa", "itau-azul-gold-mastercard": "Mastercard", "itau-azul-internacional-visa": "Visa", "itau-azul-internacional-mastercard": "Mastercard", "itau-azul-skyline": "Mastercard", "itau-azul-platinum-mastercard": "Mastercard", "itau-instituto-ayrton-senna-mastercard": "Mastercard", "itau-instituto-ayrton-senna-platinum-visa": "Visa", "itau-platinum-mastercard": "Mastercard", "itau-uniclass-black-mastercard": "Mastercard", "itau-uniclass-platinum-mastercard": "Mastercard", "itau-visa-platinum": "Visa", "itau-latam-pass-gold-visa": "Visa", "itau-latam-pass-gold-mastercard": "Mastercard", "itau-latam-pass-infinite-visa": "Visa", "itau-latam-pass-internacional-visa": "Visa", "itau-latam-pass-internacional-mastercard": "Mastercard", "itau-latam-pass-platinum-mastercard": "Mastercard", "itau-latam-pass-platinum-visa": "Visa", "itau-passai-gold": "Visa", "itau-personnalite-black-pontos-mastercard": "Mastercard", "itau-samsung-platinum-visa": "Visa", "itau-samsung-platinum-mastercard": "Mastercard", "itau-n-card-gold-visa": "Visa", "itau-players-bank-platinum": "Mastercard", "itau-pontofrio-internacional-mastercard": "Mastercard", "itau-tim-gold-visa": "Visa", "itau-tim-gold-mastercard": "Mastercard", "itau-tim-internacional-visa": "Visa", "itau-tim-internacional-mastercard": "Mastercard", "itau-tim-platinum-visa": "Visa", "itau-tim-platinum-mastercard": "Mastercard", "itau-empresas": ["Visa", "Mastercard"], "itau-empresas-mastercard-black": "Mastercard", "santander-unlimited": ["Visa", "Mastercard"], "santander-unique": ["Visa", "Mastercard"], "santander-elite": ["Visa", "Mastercard"], "santander-free": ["Visa", "Mastercard"]};
+const F_MODELO_FOTO = new Set(["bb-ame", "bb-dotz-international", "bb-dotz-platinum", "bb-ourocard-elo", "bb-ourocard-elo-mais", "bb-ourocard-facil", "bb-ourocard-grafite", "bb-ourocard-infinite", "bb-ourocard-mastercard-black", "bb-ourocard-nanquim", "bb-ourocard-platinum-mastercard", "bb-ourocard-pre-pago", "bb-ourocard-travelmoney", "bb-ourocard-universitario", "bb-ourocard-visa-gold", "bb-ourocard-visa-platinum", "bb-petrobras", "bb-saraiva", "bb-smiles-gold", "bb-smiles-infinite", "bb-smiles-platinum", "bradesco-agora-visa-infinite", "bradesco-amex-blue", "bradesco-amex-credit", "bradesco-amex-credit-2", "bradesco-amex-gold-card", "bradesco-amex-gold-credit", "bradesco-amex-gold-credit-2", "bradesco-amex-green", "bradesco-amex-platinum-credit", "bradesco-debito-bpc-elo", "bradesco-debito-bpc-visa", "bradesco-debito-click-conta-elo", "bradesco-debito-click-conta-visa", "bradesco-debito-conta-salario-elo", "bradesco-debito-conta-salario-visa", "bradesco-debito-elo-internacional", "bradesco-debito-inss-elo", "bradesco-debito-inss-visa", "bradesco-debito-poupcard-elo", "bradesco-debito-poupcard-visa", "bradesco-debito-universitario-elo", "bradesco-debito-visa", "bradesco-debito-visa-internacional", "bradesco-elo-consignado", "bradesco-elo-consignado-inss", "bradesco-elo-consignado-inss-internacional", "bradesco-elo-consignado-internacional", "bradesco-elo-diners-club", "bradesco-elo-grafite", "bradesco-elo-internacional", "bradesco-elo-internacional-basico", "bradesco-elo-internacional-funcao-credito", "bradesco-elo-mais", "bradesco-elo-mais-internacional", "bradesco-elo-nacional", "bradesco-elo-nacional-funcao-credito", "bradesco-elo-nanquim", "bradesco-elo-plus", "bradesco-elo-plus-internacional", "bradesco-elo-universitario-funcao-credito", "bradesco-fas-elo-internacional", "bradesco-fas-mastercard-gold", "bradesco-fas-mastercard-internacional", "bradesco-fas-mastercard-nacional", "bradesco-gol-smiles-mastercard-gold", "bradesco-gol-smiles-mastercard-internacional", "bradesco-gol-smiles-mastercard-platinum", "bradesco-gol-smiles-visa-gold", "bradesco-gol-smiles-visa-infinite", "bradesco-gol-smiles-visa-internacional", "bradesco-gol-smiles-visa-platinum", "bradesco-gold-amex", "bradesco-horizon-visa-infinite", "bradesco-like-visa", "bradesco-marriott-bonvoy-visa-infinite", "bradesco-mastercard-black", "bradesco-mastercard-gold", "bradesco-mastercard-internacional", "bradesco-mastercard-nacional", "bradesco-mastercard-platinum", "bradesco-multiplo-elo", "bradesco-multiplo-universitario-elo", "bradesco-multiplo-universitario-visa", "bradesco-music-elo-internacional", "bradesco-music-elo-nacional", "bradesco-music-visa-platinum", "bradesco-neo-visa-platinum", "bradesco-platinum-amex", "bradesco-seguros-amex-gold", "bradesco-seguros-amex-platinum", "bradesco-seguros-elo-grafite", "bradesco-seguros-elo-internacional", "bradesco-seguros-elo-mais", "bradesco-seguros-elo-nacional", "bradesco-seguros-elo-nanquim", "bradesco-seguros-visa-gold", "bradesco-seguros-visa-platinum", "bradesco-seguros-visa-signature", "bradesco-sos-elo-internacional", "bradesco-sos-mata-atlantica", "bradesco-sos-visa-gold", "bradesco-sos-visa-platinum", "bradesco-the-platinum-card", "bradesco-united-mileageplus-visa-infinit", "bradesco-universitario-visa-gold", "bradesco-visa-aeternum", "bradesco-visa-basico", "bradesco-visa-gold", "bradesco-visa-infinite", "bradesco-visa-internacional", "bradesco-visa-nacional", "bradesco-visa-nacional-mais", "bradesco-visa-platinum", "bradesco-visa-platinum-sem-anuidade", "bradesco-visa-signature", "bradesco-visa-universitario-nacional", "brb-connect", "brb-mastercard-black", "brb-mastercard-connect", "brb-mastercard-gold", "brb-mastercard-platinum", "brb-visa-gold", "brb-visa-infinite", "brb-visa-platinum", "btg-black", "btg-gold", "btg-platinum", "btg-tap-black", "btg-ultrablue", "btg-ultrablue-world-legend", "santander-aadvantage-black", "santander-aadvantage-platinum", "santander-aadvantage-quantum", "santander-elite", "santander-free", "santander-smiles-gold", "santander-smiles-infinite", "santander-smiles-platinum", "santander-unique", "santander-unlimited"]);  // gerada por ferramentas/fotos_cartoes.py
+const F_MODELO_FUNDO = new Set(["bradesco-amazon-prime", "bradesco-disney-visa-infinite-amigos", "bradesco-disney-visa-infinite-magia", "bradesco-disney-visa-infinite-star-wars", "bradesco-disney-visa-signature-amigos", "bradesco-disney-visa-signature-star-wars", "bradesco-harley-davidson-visa-platinum", "bradesco-harley-davidson-visa-signature", "brb-nacao-brb-fla", "infinitepay-infinitepay", "inter-platinum", "inter-prime", "inter-win", "nubank-croma", "nubank-roxo", "nubank-ultravioleta"]);  // gerada por ferramentas/artes_cartoes.py
+const F_MODELO_FUNC = {"bb-ourocard-pre-pago": "prepago", "bb-ourocard-travelmoney": "prepago", "bradesco-debito-visa-internacional": "debito", "bradesco-debito-visa": "debito", "bradesco-multiplo-universitario-visa": "debito", "bradesco-debito-click-conta-visa": "debito", "bradesco-debito-poupcard-visa": "debito", "bradesco-debito-conta-salario-visa": "debito", "bradesco-debito-inss-visa": "debito", "bradesco-debito-bpc-visa": "debito", "bradesco-debito-elo-internacional": "debito", "bradesco-multiplo-universitario-elo": "debito", "bradesco-debito-universitario-elo": "debito", "bradesco-debito-click-conta-elo": "debito", "bradesco-debito-poupcard-elo": "debito", "bradesco-debito-conta-salario-elo": "debito", "bradesco-debito-inss-elo": "debito", "bradesco-debito-bpc-elo": "debito"};
 F_MODELO_COR["c6-rainbow"].cg = "linear-gradient(125deg,#dbe7f1 0%,#ecd6ec 28%,#cfe9df 52%,#bdb8dc 78%,#dfe5ee 100%)";  // furta-cor
 F_MODELO_COR["infinitepay-infinitepay"].cg = "linear-gradient(180deg,#b9f63c 0%,#8f6dff 38%,#1a1430 70%,#0d0d0f 100%)";  // as faixas verde e roxa no alto
 // cartão escuro: a bandeira vai em metal (prata); claro ou colorido: nas cores dela
@@ -624,7 +717,9 @@ function instalarFinancas(Classe) {
   // a bandeira que o modelo diz no nome (Ourocard Nanquim → Elo, Visa Gold → Visa); sem pista, nenhuma
   P._finModeloBandeira = function (id) {
     const n = `${F_MODELOS[id]?.[1] || ""} ${F_MODELO_ROT[id] || ""}`, fixo = { "c6-carbon": "Mastercard", "caixa-diners": "Diners" }[id];
-    return fixo || (/\bvisa\b/i.test(n) ? "Visa" : /mastercard/i.test(n) ? "Mastercard" : /\b(elo|nanquim|grafite)\b/i.test(n) ? "Elo" : /\bamex|american express/i.test(n) ? "Amex" : /\bdiners\b/i.test(n) ? "Diners" : "");
+    const fb = F_MODELO_BAND[id];  // frente igual nas duas bandeiras (lista): o modelo não decide, fica a escolhida
+    if (Array.isArray(fb)) return "";
+    return fb || fixo || (/\bvisa\b/i.test(n) ? "Visa" : /mastercard/i.test(n) ? "Mastercard" : /\b(elo|nanquim|grafite)\b/i.test(n) ? "Elo" : /\bamex|american express/i.test(n) ? "Amex" : /\bdiners\b/i.test(n) ? "Diners" : "");
   };
   P._finKcEhBenef = function (id) { return F_EMISSORES_BENEF.includes(id); };
   P._finBeneficio = function (k) { return k?.vale ? F_BENEFICIOS[k.beneficio_de] || "" : ""; };
@@ -1763,7 +1858,14 @@ function instalarFinancas(Classe) {
     const campo = `<input type="hidden" id="kc-modelo" value="${this._e(m)}">`;
     if (!b) return campo;
     const band = this.shadowRoot?.getElementById("kc-band")?.value || this._fKcK?.bandeira || "Visa";
-    const lista = [["", "Padrão do banco"], ...Object.entries(F_MODELOS).filter(([, [mb]]) => mb === b).map(([mid, [, mn]]) => [mid, mn])];
+    // só os modelos da bandeira escolhida (os sem bandeira conhecida aparecem sempre); no crédito, sem os de débito e pré-pago;
+    // no débito ou pré-pago, os dessa função primeiro
+    const tipo = this.shadowRoot?.getElementById("kc-tipo")?.value || (this._fKcK ? this._finKcFuncao(this._fKcK) : "credito");
+    const doBanco = Object.entries(F_MODELOS).filter(([, [mb]]) => mb === b).map(([mid, [, mn]]) => [mid, mn]);
+    const daBand = (mid) => { const bm = F_MODELO_BAND[mid]; return !bm || (Array.isArray(bm) ? bm.includes(band) : bm === band); };
+    const serve = ([mid]) => mid === m || (daBand(mid) && !(tipo === "credito" && F_MODELO_FUNC[mid]));
+    const filtrados = doBanco.filter(serve), primeiro = ([mid]) => (F_MODELO_FUNC[mid] && F_MODELO_FUNC[mid] === tipo ? 0 : 1);
+    const lista = [["", "Padrão do banco"], ...(filtrados.length ? filtrados : doBanco).sort((x, y) => primeiro(x) - primeiro(y))];
     const face = (mid) => this._finCartaoFace ? this._finCartaoFace({ id: `kcm-${mid || b}`, emissor: b, modelo: mid, bandeira: band, categoria: "", visual: { produto: "" } }, null) : "";
     return `<span class="fl">Modelo <small>(o desenho do cartão)</small></span><div class="fkm-l" role="radiogroup" aria-label="Modelo do cartão">${lista.map(([mid, mn]) => `
       <button type="button" class="fkm${mid === m ? " on" : ""}" data-a="f-kc-mod" data-k="${mid}" role="radio" aria-checked="${mid === m}">
@@ -1778,6 +1880,8 @@ function instalarFinancas(Classe) {
   };
 
   P._finModelosIds = function () { return Object.keys(F_MODELOS); };
+  P._finTemFundo = function (id) { return F_MODELO_FUNDO.has(id) || F_MODELO_FOTO.has(id); };  // logos/cartoes/<id>.svg
+  P._finEhFoto = function (id) { return F_MODELO_FOTO.has(id); };  // o cartão inteiro (logo, chip, bandeira) vem no desenho
   P._finModelo = function (id) { return id && F_MODELOS[id] ? { banco: F_MODELOS[id][0], nome: F_MODELOS[id][1], rotulo: F_MODELO_ROT[id] || "" } : null; };
 
   P._finKcFuncao = function (k) { return k.vale ? "beneficio" : k.prepago ? "prepago" : k.credito === false ? "debito" : k.debito ? "ambos" : "credito"; };
@@ -1813,9 +1917,20 @@ function instalarFinancas(Classe) {
     return this._finCartaoFace ? this._finCartaoFace(kk, null) : "";
   };
 
+  // as bandeiras que o banco emite (pelos modelos dele), da mais comum à menos
+  P._finBandeirasDoBanco = function (b) {
+    const n = {};
+    for (const [mid, [mb]] of Object.entries(F_MODELOS)) if (mb === b) for (const x of [].concat(F_MODELO_BAND[mid] || [])) n[x] = (n[x] || 0) + 1;
+    return Object.keys(n).sort((x, y) => n[y] - n[x]);
+  };
+  P._finKcBandeiraOps = function (vale, atual) {
+    const l = F_BANDEIRAS, v = l.includes(atual) ? atual : vale ? "Sem bandeira" : l[0], b = this._fKcBanco || "";
+    const deles = this._finBandeirasDoBanco(b).filter((x) => l.includes(x)), outras = l.filter((x) => !deles.includes(x));
+    const op = (xs) => xs.map((x) => `<option ${x === v ? "selected" : ""}>${this._e(x)}</option>`).join("");
+    return deles.length ? `<optgroup label="${this._e(`No ${F_EMISSORES[b]?.[0] || "banco"}`)}">${op(deles)}</optgroup><optgroup label="Outras">${op(outras)}</optgroup>` : op(l);
+  };
   P._finKcBandeira = function (vale, atual) {
-    const l = F_BANDEIRAS, v = l.includes(atual) ? atual : vale ? "Sem bandeira" : l[0];
-    return `Bandeira<select id="kc-band">${l.map((x) => `<option ${x === v ? "selected" : ""}>${this._e(x)}</option>`).join("")}</select>`;
+    return `Bandeira<select id="kc-band">${this._finKcBandeiraOps(vale, atual)}</select>`;
   };
 
   // cadastro de cartões (aba A pagar › Cartões): toque no cartão abre o formulário aqui mesmo
@@ -1828,16 +1943,16 @@ function instalarFinancas(Classe) {
     if (!k) return "";
     const pessoas = this._dados?.compradores || [];
     const op = (l, a) => l.map((v) => `<option ${v === a ? "selected" : ""}>${this._e(v)}</option>`).join("");
-    if (this._fKcDe !== id) { this._fKcDe = id; this._fKcBanco = k.emissor || k.banco || ""; this._fKcModelo = k.modelo || ""; }
+    if (this._fKcDe !== id) { this._fKcDe = id; this._fKcBanco = k.emissor || k.banco || ""; this._fKcModelo = k.modelo || ""; this._fKcBand = null; this._fKcTipo = null; }
     this._fKcK = k;
     return `<div class="form fcartform">
       <div class="fs fkc-sec">O cartão</div>
       <div class="fkc-prev"><div id="kc-prev">${this._finKcPrevia(true)}</div><small>Assim vai ficar o cartão</small></div>
       ${this._finKcBancoSel()}<div id="kc-mods">${this._finKcMods()}</div>
       <label>Nome no cartão <small>(o modelo escrito nele: Prime, Unique, Ourocard, Latam Pass…)</small><input id="kc-prod" type="text" maxlength="24" value="${this._e(k.visual?.produto || "")}" autocomplete="off"></label>
-      <div class="duas" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"><label id="kc-band-l">${this._finKcBandeira(k.vale, k.bandeira)}</label>
+      <div class="duas" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"><label id="kc-band-l">${this._finKcBandeira(k.vale, this._fKcBand || k.bandeira)}</label>
         <label id="kc-cat-l"${k.vale ? ' style="display:none"' : ""}>${this._finKcCat(true)}</label></div>
-      <div class="duas" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"><label>Função<select id="kc-tipo">${F_FUNCOES.map(([v, n]) => `<option value="${v}" ${this._finKcFuncao(k) === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+      <div class="duas" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"><label>Função<select id="kc-tipo">${F_FUNCOES.map(([v, n]) => `<option value="${v}" ${(this._fKcTipo || this._finKcFuncao(k)) === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>
         <label id="kc-benef-l"${k.vale ? "" : ' style="display:none"'}>Saldo de<select id="kc-benef">${Object.entries(F_BENEFICIOS).map(([v, n]) => `<option value="${v}" ${(k.beneficio_de || "ambos") === v ? "selected" : ""}>${n}</option>`).join("")}</select></label></div>
       <div class="fs fkc-sec">De quem e quando vence</div>
       <label>Titular<select id="kc-dono">${op(pessoas, k.dono)}</select></label>
@@ -2210,6 +2325,10 @@ function instalarFinancas(Classe) {
       this._fKcModelo = k;
       const kb = this.shadowRoot.getElementById("kc-band"), bm = this._finModeloBandeira(k);  // o modelo diz a bandeira: ela acompanha
       if (kb && bm && kb.value !== bm) kb.value = bm;
+      if (kb) this._fKcBand = kb.value;
+      const kt = this.shadowRoot.getElementById("kc-tipo"), fm = F_MODELO_FUNC[k];  // e a função, se for de débito ou pré-pago
+      if (kt && fm && kt.value !== fm && !(fm === "debito" && kt.value === "ambos")) kt.value = fm;
+      if (kt) this._fKcTipo = kt.value;
       const box = this.shadowRoot.getElementById("kc-mods"), pv = this.shadowRoot.getElementById("kc-prev");
       if (box) this._finTrocar(box, this._finKcMods()); else this._render();
       this._finKcCatTrocar?.();
@@ -6121,6 +6240,8 @@ class ComprasCard extends HTMLElement {
       root.getElementById("kc-cat")?.addEventListener("change", kcPrev); };
     if (kcE && kcMods) kcE.addEventListener("change", () => {
       this._fKcBanco = kcE.value; this._fKcModelo = "";
+      const kb = root.getElementById("kc-band"), bs = this._finBandeirasDoBanco(kcE.value);  // bandeiras do banco primeiro; se a escolhida ele não emite, a mais comum dele
+      if (kb) { const v = bs.length && !bs.includes(kb.value) ? bs[0] : kb.value; kb.innerHTML = this._finKcBandeiraOps(false, v); kb.value = v; this._fKcBand = v; }
       if (kcT && !!this._finKcEhBenef(kcE.value) !== (kcT.value === "beneficio")) {  // empresa de benefício → função Benefício (e o contrário)
         kcT.value = this._finKcEhBenef(kcE.value) ? "beneficio" : "credito"; kcT.dispatchEvent(new Event("change"));
       }
@@ -6128,11 +6249,13 @@ class ComprasCard extends HTMLElement {
     root.getElementById("kc-cat")?.addEventListener("change", kcPrev);
     for (const [idc, ev] of [["kc-prod", "input"], ["kc-apelido", "input"], ["kc-benef", "change"]]) root.getElementById(idc)?.addEventListener(ev, kcPrev);
     root.getElementById("kc-prod")?.addEventListener("change", () => this._finKcCatTrocar());
-    root.getElementById("kc-band")?.addEventListener("change", () => { if (kcMods) this._finTrocar(kcMods, this._finKcMods()); this._finKcCatTrocar(); kcPrev(); });
+    root.getElementById("kc-band")?.addEventListener("change", (ev) => { this._fKcBand = ev.target.value; if (kcMods) this._finTrocar(kcMods, this._finKcMods()); this._finKcCatTrocar(); kcPrev(); });
     if (kcT) kcT.addEventListener("change", () => {
+      this._fKcTipo = kcT.value;
       if (kcBen) kcBen.style.display = kcT.value === "beneficio" ? "" : "none";
       const kb = root.getElementById("kc-band");
-      if (kb && kcT.value === "beneficio" && this._fCartEd === "novo") kb.value = "Sem bandeira";  // benefício novo: rede própria (troca se o cartão tiver Elo, Visa…)
+      if (kb && kcT.value === "beneficio" && this._fCartEd === "novo") { kb.value = "Sem bandeira"; this._fKcBand = kb.value; }  // benefício novo: rede própria (troca se o cartão tiver Elo, Visa…)
+      if (kcMods) this._finTrocar(kcMods, this._finKcMods());  // no crédito somem os modelos de débito
       this._finKcCatTrocar(); kcPrev();
     });
     const upSolta = root.getElementById("up-solta");
@@ -7854,7 +7977,7 @@ console.info(`%c COMPRAS-V2 %c ${V2_VERSION} `, "background:#0b6bcb;color:#fff",
 // compras-v2-card: incluído acima
 const BaseNova = ComprasCard;  // mesmo arquivo
 
-const V3_VERSION = "0.0.3";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.4";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
@@ -8659,6 +8782,8 @@ class ComprasV3Card extends BaseV2 {
     const LAY = ["santander", "bradesco", "bb", "itau", "wise", "alelo", "btg", "brb", "inter", "c6"];  // bancos com desenho próprio
     const bid = this._finBancoId(k), b = MOD[k.modelo] || (mi ? (LAY.includes(mi.banco) ? mi.banco : "outro") : LAY.includes(bid) ? bid : "outro"), ouro = c.ouro && b !== "bbd" || (b === "bb" && c.preto);
     const arte = { wise: "wise-verde", alelo: "alelo-refeicao" }[b];  // desenho inteiro do cartão (arquivo em logos/, opcional)
+    // fundo do modelo da biblioteca (logos/cartoes/<modelo>.svg: cor e textura do cartão de verdade); logo, chip e bandeira vêm por cima, como em todos
+    const fundoN = mi && !MOD[k.modelo] && this._finTemFundo?.(k.modelo) ? `cartoes/${k.modelo}` : "";
     const tem = v3Logos([bid, arte, ...V3_BANDEIRAS_LOGO.map((n) => `band-${n}`)], () => this._render()), logo = (n, cls) => `<i class="v3f-logo ${cls || n}" style="--logo:url('${V3_LOGO(n)}')" aria-hidden="true"></i>`;
     // peças
     const chip = (ouro ? ["#e9cd85", "#a8862f", "#f6e2a6"] : ["#d7d9dc", "#8f959b", "#f1f2f4"]);
@@ -8712,7 +8837,7 @@ class ComprasV3Card extends BaseV2 {
         <span class="v3f-marca"><b class="v3f-btgp">${this._e(semTier(prod) ? semTier(prod).toLowerCase().replace(/^./, (s) => s.toUpperCase()) : "")}</b></span><span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
     } else if (b === "brb") {  // BRB Connect: azul em degradê, BRB em pé à direita, "connect" à esquerda, bandeira no alto à direita
       corpo = `<span class="v3f-vert dir"><small>banco</small><b>BRB</b></span><span class="v3f-chipw brbc">${nfc}${chipSvg}</span>
-        <span class="v3f-brbn">${this._e(semTier(prod) ? semTier(prod).toLowerCase() : "connect")}</span>${info}${bandeira ? `<span class="v3f-band topo">${bandeira}</span>` : ""}`;
+        <span class="v3f-brbn">${this._e(semTier(prod) ? semTier(prod).toLowerCase() : !k.modelo || k.modelo === "brb-connect" ? "connect" : "")}</span>${info}${bandeira ? `<span class="v3f-band topo">${bandeira}</span>` : ""}`;
     } else if (b === "inter") {  // Inter: laranja, "inter" em pé à direita, chip no alto à esquerda, bandeira no alto à direita
       corpo = `<span class="v3f-vert dir int">${tem.has("inter") ? `<span class="v3f-intl">${logo("inter", "intl")}</span><b class="v3f-sr">inter</b>` : "<b>inter</b>"}${semTier(prod) ? `<small class="v3f-intp">${this._e(semTier(prod).toLowerCase())}</small>` : ""}</span><span class="v3f-chipw intc">${nfc}${chipSvg}</span>${info}${bandeira ? `<span class="v3f-band topo">${bandeira}</span>` : ""}`;
     } else if (b === "amazon") {  // Amazon (Bradesco): branco, "amazon.com.br" em pé à direita com o sorriso, a seta clara ao fundo
@@ -8730,7 +8855,11 @@ class ComprasV3Card extends BaseV2 {
       const nb = bid === "nubank" && !tem.has("nubank") ? "nu" : this._finBancoNome(k) || k.apelido || k.nome;  // outros bancos: logo (se o arquivo existir) ou o nome, e o modelo embaixo
       corpo = `<span class="v3f-marca">${bid && tem.has(bid) ? `${logo(bid, "gen")}<b class="v3f-sr">${this._e(nb)}</b>` : `<b${bid === "nubank" ? ' class="v3f-nu"' : ""}>${this._e(nb)}</b>`}${semTier(prod) ? `<small>${this._e(semTier(prod))}</small>` : ""}</span><span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
     }
-    const cls = `fcface v3f ${b}${c.preto ? " preto" : ""}${ouro ? " ouro" : ""}`, est = this._finCartaoEstilo(c), nm = this._finNomeCartao(k);
+    // cartão em foto: o desenho do banco inteiro, igual ao de verdade; o CoFinance só escreve o valor e a fatura (num vidro, para ler em qualquer fundo)
+    const foto = fundoN && this._finEhFoto?.(k.modelo);
+    if (foto) corpo = `<img class="v3f-arte" src="${V3_LOGO(fundoN)}" alt="">${info}`;
+    else if (fundoN) corpo = `<img class="v3f-arte" src="${V3_LOGO(fundoN)}" alt="" onerror="this.remove()">${corpo.replace(/^\s*<svg class="v3f-arte"[\s\S]*?<\/svg>/, "")}`;
+    const cls = `fcface v3f ${foto ? "foto" : b}${c.preto ? " preto" : ""}${ouro ? " ouro" : ""}`, est = this._finCartaoEstilo(c), nm = this._finNomeCartao(k);
     if (x?.gasto) return x.acao ? `<button class="${cls}" data-a="${x.acao}" data-k="${this._e(k.id)}" style="${est}" aria-label="${this._e(`${nm}: ${x.rotulo}, ${this._brl(x.total)}`)}">${corpo}</button>` : `<div class="${cls}" style="${est}">${corpo}</div>`;
     return x ? `<button class="${cls}" data-a="f-conta" data-k="${this._e(x.id)}" style="${est}" aria-label="${this._e(`${nm}: fatura de ${this._brl(x.total)}, vence ${this._dataCurta(x.vence + "T12:00")}`)}">${corpo}</button>`
       : `<div class="${cls}" style="${est}">${corpo}</div>`;
@@ -9344,7 +9473,8 @@ class ComprasV3Card extends BaseV2 {
     .v3f-intl{display:block;transform:rotate(180deg)}.v3f-logo.intl{width:9cqw;height:20cqw;transform:rotate(-90deg)}
     .v3f-nu{font:800 11cqw/1 Manrope,sans-serif!important;letter-spacing:-.06em!important}
     .v3f-modelo.longo{top:55%;left:6%;right:auto;text-align:left;padding-left:0;letter-spacing:.32em;font-size:3.2cqw}
-    .v3f-info{left:6%;bottom:8%;display:grid;line-height:1.15;max-width:60%}.v3f-info small{font-size:3.2cqw;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .v3f-info{left:6%;bottom:8%;display:grid;line-height:1.15;max-width:60%}
+    .v3f.foto .v3f-info{left:4%;bottom:5%;padding:1.4cqw 2.6cqw 1.6cqw;border-radius:2.8cqw;background:color-mix(in srgb,var(--cf) 58%,transparent);-webkit-backdrop-filter:blur(7px) saturate(1.2);backdrop-filter:blur(7px) saturate(1.2);box-shadow:0 0 0 1px color-mix(in srgb,var(--ct) 14%,transparent)}.v3f-info small{font-size:3.2cqw;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .v3f-info b{font:700 6.4cqw/1.15 Sora,Manrope,sans-serif;letter-spacing:-.01em}.v3f-info em{font-style:normal;font-size:3.1cqw;opacity:.8}.v3f-info em.atr{opacity:1;font-weight:700}
     .v3f-band{right:6%;bottom:7%;display:grid;justify-items:end;line-height:1;text-align:right}
     .v3f-band small{font-size:3.6cqw;font-weight:600;margin-top:.6cqw;opacity:.92}
