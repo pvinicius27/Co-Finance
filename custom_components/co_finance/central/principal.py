@@ -14,7 +14,7 @@ from .contas_casa import conta_casa, conta_mes
 from .registro import pedaco, registrar
 from .produtos import consultar, definir_tipo, desvincular, produto, produtos, vincular
 from .lista import anexar, apelido, desfazer_pago, detalhe, editar, excluir, listar, marcar_pago, mudanca, pagamento_lote, recuperar, apagar_excluida
-from .avisos import atalho_codigo, avisar, bem_salvar, config_atalho, config_avisos
+from .avisos import atalho_codigo, avisar, bem_salvar, config_atalho, config_avisos, pagamento_telefones
 from .lancamento import manual
 from .veiculo import km
 from .pedidos import pedido_decidir, pedido_email, pedidos_caixa, pedidos_config, pedidos_importar, pedidos_importar_desfazer
@@ -39,7 +39,7 @@ ACOES = {"completar_codigos": completar_codigos, "completar_bandeiras": completa
          "fatura_ler": fatura_ler, "faturas_banco": faturas_banco, "fatura_apagar": fatura_apagar,
          "faturas_previa": faturas_previa, "faturas_importar": faturas_importar, "faturas_lote": faturas_lote,
          "faturas_lojas": faturas_lojas, "faturas_classificar": faturas_classificar,
-         "pedido_email": pedido_email, "pedidos_config": pedidos_config, "pedidos_caixa": pedidos_caixa, "pedido_decidir": pedido_decidir,
+         "pedido_email": pedido_email, "pedidos_config": pedidos_config, "pedidos_caixa": pedidos_caixa, "pagamento_telefones": pagamento_telefones, "pedido_decidir": pedido_decidir,
          "pedidos_importar": pedidos_importar, "pedidos_importar_desfazer": pedidos_importar_desfazer}
 
 

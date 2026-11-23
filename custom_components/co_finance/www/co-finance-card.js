@@ -14,13 +14,25 @@ const F_DIAS = ["D", "S", "T", "Q", "Q", "S", "S"];
 const F_ICONES_CONTA = ["🌐", "🏛️", "⚡", "💧", "🔥", "📺", "📱", "🏠", "🚗", "🛡️", "🏋️", "🎓", "🏥", "📦"];  // os mesmos do script (ICONES_CONTA)
 const F_PALETA = ["#3b82f6", "#d9467a", "#0f9f8f", "#f59e0b", "#8b5cf6", "#ef4444", "#64748b"];  // a mesma do script (PALETA_PESSOAS)
 const F_BANDEIRAS = ["Visa", "Mastercard", "Elo", "Amex", "Hipercard", "Alelo", "VR", "Ticket", "Pluxee", "Outra"];
-const F_PAINEL_ENERGIA = "/energia-v5-lab/1";
+const F_PAINEL_ENERGIA = "/co-energy";  // o item da barra lateral do CoEnergy (quando instalado)
 const F_BANCOS = { santander: "Santander", bb: "Banco do Brasil", bradesco: "Bradesco", itau: "Itaú", brb: "BRB", btg: "BTG Pactual", caixa: "Caixa", inter: "Inter", nubank: "Nubank" };
-const F_EMISSORES = {bb: ["Banco do Brasil", "#fcfc30", "#1d3f9b"], bradesco: ["Bradesco", "#cc092f", "#ffffff"], itau: ["Itaú", "#ec7000", "#ffffff"], santander: ["Santander", "#ec0000", "#ffffff"], caixa: ["Caixa", "#005ca9", "#ffffff"], nubank: ["Nubank", "#820ad1", "#ffffff"], inter: ["Inter", "#ff7a00", "#ffffff"], c6: ["C6 Bank", "#242424", "#ffffff"], btg: ["BTG Pactual", "#0d2240", "#ffffff"], xp: ["XP", "#111111", "#f5c518"], sicredi: ["Sicredi", "#3fa110", "#ffffff"], sicoob: ["Sicoob", "#003641", "#7db61c"], banrisul: ["Banrisul", "#00519e", "#ffffff"], brb: ["BRB", "#0a3d91", "#ffffff"], pan: ["Banco Pan", "#00aeef", "#ffffff"], bv: ["Banco BV", "#1b2a5c", "#ffffff"], safra: ["Safra", "#00205b", "#c9a45c"], porto: ["Porto Bank", "#0046c0", "#ffffff"], picpay: ["PicPay", "#21c25e", "#ffffff"], mercadopago: ["Mercado Pago", "#00b1ea", "#ffffff"], neon: ["Neon", "#0e1a3f", "#2de0ff"], next: ["Next", "#00ff5f", "#111111"], will: ["Will Bank", "#ffe500", "#111111"], original: ["Original", "#00a335", "#ffffff"], wise: ["Wise", "#7beb7f", "#163300"], alelo: ["Alelo", "#bad355", "#1f5136"]};  // banco do cartão: nome, fundo e tinta
+const F_EMISSORES = {bb: ["Banco do Brasil", "#fcfc30", "#1d3f9b"], bradesco: ["Bradesco", "#cc092f", "#ffffff"], itau: ["Itaú", "#ec7000", "#ffffff"], santander: ["Santander", "#ec0000", "#ffffff"], caixa: ["Caixa", "#005ca9", "#ffffff"], nubank: ["Nubank", "#820ad1", "#ffffff"], inter: ["Inter", "#ff7a00", "#ffffff"], c6: ["C6 Bank", "#242424", "#ffffff"], btg: ["BTG Pactual", "#0d2240", "#ffffff"], xp: ["XP", "#111111", "#f5c518"], sicredi: ["Sicredi", "#3fa110", "#ffffff"], sicoob: ["Sicoob", "#003641", "#7db61c"], banrisul: ["Banrisul", "#00519e", "#ffffff"], brb: ["BRB", "#0a3d91", "#ffffff"], pan: ["Banco Pan", "#00aeef", "#ffffff"], bv: ["Banco BV", "#1b2a5c", "#ffffff"], safra: ["Safra", "#00205b", "#c9a45c"], porto: ["Porto Bank", "#0046c0", "#ffffff"], picpay: ["PicPay", "#21c25e", "#ffffff"], mercadopago: ["Mercado Pago", "#00b1ea", "#ffffff"], neon: ["Neon", "#0e1a3f", "#2de0ff"], next: ["Next", "#00ff5f", "#111111"], will: ["Will Bank", "#ffe500", "#111111"], original: ["Original", "#00a335", "#ffffff"], wise: ["Wise", "#7beb7f", "#163300"], infinitepay: ["InfinitePay", "#111111", "#ffffff"], alelo: ["Alelo", "#bad355", "#1f5136"]};  // banco do cartão: nome, fundo e tinta
 // modelos de cartão (desenho na V3): id → [banco, nome]. Cada foto de cartão nova vira um modelo aqui
 const F_MODELOS = { "bradesco-prime": ["bradesco", "Bradesco Prime · preto"], "santander-unique": ["santander", "Santander Unique · preto"],
   "bb-ourocard-infinite": ["bb", "Ourocard Infinite crédito · preto e dourado"], "bb-ourocard-debito": ["bb", "Ourocard débito · preto, linhas brancas"],
-  "itau-latam-black": ["itau", "Itaú Latam Pass Black · preto"], "wise-verde": ["wise", "Wise · verde"], "alelo-refeicao": ["alelo", "Alelo refeição e alimentação · verde-limão"] };
+  "itau-latam-black": ["itau", "Itaú Latam Pass Black · preto"], "wise-verde": ["wise", "Wise · verde"], "alelo-refeicao": ["alelo", "Alelo refeição e alimentação · verde-limão"],
+  "caixa-platinum": ["caixa", "Caixa Platinum · prata"], "btg-ultrablue": ["btg", "BTG Pactual Ultrablue · azul escovado"], "brb-connect": ["brb", "BRB Connect · azul"],
+  "inter-laranja": ["inter", "Inter · laranja"], "amazon-bradesco": ["bradesco", "Amazon (Bradesco) · branco"], "c6-carbon": ["c6", "C6 Carbon Black · preto fibra de carbono"] };
+// cor de cada modelo (fundo, tinta, e o degradê do cartão de verdade); sem modelo, a cor do banco
+const F_MODELO_COR = {
+  "bradesco-prime": { preto: true }, "santander-unique": { preto: true }, "itau-latam-black": { preto: true },
+  "bb-ourocard-infinite": { preto: true, ouro: true }, "bb-ourocard-debito": { preto: true },
+  "caixa-platinum": { fundo: "#cfd3d6", tinta: "#3b3f43", cg: "linear-gradient(115deg,#e6e4dc 0%,#d6d8d8 48%,#c7ccd0 100%)" },
+  "btg-ultrablue": { fundo: "#1d3c70", tinta: "#ffffff", cg: "repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 4px),linear-gradient(165deg,#2c5291 0%,#1a3768 55%,#0f2550 100%)" },
+  "brb-connect": { fundo: "#0a63c9", tinta: "#ffffff", cg: "linear-gradient(200deg,#0b3c96 0%,#0a5fc4 50%,#169fe4 100%)" },
+  "inter-laranja": { fundo: "#ff7a00", tinta: "#ffffff", cg: "linear-gradient(160deg,#ff8c22 0%,#ff7300 60%,#ff6a00 100%)" },
+  "c6-carbon": { fundo: "#1b1b1d", tinta: "#f2f2f3", cg: "repeating-linear-gradient(135deg,rgba(255,255,255,.035) 0 2px,transparent 2px 5px),linear-gradient(160deg,#2a2a2d 0%,#141416 100%)" },
+  "amazon-bradesco": { fundo: "#ffffff", tinta: "#232f3e", cg: "linear-gradient(160deg,#ffffff 0%,#f3f4f6 100%)" } };
 const F_COR_BANCO = { santander: ["#ec0000", "#ffffff"], bradesco: ["#cc092f", "#ffffff"], bb: ["#fcfc30", "#1d3f9b"], itau: ["#ec7000", "#ffffff"] };  // desenho do cartão: fundo e tinta  // leitores de fatura do script
 const F_TIPO_LINHA = { pagamento: "pagamento", estorno: "↩ estorno", iof: "IOF", juros: "juros/encargos", anuidade: "anuidade" };  // aba Energy do Dashboard (faturas da Equatorial)
 
@@ -408,7 +420,7 @@ function instalarFinancas(Classe) {
     const porCompra = new Map();
     lst.forEach((l) => { const x = porCompra.get(l.c.id) || { c: l.c, v: 0 }; x.v += l.valor; porCompra.set(l.c.id, x); });
     const compras = [...porCompra.values()].sort((a, b) => (b.c.emissao || "").localeCompare(a.c.emissao || ""));
-    const tag = (c) => c.origem === "manual" ? (c.via === "applepay" ? "Apple Pay" : "à mão") : c.origem === "nfse" ? "nota de serviço" : "nota";
+    const tag = (c) => c.origem === "manual" ? (c.via === "applepay" ? "pelo telefone" : "à mão") : c.origem === "nfse" ? "nota de serviço" : "nota";
     const noPer = this._finSomaPor(this._finFiltradas(), (l) => l.area);
     const chips = todas.slice().sort((a, b) => (noPer[b] || 0) - (noPer[a] || 0));
     const zeradas = sl.filter(([, v]) => !v).length;
@@ -433,11 +445,14 @@ function instalarFinancas(Classe) {
   // O ✓ Paguei mora na janela de cada fatura/conta; a lista só aponta para ela.
   // desenho do cartão (cadastro): cor do banco, ou preto com o nome do produto e detalhe prata/dourado
   P._finCartaoCor = function (k) {
+    const mc = F_MODELO_COR[k?.modelo];
+    if (mc?.preto) return { fundo: "#151517", tinta: mc.ouro ? "#d4b26a" : "#d4d4d8", preto: true, ouro: !!mc.ouro };
+    if (mc) return { fundo: mc.fundo, tinta: mc.tinta, cg: mc.cg };
     if (k?.visual?.estilo === "preto") { const ouro = k.visual.metal === "dourado"; return { fundo: "#151517", tinta: ouro ? "#d4b26a" : "#d4d4d8", preto: true, ouro }; }
     const e = F_EMISSORES[k?.emissor || k?.banco], c = e ? [e[1], e[2]] : null;
     return c ? { fundo: c[0], tinta: c[1] } : k?.vale ? { fundo: "#0b6e4f", tinta: "#ffffff" } : { fundo: "#334155", tinta: "#ffffff" };
   };
-  P._finCartaoEstilo = function (c) { return `--cf:${c.fundo};--ct:${c.tinta}${c.preto ? ";--cg:linear-gradient(135deg,#232327,#0c0c0e)" : ""}`; };
+  P._finCartaoEstilo = function (c) { return `--cf:${c.fundo};--ct:${c.tinta}${c.preto ? ";--cg:linear-gradient(135deg,#232327,#0c0c0e)" : c.cg ? `;--cg:${c.cg}` : ""}`; };
   P._finMini = function (k) { return `<span class="fmini" style="${this._finCartaoEstilo(this._finCartaoCor(k))}" aria-hidden="true"></span>`; };
   // nome do cartão nas telas: o que vocês escolheram; senão o banco e o produto ("Bradesco Prime"); sem banco, a sigla
   // banco do cartão: o escolhido em "Banco"; sem ele, o da leitura da fatura (cartões de antes)
@@ -458,7 +473,7 @@ function instalarFinancas(Classe) {
     return `${nome}${tipo(k) ? ` · ${tipo(k)}` : ""} · ${k.dono || k.nome}`;
   };
   // "Automático" no modelo: o desenho que sai quando só o banco é escolhido
-  const F_MODELO_PADRAO = { bradesco: "bradesco-prime", santander: "santander-unique", bb: "bb-ourocard-infinite", itau: "itau-latam-black", wise: "wise-verde", alelo: "alelo-refeicao" };
+  const F_MODELO_PADRAO = { bradesco: "bradesco-prime", santander: "santander-unique", bb: "bb-ourocard-infinite", itau: "itau-latam-black", wise: "wise-verde", alelo: "alelo-refeicao", btg: "btg-ultrablue", brb: "brb-connect", inter: "inter-laranja", c6: "c6-carbon" };
   P._finAutoTxt = function (banco) {
     const m = F_MODELOS[F_MODELO_PADRAO[banco]]?.[1];
     return `Automático: ${m || (F_EMISSORES[banco] ? `cartão na cor do ${F_EMISSORES[banco][0]}` : "cartão simples")}`;
@@ -723,7 +738,7 @@ function instalarFinancas(Classe) {
       const nome = i.conta ? `<button class="fprod" data-a="f-conta" data-k="${this._e(i.compra)}">${this._e(i.descricao)}</button>`
         : i.chave ? `<button class="fprod" data-a="produto" data-k="${this._e(i.chave)}">${this._e(i.descricao)}</button>`
         : i.manual ? `<button class="fprod" data-a="f-nota" data-id="${this._e(i.compra)}">${this._e(i.descricao)}</button>` : `<span>${this._e(i.descricao)}</span>`;
-      const extra = i.conta ? (i.fonte && i.fonte !== "energia" ? "conta" : "conta (Equatorial)") : i.manual ? `${i.applepay ? "Apple Pay · sem cupom" : "lançada à mão"}${i.moeda ? ` · ${this._moeda(i.moeda)}` : ""}` : i.qtd != null ? `${this._num(i.qtd)} ${this._e(i.un || "")} × ${this._brl(i.unit)}` : "";
+      const extra = i.conta ? (i.fonte && i.fonte !== "energia" ? "conta" : "conta (Equatorial)") : i.manual ? `${i.applepay ? "pelo telefone · sem cupom" : "lançada à mão"}${i.moeda ? ` · ${this._moeda(i.moeda)}` : ""}` : i.qtd != null ? `${this._num(i.qtd)} ${this._e(i.un || "")} × ${this._brl(i.unit)}` : "";
       return `<div class="fitem"><span class="fd">${this._dataCurta(i.data)}</span><span class="fdesc">${nome}${i.promo ? " <em>promo</em>" : ""}
           <small>${extra}${seta} · ${this._e(i.loja)}</small></span><b>${this._brl(i.total)}</b></div>`;
     }).join("");
@@ -871,7 +886,7 @@ function instalarFinancas(Classe) {
       ${this._aviso ? `<div class="aviso" role="status">${this._e(this._aviso)}</div>` : ""}
       ${pg ? (this._fCorrigir ? `<div class="fcard">${this._finItem(x, true, true)}</div>` : "") : `<button class="btn prim fpg-grande" data-a="f-pagar" data-k="${this._e(x.id)}">✓ Paguei esta conta</button>`}
       ${x.fonte === "agua" ? this._finAguaDetalhe(x) : x.fonte === "luz_pdf" ? this._finLuzDetalhe(x) : x.fonte === "parcelada" ? `<div class="fcard"><div class="fhd"><h3>Parcela ${this._e(x.referencia)}</h3></div><div class="fs">Parcela de ${this._brl(x.total)} do carnê, com vencimento em ${this._dataCurta(x.vence + "T12:00")}. Paga depois do vencimento, a prefeitura cobra multa e juros: corrija o valor se for o caso.${x.pago ? ` Paga em ${this._finQuando(x.pago.em)}.` : ""}</div></div>
-        <div class="links"><button class="lnk" data-a="f-rec" data-k="${this._e(x.id.split(":")[0])}">${this._e(x.icone)} Todas as parcelas ›</button></div>` : x.fonte === "recorrente" ? `<div class="fcard"><div class="fhd"><h3>Como funciona</h3></div><div class="fs">A operadora não manda conta nem comprovante: a Central cria esta conta todo mês e o controle é de vocês (✓ Paguei com a data).<br>
+        <div class="links"><button class="lnk" data-a="f-rec" data-k="${this._e(x.id.split(":")[0])}">${this._e(x.icone)} Todas as parcelas ›</button></div>` : x.fonte === "recorrente" ? `<div class="fcard"><div class="fhd"><h3>Como funciona</h3></div><div class="fs">A operadora não manda conta nem comprovante: o CoFinance cria esta conta todo mês e o controle é de vocês (✓ Paguei com a data).<br>
         Pagando até <b>${this._dataCurta(x.faixas.ate + "T12:00")}</b>: <b>${this._brl(x.faixas.valor)}</b> · depois: <b>${this._brl(x.faixas.depois)}</b>.${x.pago ? ` Paga em ${this._finQuando(x.pago.em)}: ${this._brl(x.total)}.` : ""}</div></div>
         <div class="links"><button class="lnk" data-a="f-rec" data-k="${this._e(x.id.split(":")[0])}">${this._e(x.icone)} Histórico de ${this._e(x.nome.toLowerCase())} ›</button></div>` : `<div class="links"><button class="lnk" data-a="f-energia">⚡ Abrir no painel de energia ›</button></div>
       <div class="fs">Lá, abra a aba Faturas e escolha ${this._e(x.referencia || "o mês")}. Valor e consumo vêm de lá (a Equatorial); aqui só a data do pagamento.</div>`}
@@ -1446,7 +1461,7 @@ function instalarFinancas(Classe) {
     ].join("");
     return `<div class="fcard"><div class="fhd"><h2>Contas da casa</h2><small>aparecem em A pagar</small></div><div class="fcarts">${lista}</div>${this._finFormConta()}
       ${cc.agua || cc.luz ? `<div class="fimp">${this._finImportarConta("agua")}${this._finImportarConta("luz")}</div>` : ""}
-      <div class="fs" style="margin-top:8px">Mensal: a Central cria uma conta por mês. Carnê: uma por data. Mudar o valor vale para o que ainda não foi pago.</div></div>`;
+      <div class="fs" style="margin-top:8px">Mensal: o CoFinance cria uma conta por mês. Carnê: uma por data. Mudar o valor vale para o que ainda não foi pago.</div></div>`;
   };
 
   P._finImportarConta = function (tipo) {
@@ -1477,10 +1492,10 @@ function instalarFinancas(Classe) {
       const pe = this._fFin?.painel_energia;
       f += `<label>De onde vem<select id="kk-fonte">${pe ? `<option value="painel">Painel de energia (Co-Energy)</option>` : ""}<option value="pdf" ${x.fonte === "pdf" ? "selected" : ""}>Conta em PDF (Equatorial Goiás, CPFL, Neoenergia)</option><option value="manual" ${x.fonte === "manual" ? "selected" : ""}>Outra distribuidora (digito o valor todo mês)</option></select></label>
         ${pe ? `<label>Unidade no painel de energia <small>(só com o painel)</small><select id="kk-uni"><option value="">—</option>${(pe.unidades || []).map((u) => `<option value="${this._e(u.id)}" ${x.unidade === u.id ? "selected" : ""}>${this._e(u.nome)}</option>`).join("")}</select></label>` : ""}
-        <div class="fs">${pe ? "Painel: valor e vencimento vêm do Co-Energy. " : ""}PDF: a Central lê as contas e fica só com valor, vencimento, consumo e leituras (sem nome, CPF ou endereço). Outra: vocês digitam o valor e o vencimento de cada mês.</div>`;
+        <div class="fs">${pe ? "Painel: valor e vencimento vêm do Co-Energy. " : ""}PDF: o CoFinance lê as contas e fica só com valor, vencimento, consumo e leituras (sem nome, CPF ou endereço). Outra: vocês digitam o valor e o vencimento de cada mês.</div>`;
     }
-    if (tipo === "agua") f += `<label>Companhia<select id="kk-fonte"><option value="saneago">Saneago (a Central lê o PDF)</option><option value="manual" ${x.fonte === "manual" ? "selected" : ""}>Outra (digito o valor todo mês)</option></select></label>
-      <div class="fs">Saneago: a Central lê as contas em PDF. Outra companhia: vocês digitam o valor e o vencimento de cada mês (Sabesp, Copasa, Caesb… ganham leitor quando alguém mandar uma conta).</div>`;
+    if (tipo === "agua") f += `<label>Companhia<select id="kk-fonte"><option value="saneago">Saneago (o CoFinance lê o PDF)</option><option value="manual" ${x.fonte === "manual" ? "selected" : ""}>Outra (digito o valor todo mês)</option></select></label>
+      <div class="fs">Saneago: o CoFinance lê as contas em PDF. Outra companhia: vocês digitam o valor e o vencimento de cada mês (Sabesp, Copasa, Caesb… ganham leitor quando alguém mandar uma conta).</div>`;
     if (fora && cc[tipo] && this._finImportarConta(tipo)) f += `<div class="fimp">${this._finImportarConta(tipo)}<span class="fs">${cc[tipo].fonte === "manual" ? "Digite o valor e o vencimento de cada mês." : tipo === "luz" && cc.luz.fonte !== "pdf" ? "Valor e consumo vêm de lá." : "Escolha a pasta ou os PDFs: só as contas novas são lidas."}</span></div>`;
     if (tipo === "recorrente") f += `<div class="duas" style="grid-template-columns:5em minmax(0,1fr) minmax(0,1fr)"><label>Vence dia<input id="kk-dia" type="number" inputmode="numeric" min="1" max="31" value="${x.dia ?? ""}"></label>
         <label>Valor<input id="kk-val" type="text" inputmode="decimal" value="${num(x.valor)}"></label>
@@ -1546,7 +1561,12 @@ function instalarFinancas(Classe) {
     return `<fieldset class="fkc-sec2"><legend>Avisos no telefone</legend>
       <label>Celular <small>(o app do Home Assistant instalado nele)</small><select id="kp-cel"><option value="">— sem celular (não recebe avisos) —</option>${cels.map((c) => `<option value="${this._e(c)}" ${a.celular === c ? "selected" : ""}>${this._e(nome(c))}</option>`).join("")}</select></label>
       <label>Compras que recebe<select id="kp-comp">${F_AV_COMPRAS.map(([v, t]) => `<option value="${v}" ${a.compras === v ? "selected" : ""}>${t}</option>`).join("")}</select></label>
-      <label class="chk"><input type="checkbox" id="kp-ap" ${a.applepay ? "checked" : ""}> Apple Pay: pergunta "Lançar sem cupom?" quando pagar</label>
+      <label class="chk"><input type="checkbox" id="kp-ap" ${a.applepay ? "checked" : ""}> Pagamento pelo telefone: pergunta "Lançar sem cupom?" quando pagar</label>
+      <details class="fkc-mais"><summary>Como ligar no telefone</summary><span class="fs"><b>iPhone:</b> no app Atalhos › Automação › Nova automação › <b>Transação</b>
+        (Carteira) › escolha os cartões › ação que manda valor, comerciante e cartão para o endereço do Atalho do telefone.<br>
+        <b>Android:</b> no app do Home Assistant › Configurações › Companion app › Gerenciar sensores › <b>Última notificação</b> › ligar, e em
+        "Permitir lista" marque o app que avisa o pagamento: Google Wallet, Samsung Wallet ou o app do banco. O CoFinance lê o aviso
+        ("Compra de R$ 45,90 em …") e pergunta "Lançar sem cupom?".</span></details></label>
       <label class="chk"><input type="checkbox" id="kp-ct" ${a.contas ? "checked" : ""}> Lembretes de contas e faturas (com ✓ Paguei)</label>
       ${cels.length ? "" : `<span class="fs">Nenhum celular na lista: instale o app do Home Assistant no celular e entre com a sua conta.</span>`}</fieldset>`;
   };
@@ -1590,6 +1610,24 @@ function instalarFinancas(Classe) {
     this._render();
   };
 
+  // cartão › banco (lista) e modelo: escolhido o banco, os modelos dele aparecem em miniatura (o mesmo desenho da tela)
+  P._finKcBancoSel = function () {
+    const b = this._fKcBanco || "";
+    return `<label>Banco<select id="kc-emissor"><option value="">—</option>${Object.entries(F_EMISSORES).sort((x, y) => x[1][0].localeCompare(y[1][0]))
+      .map(([v, e]) => `<option value="${v}" ${b === v ? "selected" : ""}>${this._e(e[0])}</option>`).join("")}</select></label>`;
+  };
+  P._finKcMods = function () {
+    const b = this._fKcBanco || "", m = this._fKcModelo || "";
+    const campo = `<input type="hidden" id="kc-modelo" value="${this._e(m)}">`;
+    if (!b) return campo;
+    const band = this.shadowRoot?.getElementById("kc-band")?.value || "Visa";
+    const lista = [["", "Padrão do banco"], ...Object.entries(F_MODELOS).filter(([, [mb]]) => mb === b).map(([mid, [, mn]]) => [mid, mn])];
+    const face = (mid) => this._finCartaoFace ? this._finCartaoFace({ id: `kcm-${mid || b}`, emissor: b, modelo: mid, bandeira: band, categoria: "", visual: { produto: "" } }, null) : "";
+    return `<span class="fl">Modelo <small>(o desenho do cartão)</small></span><div class="fkm-l" role="radiogroup" aria-label="Modelo do cartão">${lista.map(([mid, mn]) => `
+      <button type="button" class="fkm${mid === m ? " on" : ""}" data-a="f-kc-mod" data-k="${mid}" role="radio" aria-checked="${mid === m}">
+        <span class="fkm-f">${face(mid)}</span><small>${mid === m ? "✓ " : ""}${this._e(mn)}</small></button>`).join("")}</div>${campo}`;
+  };
+
   // cadastro de cartões (aba A pagar › Cartões): toque no cartão abre o formulário aqui mesmo
   P._finFormCartao = function () {
     const F = this._fFin, id = this._fCartEd;
@@ -1600,14 +1638,11 @@ function instalarFinancas(Classe) {
     if (!k) return "";
     const pessoas = this._dados?.compradores || [];
     const op = (l, a) => l.map((v) => `<option ${v === a ? "selected" : ""}>${this._e(v)}</option>`).join("");
-    const bancoK = k.emissor || k.banco || "", grupos = {};
-    for (const [mid, [mb, mn]] of Object.entries(F_MODELOS)) (grupos[mb] ||= []).push([mid, mn]);
-    const modelos = Object.entries(grupos).map(([mb, l]) => `<optgroup label="${this._e(F_EMISSORES[mb]?.[0] || mb)}">${l.map(([mid, mn]) => `<option value="${mid}" ${k.modelo === mid ? "selected" : ""}>${this._e(mn)}</option>`).join("")}</optgroup>`).join("");
+    if (this._fKcDe !== id) { this._fKcDe = id; this._fKcBanco = k.emissor || k.banco || ""; this._fKcModelo = k.modelo || ""; }
     const cats = ["Classic", "Gold", "Platinum", "Signature", "Infinite", "Standard", "Black", "Grafite", "Nanquim", "Internacional"];
     return `<div class="form fcartform">
       <div class="fs fkc-sec">O cartão</div>
-      <div class="duas" style="grid-template-columns:minmax(0,1fr)"><label>Banco<select id="kc-emissor"><option value="">—</option>${Object.entries(F_EMISSORES).sort((a, b) => a[1][0].localeCompare(b[1][0])).map(([v, e]) => `<option value="${v}" ${bancoK === v ? "selected" : ""}>${e[0]}</option>`).join("")}</select></label>
-        <label>Modelo <small>(o desenho)</small><select id="kc-modelo"><option value="">${this._e(this._finAutoTxt(bancoK))}</option>${modelos}</select></label></div>
+      ${this._finKcBancoSel()}<div id="kc-mods">${this._finKcMods()}</div>
       <label>Nome no cartão <small>(o modelo escrito nele: Prime, Unique, Ourocard, Latam Pass…)</small><input id="kc-prod" type="text" maxlength="24" value="${this._e(k.visual?.produto || "")}" autocomplete="off"></label>
       <div class="duas" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"><label>Bandeira<select id="kc-band">${op(F_BANDEIRAS, k.bandeira)}</select></label>
         <label>Categoria <small>(Infinite, Black…)</small><input id="kc-cat" type="text" maxlength="20" list="kc-cats" value="${this._e(k.categoria || "")}" placeholder="${this._e(this._finCategoria({ ...k, categoria: "" }) || "ex.: Infinite")}" autocomplete="off"><datalist id="kc-cats">${cats.map((v) => `<option value="${v}">`).join("")}</datalist></label></div>
@@ -1622,9 +1657,7 @@ function instalarFinancas(Classe) {
       <div><div class="fs">Finais do cartão <small>(os 4 últimos números de cada cartão: físico, virtual, adicional)</small></div>
         <div class="fkf-l">${Object.entries(k.finais || {}).map(([f, x]) => this._finLinhaFinal(f, x, pessoas)).join("")}</div>
         <button class="lnk" data-a="f-kf-mais">+ Adicionar final</button></div>
-      <details class="fkc-mais"${k.apelido || k.nome ? "" : ""}><summary>Mais opções · aparência na v2 e nome para mostrar</summary>
-        <div class="duas" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"><label>Desenho na v2<select id="kc-vis"><option value="banco">Cor do banco</option><option value="preto" ${k.visual?.estilo === "preto" ? "selected" : ""}>Preto</option></select></label><label>Detalhe <small>(preto)</small><select id="kc-metal"><option value="prata">Prata</option><option value="dourado" ${k.visual?.metal === "dourado" ? "selected" : ""}>Dourado</option></select></label></div>
-        <label>Nome para mostrar <small>(vazio: banco e nome no cartão)</small><input id="kc-apelido" type="text" maxlength="24" value="${this._e(k.apelido || "")}" placeholder="${this._e(this._finNomeCartao({ ...k, apelido: "" }) || "ex.: Bradesco Prime")}" autocomplete="off"></label></details>
+      <label>Nome para mostrar <small>(vazio: banco e nome no cartão)</small><input id="kc-apelido" type="text" maxlength="24" value="${this._e(k.apelido || "")}" placeholder="${this._e(this._finNomeCartao({ ...k, apelido: "" }) || "ex.: Bradesco Prime")}" autocomplete="off"></label>
       <label class="chk"><input type="checkbox" id="kc-ativo" ${k.ativo !== false ? "checked" : ""}> Em uso (aparece para escolher nas compras)</label>
       <div class="fpe"><button class="btn prim" data-a="f-cart-salvar">Salvar</button><button class="btn" data-a="f-cart-ed" data-k="${this._e(id)}">Cancelar</button>
         ${id === "novo" ? "" : this._fCartApagar ? `<span class="fs">Apagar o ${this._e(this._finNomeCartao(k))}?</span><button class="btn perigo" data-a="f-cart-apagar">Apagar</button>` : `<button class="lnk perigo" data-a="f-cart-apagar">Apagar</button>`}</div>
@@ -1654,7 +1687,7 @@ function instalarFinancas(Classe) {
       emissor: g("kc-emissor")?.value || F_MODELOS[g("kc-modelo")?.value]?.[0] || "", banco: g("kc-ler")?.checked ? g("kc-emissor")?.value || "" : "",
       finais: [...this.shadowRoot.querySelectorAll(".fkf")].map((r) => { const v = (n) => r.querySelector(`[data-kf="${n}"]`); const uso = v("uso").checked;
         return { final: v("final").value.trim(), quem: v("quem").value, tipo: v("tipo").value, parado: uso ? "" : v("parado").value || this._fFin?.hoje || "" }; }),
-      visual: { estilo: g("kc-vis")?.value || "banco", produto: g("kc-prod")?.value || "", metal: g("kc-metal")?.value || "prata" } };
+      visual: { ...((this._fFin?.cartoes || []).find((x) => x.id === id)?.visual || {}), produto: g("kc-prod")?.value || "" } };
     try {
       const r = await this._api(p);
       this._aviso = r.mensagem;
@@ -1981,6 +2014,12 @@ function instalarFinancas(Classe) {
     if (a === "f-pg-salvar-txt") return this._finPgSalvar();
     if (a === "f-pg-cancelar") return this._finPgCancelar();
     if (a === "f-corrigir") { this._fCorrigir = !this._fCorrigir; this._fPgEd = null; this._fCartEd = null; this._aviso = null; return this._render(); }
+    if (a === "f-kc-mod") {  // só troca as miniaturas: o resto do formulário não perde o que já foi digitado
+      this._fKcModelo = k;
+      const box = this.shadowRoot.getElementById("kc-mods");
+      if (box) box.innerHTML = this._finKcMods(); else this._render();
+      return;
+    }
     if (a === "f-cart-ed") { this._fCartEd = this._fCartEd === k ? null : k; this._fCartApagar = false; this._aviso = null; return this._render(); }
     if (a === "f-cart-salvar") return this._finSalvarCartao(false);
     if (a === "f-pes-ed") { this._fPesEd = this._fPesEd === k ? null : k; this._fPesApagar = false; this._aviso = null; return this._render(); }
@@ -2181,6 +2220,10 @@ function instalarFinancas(Classe) {
     .fcfg-l:hover,.fcfg-g.on .fcfg-l{background:color-mix(in srgb,var(--c-txt) 5%,transparent)}
     .fcfg-t{font-weight:600}.fcfg-r{color:var(--c-sub);font-size:13px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .fcfg-s{color:var(--c-sub);font-size:18px;line-height:1;transition:transform .15s}.fcfg-g.on .fcfg-s{transform:rotate(90deg)}
+    .fkm-l{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:4px 0 12px}
+    .fkm{display:grid;gap:6px;border:0;background:none;padding:4px;border-radius:14px;cursor:pointer;color:var(--c-txt);font:inherit;text-align:center}
+    .fkm small{font-size:12px;line-height:1.3}.fkm.on{box-shadow:0 0 0 2.5px var(--c-acc)}.fkm.on small{color:var(--c-acc);font-weight:600}
+    .fkm-f{display:block;pointer-events:none}.fkm-f .fcface{width:100%;border-radius:10px!important;box-shadow:0 4px 10px -6px rgba(0,0,0,.5)!important}.fkm-f .v3f-info{display:none}
     .fcfg-prog{max-width:760px;width:100%;box-sizing:border-box;margin:0 auto 12px;display:grid;gap:6px;border:1px solid color-mix(in srgb,var(--c-acc) 40%,transparent);border-radius:14px;padding:12px 16px;background:color-mix(in srgb,var(--c-acc) 6%,transparent)}
     .fcfg-bar{height:6px;border-radius:999px;background:var(--c-linha);overflow:hidden}.fcfg-bar i{display:block;height:100%;background:var(--c-acc);border-radius:999px;transition:width .3s}
     .fcfg-n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--c-sub);color:var(--c-sub);font-size:12px;font-weight:700;margin-right:8px;vertical-align:-1px}
@@ -4709,7 +4752,7 @@ class ComprasCard extends HTMLElement {
     if (this._hass?.services?.co_finance?.pedido) {  // integração do HACS instalada: o serviço dela responde direto
       const r = await this._hass.callWS({ type: "call_service", domain: "co_finance", service: "pedido", service_data: { pedido }, return_response: true });
       const d = r?.response;
-      if (!d || typeof d !== "object") throw new Error("A Central não respondeu.");
+      if (!d || typeof d !== "object") throw new Error("O CoFinance não respondeu.");
       if (!d.ok) throw new Error(d.mensagem || "Erro.");
       return d;
     }
@@ -4913,7 +4956,7 @@ class ComprasCard extends HTMLElement {
   // Observação da compra sem nota, quando diz algo além do item (e não é o texto automático do Apple Pay)
   _obsManual(c) {
     const o = String(c.observacao || "").trim(), n = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-    if (!o || (c.via === "applepay" && o.startsWith("Apple Pay"))) return "";
+    if (!o || (c.via === "applepay" && /^(Apple Pay|Pelo telefone)/.test(o))) return "";
     return (c.itens || []).some((i) => n(i.descricao) === n(o)) ? "" : o;
   }
 
@@ -4946,8 +4989,8 @@ class ComprasCard extends HTMLElement {
           <div class="fs">${this._e((x.lojas || []).filter(Boolean).join(", "))}${x.situacao === "pago_sem_detalhes" ? " · pagamento confirmado, mas o e-mail do pedido (com os preços) não chegou" : x.situacao === "conferir_cartao" ? ` · cartão final ${this._e(x.final || "?")}, que não está em ⚙ › Cartões` : " · sem a confirmação do pagamento"}</div></div>
           <span>${x.situacao === "aguardando_pagamento" || x.situacao === "conferir_cartao" ? `<button class="btn prim" data-a="pd-decidir" data-k="${this._e(x.id)}" data-d="confirmar">${x.situacao === "conferir_cartao" ? "É nosso, lançar" : "Já paguei"}</button>` : ""}<button class="btn" data-a="pd-decidir" data-k="${this._e(x.id)}" data-d="descartar">Descartar</button></span></div>`;
         }).join("")}</section>` : ""}
-      ${pd.applepay.length ? `<section><div class="h"><h2>Apple Pay a decidir</h2><small>${pd.applepay.length}</small></div>
-        <div class="fs">Compras pagas com Apple Pay ainda sem decisão. Sem cupom: lançar. Com cupom: leia a nota pelo processo normal (quando ela chegar, esta some sozinha) ou toque em Tenho cupom.</div>
+      ${pd.applepay.length ? `<section><div class="h"><h2>Pagos pelo telefone, a decidir</h2><small>${pd.applepay.length}</small></div>
+        <div class="fs">Compras pagas pelo telefone (iPhone ou Android) ainda sem decisão. Sem cupom: lançar. Com cupom: leia a nota pelo processo normal (quando ela chegar, esta some sozinha) ou toque em Tenho cupom.</div>
         ${pd.applepay.map((x) => `<div class="apl"><div><b>${this._brl(x.valor)}</b> · ${this._e(x.loja)}<div class="fs">${this._e(x.quem)} · ${this._dataCurta(x.em)} ${this._e(String(x.em).slice(11, 16))}${x.cartao_nome ? ` · ${this._e(x.cartao_nome)}` : ""}</div></div>
           <input class="apitem" data-k="${this._e(x.id)}" type="text" maxlength="80" placeholder="O que foi? (opcional)" aria-label="O que foi (opcional)" autocomplete="off">
           <span><button class="btn prim" data-a="ap-lancar" data-k="${this._e(x.id)}">Lançar sem cupom</button><button class="btn" data-a="ap-cupom" data-k="${this._e(x.id)}">Tenho cupom</button></span></div>`).join("")}</section>` : ""}
@@ -5663,7 +5706,7 @@ class ComprasCard extends HTMLElement {
         : `<button class="lnk perigo" data-a="excluir">Excluir compra</button>`}</div>
       </div></details>
       ${c.origem === "manual" ? `<div class="recibo"><div class="c"><b>${this._e(c.loja_curta)}</b><br>${c.via === "applepay"
-        ? `Pago pelo Apple Pay · sem cupom<br>${this._e((c.pago_com || []).map((pg) => this._pagNome(pg)).join(" + "))}<br>${this._dataCurta(c.emissao)} às ${this._e(String(c.emissao || "").slice(11, 16))}`
+        ? `Pago pelo telefone · sem cupom<br>${this._e((c.pago_com || []).map((pg) => this._pagNome(pg)).join(" + "))}<br>${this._dataCurta(c.emissao)} às ${this._e(String(c.emissao || "").slice(11, 16))}`
         : "Compra lançada à mão"}</div><hr>${(c.itens || []).map((i) => `<div class="it"><span class="ds">${this._e(i.descricao)}</span><span class="vt">${c.moeda ? "" : this._brl(i.total)}</span></div>`).join("")}${this._obsManual(c) ? `<div class="c">${this._e(this._obsManual(c))}</div>` : ""}${(c.itens || []).length || this._obsManual(c) ? "<hr>" : ""}<div class="tot"><span>TOTAL</span><span>${c.moeda ? this._moeda(c.moeda) : this._brl(c.valor_pago)}</span></div>${c.moeda ? `<div class="c">${c.valor_pago ? `Em reais: ${this._brl(c.valor_pago)}` : "Sem valor em reais (fica fora dos totais)"}</div>` : ""}</div>
       <label class="btn escolher anexar">${this._anexando ? `Guardando o cupom… ${this._anexando}` : c.tem_nota ? "📎 Trocar foto/PDF do cupom" : "📎 Anexar foto/PDF do cupom"}<input id="c-anexo" type="file" accept="image/*,application/pdf" ${this._anexando ? "disabled" : ""}></label>` : `
       <div class="recibo">
@@ -5744,7 +5787,7 @@ class ComprasCard extends HTMLElement {
         <span class="fs">Cupom do app, cashback… A nota fica igual; totais, fatura e parcelas usam o cobrado. Apague para voltar ao da nota.</span></div>` : "";
     return `<details class="editar cartbox" data-k="_pgAberto" ${this._pgAberto || (temCred && deles && !c.fatura_txt) ? "open" : ""}><summary>Pagamento${varios ? ` (${pgs.length})` : ""} · data, forma, cartão e valor cobrado</summary>
       <div class="cartlin"><label>Data da compra<input type="date" data-fcompra="data" ${c.via === "applepay" ? "disabled" : ""} max="${new Date().toISOString().slice(0, 10)}" value="${this._e((c.data_compra || c.emissao || "").slice(0, 10))}"></label>
-        <span class="fs">${c.via === "applepay" ? "Dia e hora do pagamento pelo Apple Pay (não muda)." : c.origem === "manual" ? "O dia em que a compra foi feita." : c.data_compra ? "Diferente da nota. Volte à data da nota para tirar." : "Comprou antes de a nota sair? Ponha a data real; a nota continua com a de emissão."}</span></div>
+        <span class="fs">${c.via === "applepay" ? "Dia e hora do pagamento pelo telefone (não muda)." : c.origem === "manual" ? "O dia em que a compra foi feita." : c.data_compra ? "Diferente da nota. Volte à data da nota para tirar." : "Comprou antes de a nota sair? Ponha a data real; a nota continua com a de emissão."}</span></div>
       ${cobr}${pgs.map(linha).join("")}
       ${this._pgBarra(c)}${fat}
       <div class="fs">${c.divisao_real ? `Pagamento dividido de verdade: a soma dá o valor cobrado (${this._brl(c.cobrado?.valor)}). A nota impressa não muda. Apagar o valor cobrado desfaz a divisão.` : manual ? "Pagou parte de um jeito e parte de outro? Use dividir e ajuste os valores." : "Pagou parte de um jeito e parte de outro (ex.: saldo Mercado Pago + cartão)? Use dividir. A nota impressa não muda; vale para os totais e as faturas."}</div></details>`;
@@ -5872,8 +5915,10 @@ class ComprasCard extends HTMLElement {
     if (pdImp) pdImp.addEventListener("change", () => this._finPedidosImportar(pdImp.files));
     const upArq = root.getElementById("up-arq");
     if (upArq) upArq.addEventListener("change", () => this._addArquivos(upArq.files));
-    const kcE = root.getElementById("kc-emissor"), kcM = root.getElementById("kc-modelo");  // trocar o banco mostra o desenho do "Automático"
-    if (kcE && kcM?.options[0]) kcE.addEventListener("change", () => { kcM.options[0].textContent = this._finAutoTxt(kcE.value); });
+    const kcE = root.getElementById("kc-emissor"), kcMods = root.getElementById("kc-mods");  // trocar o banco mostra os modelos dele em miniatura
+    if (kcE && kcMods) kcE.addEventListener("change", () => { this._fKcBanco = kcE.value; this._fKcModelo = ""; kcMods.innerHTML = this._finKcMods(); });
+    const kcB = root.getElementById("kc-band");  // a bandeira aparece nas miniaturas
+    if (kcB && kcMods) kcB.addEventListener("change", () => { kcMods.innerHTML = this._finKcMods(); });
     const upSolta = root.getElementById("up-solta");
     if (upSolta && dlg) {
       const sobre = (on) => upSolta.classList.toggle("sobre", on);
@@ -6578,7 +6623,7 @@ class ComprasV2Card extends Base {
     const corrigir = "";  // o lápis virou "Histórico de pagamentos ›" em Contas da casa
     return `<div class="v-topo">
       <div class="v-mes">${seta(-1)}
-        <div class="v-perw"><button class="v-per" data-a="v2-per" aria-expanded="${!!this._v2Per}" aria-label="Período: ${this._e(rot)}. Toque para escolher outro"><small>Central de Compras</small><span>${this._e(rot)}${V2_SVG("baixo")}</span></button>
+        <div class="v-perw"><button class="v-per" data-a="v2-per" aria-expanded="${!!this._v2Per}" aria-label="Período: ${this._e(rot)}. Toque para escolher outro"><small>CoFinance</small><span>${this._e(rot)}${V2_SVG("baixo")}</span></button>
           ${this._v2Per ? this._v2Seletor() : ""}</div>
         ${seta(1)}</div>
       <nav class="v-abas" role="tablist" aria-label="Seções">${abas.map(([k, t]) => `<button role="tab" class="${aba === k ? "on" : ""}" aria-selected="${aba === k}" data-a="v2-aba" data-k="${k}">${t}</button>`).join("")}</nav>
@@ -7593,7 +7638,7 @@ console.info(`%c COMPRAS-V2 %c ${V2_VERSION} `, "background:#0b6bcb;color:#fff",
 // compras-v2-card: incluído acima
 const BaseNova = ComprasCard;  // mesmo arquivo
 
-const V3_VERSION = "0.0.1";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.2";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
@@ -7784,7 +7829,7 @@ class ComprasV3Card extends BaseV2 {
 
   _v3Lado() {
     const aba = this._v2Aba, ps = this._dados?.pessoas || [];
-    return `<div class="v3-marca"><span class="v3-logo">CC</span><b>Central de<br>Compras</b></div>
+    return `<div class="v3-marca"><span class="v3-logo">CF</span><b>CoFinance</b></div>
       <nav class="v3-nav" aria-label="Seções">${V3_MENU.map(([k, t, ic]) => `<button class="${aba === k ? "on" : ""}" aria-current="${aba === k ? "page" : "false"}" data-a="v3-menu" data-k="${k}">${V3_SVG(ic)}<span>${t}</span></button>`).join("")}</nav>
       <div class="v3-lado-pe">${ps.map((p) => `<span><i style="background:${p.cor}"></i>${this._e(p.nome)}</span>`).join("")}
         <small>${this._v3AtualTxt()}</small></div>`;
@@ -8331,7 +8376,7 @@ class ComprasV3Card extends BaseV2 {
   _v3Assinaturas() {
     const A = this._fFatCache?.assinaturas, F = this._fFin;
     const nomeK = (id) => { const k = (F.cartoes || []).find((x) => x.id === id); return k ? this._finNomeCartao(k) : id; };
-    const corpo = !A ? `<div class="v3-vazio">Carregando…</div>` : !A.length ? `<div class="v3-vazio">Leia as faturas do banco para a Central achar as assinaturas.</div>`
+    const corpo = !A ? `<div class="v3-vazio">Carregando…</div>` : !A.length ? `<div class="v3-vazio">Leia as faturas do banco para o CoFinance achar as assinaturas.</div>`
       : A.slice().sort((a, b) => b.valor_atual - a.valor_atual).slice(0, 6).map((a) => {
         const ativa = a.ultimo >= this._finSomaMes(F.hoje.slice(0, 7), -2);
         return `<div class="v3-ass"><span class="v3-ass-i">${this._e((a.descricao.replace(/^[^A-Za-z]*/, "")[0] || "?").toUpperCase())}</span><span class="v3-it-t"><b>${this._e(a.descricao)}</b><small>${this._e(nomeK(a.cartao))} ·${this._e(a.finais.join(", "))} · ${a.meses} meses</small></span>
@@ -8359,8 +8404,9 @@ class ComprasV3Card extends BaseV2 {
     const c = this._finCartaoCor(k), hoje = this._fFin.hoje, prod = String(k.visual?.produto || "").toUpperCase();
     const tier = this._finCategoria(k), semTier = (s) => s.replace(/\b(INFINITE|BLACK|PLATINUM|SIGNATURE|GOLD|NANQUIM|GRAFITE|CLASSIC|STANDARD|INTERNACIONAL)\b/g, "").replace(/\s+/g, " ").trim();
     // o modelo escolhido no cadastro manda; sem ele, o padrão do banco (Bradesco Prime, Santander Unique, Ourocard crédito, Latam Pass)
-    const MOD = { "bradesco-prime": "bradesco", "santander-unique": "santander", "bb-ourocard-infinite": "bb", "bb-ourocard-debito": "bbd", "itau-latam-black": "itau", "wise-verde": "wise", "alelo-refeicao": "alelo" };
-    const bid = this._finBancoId(k), b = MOD[k.modelo] || (["santander", "bradesco", "bb", "itau", "wise", "alelo"].includes(bid) ? bid : "outro"), ouro = c.ouro && b !== "bbd" || (b === "bb" && c.preto);
+    const MOD = { "bradesco-prime": "bradesco", "santander-unique": "santander", "bb-ourocard-infinite": "bb", "bb-ourocard-debito": "bbd", "itau-latam-black": "itau", "wise-verde": "wise", "alelo-refeicao": "alelo",
+      "caixa-platinum": "caixa", "btg-ultrablue": "btg", "brb-connect": "brb", "inter-laranja": "inter", "amazon-bradesco": "amazon", "c6-carbon": "c6" };
+    const bid = this._finBancoId(k), b = MOD[k.modelo] || (["santander", "bradesco", "bb", "itau", "wise", "alelo", "btg", "brb", "inter", "c6"].includes(bid) ? bid : "outro"), ouro = c.ouro && b !== "bbd" || (b === "bb" && c.preto);
     const arte = { wise: "wise-verde", alelo: "alelo-refeicao" }[b];  // desenho inteiro do cartão (arquivo em logos/, opcional)
     const tem = v3Logos([bid, arte], () => this._render()), logo = (n, cls) => `<i class="v3f-logo ${cls || n}" style="--logo:url('${V3_LOGO(n)}')" aria-hidden="true"></i>`;
     // peças
@@ -8369,7 +8415,9 @@ class ComprasV3Card extends BaseV2 {
     const nfc = `<svg class="v3f-nfc" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7.5c1.6 2.6 1.6 6.4 0 9M11 5.5c2.6 4 2.6 9 0 13M15 3.5c3.6 5.2 3.6 11.8 0 17" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round"/></svg>`;
     const mc = `<span class="v3f-mcw"><svg class="v3f-mc" viewBox="0 0 48 30" aria-hidden="true"><defs><linearGradient id="m${this._e(k.id)}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8d8f93"/><stop offset="1" stop-color="#4c4e52"/></linearGradient><linearGradient id="n${this._e(k.id)}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e3e4e6"/><stop offset="1" stop-color="#a7a9ad"/></linearGradient></defs>
       <circle cx="16" cy="15" r="13" fill="url(#m${this._e(k.id)})" stroke="#e8e9eb" stroke-width=".9"/><circle cx="32" cy="15" r="13" fill="url(#n${this._e(k.id)})" fill-opacity=".85" stroke="#f4f4f5" stroke-width=".9"/></svg><b class="v3f-mcn">mastercard</b></span>`;
-    const bandeira = k.bandeira === "Mastercard" ? mc : k.bandeira === "Visa" ? (tem.has("visa") ? `${logo("visa", "visa")}<b class="v3f-sr">VISA</b>` : `<b class="v3f-visa">VISA</b>`) : k.bandeira === "Elo" ? `<b class="v3f-visa">elo</b>` : k.bandeira === "Amex" ? `<b class="v3f-visa">AMEX</b>` : k.bandeira && k.bandeira !== "Outra" ? `<b class="v3f-mcn">${this._e(k.bandeira)}</b>` : "";
+    const mcCor = `<span class="v3f-mcw"><svg class="v3f-mc" viewBox="0 0 48 30" aria-hidden="true"><circle cx="16" cy="15" r="13" fill="#eb001b"/><circle cx="32" cy="15" r="13" fill="#f79e1b"/><path d="M24 4.8a13 13 0 0 1 0 20.4 13 13 0 0 1 0-20.4z" fill="#ff5f00"/></svg></span>`;
+    const colorido = ["brb", "inter", "amazon"].includes(b);
+    const bandeira = k.bandeira === "Mastercard" ? (colorido ? mcCor : mc) : k.bandeira === "Visa" ? (tem.has("visa") ? `${logo("visa", "visa")}<b class="v3f-sr">VISA</b>` : `<b class="v3f-visa">VISA</b>`) : k.bandeira === "Elo" ? `<b class="v3f-visa">elo</b>` : k.bandeira === "Amex" ? `<b class="v3f-visa">AMEX</b>` : k.bandeira && k.bandeira !== "Outra" ? `<b class="v3f-mcn">${this._e(k.bandeira)}</b>` : "";
     const sit = !x || x.gasto ? "" : x.pago ? "✓ paga" : x.vence < hoje ? "atrasada" : x.vence === hoje ? "vence hoje" : "";
     const info = `<span class="v3f-info"><small>${x?.gasto ? this._e(x.rotulo) : x ? `Fatura · vence ${this._dataCurta(x.vence + "T12:00")}` : k.credito === false ? "Nenhum gasto este mês" : "Nenhuma fatura em aberto"}</small><b>${x ? this._brl(x.total) : "—"}</b>${sit ? `<em class="${sit === "✓ paga" ? "" : "atr"}">${sit}</em>` : x?.gasto ? `<em>${x.n} ${x.n === 1 ? "compra" : "compras"}</em>` : ""}</span>`;
     const band = (cls = "") => bandeira ? `<span class="v3f-band ${cls}">${bandeira}${tier ? `<small>${this._e(k.bandeira === "Mastercard" ? tier.toLowerCase() : tier)}</small>` : ""}</span>` : "";
@@ -8395,6 +8443,24 @@ class ComprasV3Card extends BaseV2 {
         <span class="v3f-itop">${tem.has("itau") ? `<img src="${V3_LOGO("itau")}" alt="Itaú">` : `<b>itaú</b>`}${tier ? `<b class="v3f-itier">${this._e(tier.toLowerCase())}</b>` : ""}</span>
         <span class="v3f-marca dir lp">${lp ? `<small>LATAM</small><b>PASS</b>` : `<b>${this._e(semTier(prod) || "")}</b>`}</span>
         <span class="v3f-chipw itc">${chipSvg}${nfc}</span>${info}${bandeira ? `<span class="v3f-band">${bandeira}</span>` : ""}`;
+    } else if (b === "caixa") {  // Caixa Platinum: prata, o X grafite no alto à direita, o nível no alto à esquerda
+      corpo = `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="M0 240 380 0V240z" fill="#fff" opacity=".16"/><path d="M0 52h380" stroke="#000" stroke-opacity=".05"/></svg>
+        <svg class="v3f-cx" viewBox="0 0 60 50" aria-hidden="true"><path d="M2 2h18l38 46H40z" fill="#3d3f42"/><path d="M58 2H40L2 48h18z" fill="#6d7074"/></svg>
+        <span class="v3f-marca"><small class="v3f-nivel">${this._e((tier || semTier(prod) || "platinum").toUpperCase())}</small></span><span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
+    } else if (b === "btg") {  // BTG Ultrablue: azul escovado, "btg pactual" no alto à direita com o arco, o produto à esquerda
+      corpo = `<span class="v3f-btg"><b><i aria-hidden="true"></i>btg</b><small>pactual</small></span>
+        <span class="v3f-marca"><b class="v3f-btgp">${this._e(semTier(prod) ? semTier(prod).toLowerCase().replace(/^./, (s) => s.toUpperCase()) : "Ultrablue")}</b></span><span class="v3f-chipw">${chipSvg}${nfc}</span>${info}${band()}`;
+    } else if (b === "brb") {  // BRB Connect: azul em degradê, BRB em pé à direita, "connect" à esquerda, bandeira no alto à direita
+      corpo = `<span class="v3f-vert dir"><small>banco</small><b>BRB</b></span><span class="v3f-chipw brbc">${nfc}${chipSvg}</span>
+        <span class="v3f-brbn">${this._e(semTier(prod) ? semTier(prod).toLowerCase() : "connect")}</span>${info}${bandeira ? `<span class="v3f-band topo">${bandeira}</span>` : ""}`;
+    } else if (b === "inter") {  // Inter: laranja, "inter" em pé à direita, chip no alto à esquerda, bandeira no alto à direita
+      corpo = `<span class="v3f-vert dir int"><b>inter</b></span><span class="v3f-chipw intc">${nfc}${chipSvg}</span>${info}${bandeira ? `<span class="v3f-band topo">${bandeira}</span>` : ""}`;
+    } else if (b === "amazon") {  // Amazon (Bradesco): branco, "amazon.com.br" em pé à direita com o sorriso, a seta clara ao fundo
+      corpo = `<svg class="v3f-arte" viewBox="0 0 380 240" preserveAspectRatio="none" aria-hidden="true"><path d="M150 230C190 150 192 80 170 10" stroke="#c9d8f2" stroke-width="5" fill="none" opacity=".7"/><path d="M158 26 170 8 186 22" stroke="#c9d8f2" stroke-width="5" fill="none" opacity=".7"/></svg>
+        <span class="v3f-vert dir amz"><b>amazon<small>.com.br</small></b><i aria-hidden="true"></i></span><span class="v3f-chipw amzc">${nfc}${chipSvg}</span>${info}${bandeira ? `<span class="v3f-band amzb">${bandeira}</span>` : ""}`;
+    } else if (b === "c6") {  // C6 Carbon: fibra de carbono, "C6 BANK" em pé à direita, o nível em pé à esquerda, bandeira embaixo à direita
+      corpo = `<span class="v3f-vert dir c6"><b>C6</b><small>BANK</small></span><span class="v3f-chipw c6c">${nfc}${chipSvg}</span>
+        <span class="v3f-vert c6n"><b>${this._e(semTier(prod) || "Carbon")}</b><small>${this._e(tier ? tier.toLowerCase().replace(/^./, (s) => s.toUpperCase()) : "Black")}</small></span>${info}${band("c6b")}`;
     } else if (b === "wise") {  // Wise: verde, a marca grande no alto, sem chip, VISA embaixo
       corpo = `${tem.has(arte) ? `<img class="v3f-arte" src="${V3_LOGO(arte)}" alt="">` : `<b class="v3f-wisen">wise</b>`}${info}${band()}`;
     } else if (b === "alelo") {  // Alelo: verde-limão, linhas com talheres e copo, mancha do logo e os saldos embaixo dela
@@ -8430,7 +8496,7 @@ class ComprasV3Card extends BaseV2 {
     const idx = this._v3Faturas(), [st, tom] = this._v3Status(c, idx, true), area = c.categoria || "Outros";
     const dt = new Date(c.data_compra || c.emissao), q = this._dia(c.data_compra || c.emissao);
     const diaTxt = isNaN(dt) ? "" : `${dt.getDate()} de ${V3_MESES[dt.getMonth()]} de ${dt.getFullYear()}${c.data_compra ? "" : ` · ${q.hora}`}${c.loja?.cidade ? ` · ${this._e(c.loja.cidade)}` : ""}`;
-    const origem = c.via === "applepay" ? "Apple Pay" : c.via === "fatura" ? "Veio da fatura" : c.via === "pedido" ? `E-mail do pedido ${c.pedido?.loja || ""}`.trim()
+    const origem = c.via === "applepay" ? "Pago pelo telefone" : c.via === "fatura" ? "Veio da fatura" : c.via === "pedido" ? `E-mail do pedido ${c.pedido?.loja || ""}`.trim()
       : c.origem === "manual" ? "Lançada à mão" : c.pedido ? `Nota · pedido ${c.pedido.loja}` : "Nota fiscal";
     const valor = this._semReal(c) ? this._moeda(c.moeda) : this._brl(c.cobrado?.valor ?? c.valor_pago);
     const corK = (nome) => { const k = (this._fFin?.cartoes || []).find((x) => x.nome === nome); return k ? this._finCartaoCor(k).fundo : "var(--v3-mut)"; };
@@ -9035,6 +9101,23 @@ class ComprasV3Card extends BaseV2 {
     .v3f-bbs{left:6%;top:9%}.v3f-logo.bb{width:9cqw;height:9cqw;background:linear-gradient(160deg,#f3dc9a,#c9a453 60%,#9c7a2c)}
     .v3f-logo.visa{width:19cqw;height:6.2cqw;-webkit-mask-position:right center;mask-position:right center;background:linear-gradient(180deg,#f7f7f8 0%,#c3c5c9 55%,#8e9095 100%)}
     .v3f.ouro .v3f-logo.visa{background:linear-gradient(180deg,#f3dc9a 0%,#d4b26a 55%,#a8862f 100%)}.v3f:not(.preto) .v3f-logo{background:var(--ct)}
+    .v3f-cx{position:absolute;right:6%;top:7%;width:17cqw;height:auto;z-index:1}
+    .v3f.caixa .v3f-marca{top:12%}.v3f-nivel{font:500 3.4cqw/1 Manrope,sans-serif!important;letter-spacing:.06em;color:#3b3f43}
+    .v3f-btg{right:6%;top:8%;display:flex;align-items:baseline;gap:1.2cqw;color:#fff}.v3f-btg b{position:relative;font:500 8cqw/1 Manrope,sans-serif;letter-spacing:-.02em;padding:0 1cqw}
+    .v3f-btg b i{position:absolute;left:-1.6cqw;top:-2.4cqw;width:13cqw;height:13cqw;border:.5cqw solid #fff;border-radius:50%;border-left-color:transparent;transform:rotate(-30deg)}
+    .v3f-btg small{font:400 6cqw/1 Manrope,sans-serif;letter-spacing:-.01em}.v3f-btgp{font:500 4.6cqw/1 Manrope,sans-serif!important;letter-spacing:.01em}.v3f.btg .v3f-marca{top:22%}
+    .v3f-vert{writing-mode:vertical-rl;transform:rotate(180deg);bottom:7%;line-height:1}.v3f-vert.dir{right:5%}
+    .v3f-vert b{font:800 9cqw/1 Manrope,sans-serif;letter-spacing:-.03em;font-style:italic}.v3f-vert small{font:500 3cqw/1 Manrope,sans-serif;font-style:italic;margin-bottom:.6cqw}
+    .v3f-vert.int b{font-style:normal;font-weight:700;font-size:11cqw;letter-spacing:-.02em}
+    .v3f-vert.amz{display:flex;align-items:center;gap:1cqw;color:#232f3e}.v3f-vert.amz b{font:800 8cqw/1 Arial,Helvetica,sans-serif;font-style:normal;letter-spacing:-.04em}.v3f-vert.amz b small{font:600 4cqw/1 Arial,sans-serif;font-style:normal}
+    .v3f-vert.amz i{display:block;width:3cqw;height:20cqw;border-left:1cqw solid #ff9900;border-radius:50%;margin-right:-2cqw}
+    .v3f-chipw.brbc,.v3f-chipw.intc,.v3f-chipw.amzc{flex-direction:column;align-items:flex-start;top:9%;gap:1.4cqw}.v3f-chipw.brbc{top:16%;left:13%}.v3f-chipw.amzc{top:10%}
+    .v3f-brbn{left:6%;top:56%;font:500 4cqw/1 Manrope,sans-serif;letter-spacing:.02em}
+    .v3f-band.topo{right:5%;top:6%;bottom:auto}.v3f-band.amzb{right:22%;bottom:7%}
+    .v3f.amazon .v3f-info{color:#232f3e}.v3f.caixa .v3f-info{color:#2f3236}
+    .v3f-vert.c6{top:7%;bottom:auto;display:flex;align-items:center;gap:1cqw}.v3f-vert.c6 b{font:900 8cqw/1 Manrope,sans-serif;font-style:normal;letter-spacing:-.04em}.v3f-vert.c6 small{font:300 6.4cqw/1 Manrope,sans-serif;font-style:normal;letter-spacing:.02em;margin:0}
+    .v3f-chipw.c6c{flex-direction:column;align-items:flex-start;top:18%;left:13%;gap:1.4cqw}
+    .v3f-vert.c6n{left:4%;top:auto;bottom:34%;display:flex;gap:.6cqw}.v3f-vert.c6n b{font:700 3.6cqw/1 Manrope,sans-serif}.v3f-vert.c6n small{font:300 3.6cqw/1 Manrope,sans-serif;font-style:italic;margin:0}
     .v3f-itaul{right:6%;bottom:7%}.v3f-itaul img{display:block;width:9cqw;height:auto;filter:grayscale(1) invert(1) brightness(1.05);border-radius:1.6cqw}
     .v3f-itau{right:6%;bottom:8%;font:700 5.4cqw/1 Manrope,sans-serif;letter-spacing:-.02em;opacity:.9}
     .v3 .v3-pilha{display:block;width:100%;max-width:340px;margin:4px auto 0}.v3 .v3-pilha .fpilha{max-width:none}

@@ -68,7 +68,7 @@ def conferir_supostas(db: dict[str, Any], cid: str) -> list[str]:
             pg.pop("forma_suposta", None)
             pg["cartao_via"] = "fatura"
         nome = rotulo_cartao(k, db.get("cartoes") or [])
-        anotar_mudanca(db, c, f"Débito: a compra do Apple Pay ({d[8:10]}/{d[5:7]}, {fmt_brl(valor_efetivo(c) or 0)}) tinha entrado "
+        anotar_mudanca(db, c, f"Débito: a compra paga pelo telefone ({d[8:10]}/{d[5:7]}, {fmt_brl(valor_efetivo(c) or 0)}) tinha entrado "
                               f"no crédito, mas não veio na fatura {nome} que vence em {f['vence'][8:10]}/{f['vence'][5:7]}. "
                               "Confirmar = foi débito · Desfazer = volta para crédito.", antes)
         feito.append(f"{nome_loja(c['loja'])} {fmt_brl(valor_efetivo(c) or 0)}")
@@ -141,7 +141,7 @@ def fatura_ler(p: dict[str, Any]) -> dict[str, Any]:
            f"{f' · cartão acertado em {len(trocas)} (veja no sino)' if trocas else ''}"
            f"{' · final novo: ' + ', '.join(r['finais_novos']) if r['finais_novos'] else ''}"
            f"{' · parcelada cancelada: ' + '; '.join(paradas) + ' (veja no sino)' if paradas else ''}"
-           f"{' · Apple Pay que foi no débito: ' + '; '.join(debitos) + ' (veja no sino)' if debitos else ''}"
+           f"{' · pago pelo telefone, mas foi no débito: ' + '; '.join(debitos) + ' (veja no sino)' if debitos else ''}"
            f"{'' if nova else ' (lida de novo)'}.")
     return {"ok": True, "status": "nova" if nova else "atualizada", "id": fid, "mensagem": msg}
 

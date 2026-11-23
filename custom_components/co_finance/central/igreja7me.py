@@ -2,7 +2,7 @@
 (Administração, Dízimo, Oferta…), o total e o primeiro nome de quem deu (para saber de quem é). O resto do e-mail (nome
 completo, código da transação) não é lido nem guardado. O método (cartão de crédito, Pix…) fica anotado no pagamento.
 
-A doação também vem na fatura do cartão ("7ME IGREJA ADVEN"): se a compra da fatura já está na Central, o e-mail só a
+A doação também vem na fatura do cartão ("7ME IGREJA …"): se a compra da fatura já está na Central, o e-mail só a
 completa (partes e quem); se não, entra uma compra nova que a fatura reconhece depois (mesmo dia e valor), sem repetir."""
 from __future__ import annotations
 
@@ -100,7 +100,7 @@ def _itens(partes: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 def _da_igreja(c: dict[str, Any]) -> bool:
     nome = norm_txt(((c.get("loja") or {}).get("nome") or "") + " " + ((c.get("fatura_banco") or {}).get("descricao") or "")).upper()
-    return c.get("categoria") == CATEGORIA[0] or bool(re.search(r"7ME|IGREJA|ADVENT", nome))
+    return c.get("categoria") == CATEGORIA[0] or bool(re.search(r"7ME|IGREJA", nome))
 
 
 def registrar(texto: str, quando: Any) -> dict[str, Any]:
@@ -128,7 +128,7 @@ def registrar(texto: str, quando: Any) -> dict[str, Any]:
         if c:
             antes = {k: c.get(k) for k in ("quem", "itens", "qtd_itens", "categoria", "subcategoria", "classe_via")}
             c["itens"], c["qtd_itens"] = _itens(r["partes"]), len(r["partes"])
-            c["loja"] = {**(c.get("loja") or {}), "nome": LOJA}  # o nome da fatura vem cortado ("7ME IGREJA ADVEN")
+            c["loja"] = {**(c.get("loja") or {}), "nome": LOJA}  # o nome da fatura vem cortado ("7ME IGREJA …")
             c["conferencia"] = {**(c.get("conferencia") or {}), "soma_itens": total, "bate": True}
             if not c.get("categoria_manual"):
                 c["categoria"], c["subcategoria"], c["classe_via"] = cat, sub, "regra"

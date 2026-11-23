@@ -80,7 +80,7 @@ def _divergencia(db: dict[str, Any], compra: dict[str, Any], m: dict[str, Any], 
     k = next((x for x in db.get("cartoes") or [] if x.get("id") == meu.get("cartao")), None)
     disse = f"{rotulo_cartao(k, db.get('cartoes') or [])} {meu['tipo'].lower()}" if k else meu["tipo"]
     from .pagamentos import aceita
-    origem = "no Apple Pay" if m.get("via") == "applepay" else "no lançamento"
+    origem = "no pagamento pelo telefone" if m.get("via") == "applepay" else "no lançamento"
     pgs = copy.deepcopy(compra.get("pagamentos") or [])
     i = next(n for n, x in enumerate(compra.get("pagamentos") or []) if x is alvo)
     pgs[i]["tipo"] = da_nota  # "usar o da nota": a forma da nota, com o mesmo cartão se ele servir para ela
@@ -130,7 +130,7 @@ def juntar(db: dict[str, Any], compra: dict[str, Any]) -> dict[str, Any] | None:
     if dm and dm != dn:
         compra["data_compra"] = dm
     # categoria escolhida na tela vale; a do Apple Pay foi só um palpite pelo nome, a da nota (itens) é melhor
-    if m.get("categoria") not in (None, "Outros") and not str(m.get("observacao") or "").startswith("Apple Pay"):
+    if m.get("categoria") not in (None, "Outros") and not str(m.get("observacao") or "").startswith(("Apple Pay", "Pelo telefone")):
         compra["categoria"], compra["subcategoria"], compra["classe_via"] = m["categoria"], m.get("subcategoria"), "você"
         compra["categoria_manual"] = True
     obs = str(m.get("observacao") or "").strip()

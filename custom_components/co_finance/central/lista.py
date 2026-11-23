@@ -303,7 +303,7 @@ def _editar_fn(p: dict[str, Any]):
             if c["itens"] and c.get("categoria") == "Outros" and (k := classe_item_manual(c["itens"][0]["descricao"])):
                 c["categoria"], c["subcategoria"] = checar_classe(db, *k)
         if dcompra is not None and c.get("via") == "applepay":
-            raise Falha("Compra do Apple Pay fica com o dia e a hora do pagamento.")
+            raise Falha("Compra paga pelo telefone fica com o dia e a hora do pagamento.")
         if dcompra is not None and c.get("origem") == "manual":  # lançada à mão: uma data só
             if dcompra:
                 c["emissao"] = dcompra + ((c.get("emissao") or "")[10:] or "T12:00:00-03:00")

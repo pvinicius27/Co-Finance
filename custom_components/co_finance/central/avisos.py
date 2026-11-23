@@ -12,7 +12,7 @@ from .base import Falha, fmt_brl, nome_loja, norm_txt
 from .pagamentos import valor_efetivo
 from .veiculo import litros, precisa_km
 from .cartao_aviso import acoes_cartao, casar_applepay_agora
-from .dados import apelidos_de, file_lock, load_db, save_db
+from .dados import apelidos_de, file_lock, load_db, load_db_ro, save_db
 
 COMPRAS = ("todas", "novas_e_minhas", "minhas", "nenhuma")  # que compras a pessoa recebe no celular
 PADRAO_PESSOA = {"celular": "", "compras": "nenhuma", "applepay": False, "contas": False}
@@ -62,6 +62,13 @@ def para_compra(db: dict[str, Any], status: str, quem: str) -> list[tuple[dict, 
         if a["compras"] == "todas" or (a["compras"] == "novas_e_minhas" and (nova or sua)) or (a["compras"] == "minhas" and sua):
             out.append((x, a))
     return out
+
+
+def pagamento_telefones(_: dict[str, Any]) -> dict[str, Any]:
+    """Para a integração (Android): quem quer a pergunta do pagamento pelo telefone e o celular dela (notify.mobile_app_…)."""
+    db = load_db_ro()
+    return {"ok": True, "status": "pagamento_telefones",
+            "pessoas": [{"quem": x["nome"], "celular": a["celular"]} for x, a in _com_celular(db) if a["applepay"]]}
 
 
 def para_applepay(db: dict[str, Any], quem: str) -> list[tuple[dict, dict]]:
@@ -125,11 +132,11 @@ def avisar(p: dict[str, Any]) -> dict[str, Any]:
             acoes.append({"action": "URI", "title": "Ler cupom", "uri": LER_CUPOM})
         dados = {**_link(db, f"?compras_abrir={c['id']}" if c else "?compras=avisos"),
                  "tag": f"compras-cartao-{c['id']}" if c else f"compras-{p.get('id')}", "actions": acoes}
-        out = [_aviso(x, a, str(p.get("titulo") or "💳 Apple Pay"), (f"{quem}: " if quem and quem != x["nome"] else "") + msg, dados)
+        out = [_aviso(x, a, str(p.get("titulo") or "💳 Pagamento pelo telefone"), (f"{quem}: " if quem and quem != x["nome"] else "") + msg, dados)
                for x, a in para_applepay(db, quem)]
     elif tipo == "applepay_resp":
         ok, lancar = bool(p.get("ok")), p.get("decisao") == "lancar"
-        titulo = "🛒 Compra lançada" if lancar and ok else "🧾 Com cupom" if ok else "⚠ Apple Pay"
+        titulo = "🛒 Compra lançada" if lancar and ok else "🧾 Com cupom" if ok else "⚠ Pagamento pelo telefone"
         c = next((y for y in db["compras"] if y["id"] == p.get("id")), None) if lancar and ok and p.get("id") else None
         falta = _quem_responde_cartao(db, c, quem)  # lançou sem cupom e falta o cartão (ou crédito/débito): no mesmo aviso
         for x, a in para_applepay(db, quem):

@@ -116,7 +116,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     desfazer.append(lambda: webhook.async_unregister(hass, codigo))
     desfazer.append(async_track_time_change(hass, ponte.lembretes, minute=0, second=0))
     desfazer.append(hass.bus.async_listen("mobile_app_notification_action", ponte.acao_notificacao))
-    desfazer.append(hass.bus.async_listen("imap_content", ponte.imap))  # pedidos de lojas online (só a caixa escolhida no ⚙)
+    desfazer.append(hass.bus.async_listen("imap_content", ponte.imap))
+    desfazer.append(hass.bus.async_listen("state_changed", ponte.notificacao_android))  # pagamento pelo telefone no Android  # pedidos de lojas online (só a caixa escolhida no ⚙)
 
     # os cards: servidos pela integração e carregados em todas as telas (sem adicionar recurso à mão)
     if not hass.data.get(f"{DOMAIN}_cards"):

@@ -131,8 +131,8 @@ def _ap_um(db: dict[str, Any], p: dict[str, Any]) -> tuple[dict[str, Any], bool]
     """Uma compra do Apple Pay em db["applepay"]. Devolve (registro, se é nova)."""
     valor = round(_valor_txt(p.get("valor")) or 0.0, 2)
     if valor <= 0:
-        raise Falha("Apple Pay: valor não veio.")
-    loja = re.sub(r"\s+", " ", str(p.get("loja") or "")).strip()[:60] or "Compra com Apple Pay"
+        raise Falha("Pagamento pelo telefone: o valor não veio.")
+    loja = re.sub(r"\s+", " ", str(p.get("loja") or "")).strip()[:60] or "Compra pelo telefone"
     q = norm_txt(str(p.get("quem") or ""))  # "ana", "ANA PAULA"… → o nome do cadastro (sem achar: a 1ª pessoa)
     quem = next((x for x in compradores() if q[:3] and norm_txt(x)[:3] == q[:3]), (compradores() or [None])[0])
     nome_cartao = re.sub(r"\s+", " ", str(p.get("cartao") or "")).strip()[:60]
@@ -167,7 +167,7 @@ def applepay(p: dict[str, Any]) -> dict[str, Any]:
     feita sem rede sobe junto com a próxima. A última da fila é a compra de agora (a da notificação)."""
     itens = _fila(p)
     if not itens:
-        raise Falha("Apple Pay: a fila veio vazia.")
+        raise Falha("Pagamento pelo telefone: a fila veio vazia.")
     with file_lock():
         db = load_db()
         feitos = []
@@ -178,7 +178,7 @@ def applepay(p: dict[str, Any]) -> dict[str, Any]:
                 if i == len(itens) - 1 and not feitos:
                     raise
         if not feitos:
-            raise Falha("Apple Pay: nenhuma compra válida na fila.")
+            raise Falha("Pagamento pelo telefone: nenhuma compra válida na fila.")
         db["applepay"] = db["applepay"][-200:]
         if any(nova for _, nova in feitos):
             _ap_casar_notas(db)  # a nota já chegou antes (compra que veio atrasada na fila): fica com a nota, não duplica
@@ -233,7 +233,7 @@ def applepay_decidir(p: dict[str, Any]) -> dict[str, Any]:
         db = load_db()
         x = next((y for y in db.get("applepay") or [] if y["id"] == aid), None)
     if not x:
-        raise Falha("Não achei essa compra do Apple Pay.")
+        raise Falha("Não achei essa compra paga pelo telefone.")
     if x["status"] != "pendente":
         return {"ok": True, "status": "applepay_ok", "quem": x["quem"],
                 "mensagem": f"{x['loja']} · {fmt_brl(x['valor'])}: já {'lançada' if x['status'] == 'lancada' else 'marcada como com cupom'}."}
@@ -293,7 +293,7 @@ def _lancar_ap(aid: str, item: str = "") -> dict[str, Any]:
                 "forma": "Crédito" if suposta else forma_do_cartao(k_ap) if k_ap  # crédito e débito: crédito suposto
                 else "Alelo" if "ALELO" in norm_txt(x.get("cartao_nome") or "") else "",
                 "cartao": x.get("cartao") or "", "parcelas": 1,
-                "categoria": cat, "subcategoria": sub, "item": item, "observacao": f"Apple Pay{(' · ' + x['cartao_nome']) if x.get('cartao_nome') else ''}"})
+                "categoria": cat, "subcategoria": sub, "item": item, "observacao": f"Pelo telefone{(' · ' + x['cartao_nome']) if x.get('cartao_nome') else ''}"})
     x["compra"] = r["id"]
     if x.get("cartao") and not forma_do_cartao(_cartao(load_db_ro(), x["cartao"])):  # o cartão da Carteira fica de sugestão
         with file_lock():

@@ -123,7 +123,7 @@ def registrar(payload: dict[str, Any]) -> dict[str, Any]:
     msg = f"{loja} · {fmt_brl(nota['valor_pago'])} · {nota['qtd_itens']} {'item' if nota['qtd_itens'] == 1 else 'itens'} · {quem}"
     msg += RECEBER_TXT.get(reembolso, "")
     if juntada:
-        msg += f" · juntei com {'a compra do Apple Pay' if juntada.get('via') == 'applepay' else 'o lançamento à mão'} de {str(juntada.get('emissao') or '')[8:10]}/{str(juntada.get('emissao') or '')[5:7]}"
+        msg += f" · juntei com {'o pagamento pelo telefone' if juntada.get('via') == 'applepay' else 'o lançamento à mão'} de {str(juntada.get('emissao') or '')[8:10]}/{str(juntada.get('emissao') or '')[5:7]}"
     if do_pedido:
         msg += texto_do_pedido(do_pedido, compra)
     if any(p["deduzido"] for p in pago_com(compra)):
@@ -289,7 +289,7 @@ def _registrar_nota(payload: dict[str, Any], quem: Any, reembolso: Any, tipo: An
     if status == "nova":
         msg += RECEBER_TXT.get(reembolso, "")
     if status == "nova" and juntada:
-        msg += f" · juntei com {'a compra do Apple Pay' if juntada.get('via') == 'applepay' else 'o lançamento à mão'} de {str(juntada.get('emissao') or '')[8:10]}/{str(juntada.get('emissao') or '')[5:7]}"
+        msg += f" · juntei com {'o pagamento pelo telefone' if juntada.get('via') == 'applepay' else 'o lançamento à mão'} de {str(juntada.get('emissao') or '')[8:10]}/{str(juntada.get('emissao') or '')[5:7]}"
     if status == "nova" and do_pedido:
         msg += texto_do_pedido(do_pedido, compra)
     if not nota["conferencia"]["bate"]:

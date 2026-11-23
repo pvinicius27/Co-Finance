@@ -230,7 +230,7 @@ ENERGIA_DIR = Path(os.environ.get("COMPRAS_ENERGIA_DIR", str(BASE_DIR.parent / "
 PAGOS_NA_HORA = ("Pix", "Débito", "Alelo", "Dinheiro", "Boleto", "Saldo em carteira")  # saem da conta no dia da compra
 
 
-BANCOS_EMISSORES = {"bb": "Banco do Brasil", "bradesco": "Bradesco", "itau": "Itaú", "santander": "Santander", "caixa": "Caixa", "nubank": "Nubank", "inter": "Inter", "c6": "C6 Bank", "btg": "BTG Pactual", "xp": "XP", "sicredi": "Sicredi", "sicoob": "Sicoob", "banrisul": "Banrisul", "brb": "BRB", "pan": "Banco Pan", "bv": "Banco BV", "safra": "Safra", "porto": "Porto Bank", "picpay": "PicPay", "mercadopago": "Mercado Pago", "neon": "Neon", "next": "Next", "will": "Will Bank", "original": "Original", "wise": "Wise", "alelo": "Alelo"}  # banco do cartão (desenho e nome); leitor de PDF à parte
+BANCOS_EMISSORES = {"bb": "Banco do Brasil", "bradesco": "Bradesco", "itau": "Itaú", "santander": "Santander", "caixa": "Caixa", "nubank": "Nubank", "inter": "Inter", "c6": "C6 Bank", "btg": "BTG Pactual", "xp": "XP", "sicredi": "Sicredi", "sicoob": "Sicoob", "banrisul": "Banrisul", "brb": "BRB", "pan": "Banco Pan", "bv": "Banco BV", "safra": "Safra", "porto": "Porto Bank", "picpay": "PicPay", "mercadopago": "Mercado Pago", "neon": "Neon", "next": "Next", "will": "Will Bank", "original": "Original", "wise": "Wise", "infinitepay": "InfinitePay", "alelo": "Alelo"}  # banco do cartão (desenho e nome); leitor de PDF à parte
 BANDEIRAS_CARTAO = ["Visa", "Mastercard", "Elo", "Amex", "Hipercard", "Alelo", "VR", "Ticket", "Pluxee", "Outra"]  # v27: cadastro de cartões pela tela
 
 

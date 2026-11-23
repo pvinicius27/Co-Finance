@@ -6,6 +6,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
+import time
 from typing import Any, Callable
 
 from aiohttp import web
@@ -22,6 +23,7 @@ class Ponte:
         self._executar = executar
         self._trava = asyncio.Lock()  # um pedido por vez: o código da Central foi feito para rodar um de cada vez
         self._trava_imap = asyncio.Lock()  # um aviso de e-mail por vez (cada um revisa os últimos 10 da caixa)
+        self._vistos: dict[tuple[str, float], float] = {}  # pagamento pelo Android já tratado: (quem, valor) → quando (banco e carteira avisam juntos)
 
     async def rodar(self, pedido: dict[str, Any]) -> dict[str, Any]:
         async with self._trava:
@@ -140,6 +142,39 @@ class Ponte:
                 if eu or st != "repetido":
                     self.diario(f"Pedido por e-mail: {r.get('mensagem', '')}")
 
+    # ---------------------------------------------------------------- pagamento pelo telefone no Android (sensor "Última notificação")
+    async def notificacao_android(self, ev: Event) -> None:
+        """O app do HA no Android expõe a última notificação do celular (sensor.<celular>_last_notification). Aviso de pagamento
+        (Google Wallet, Samsung Wallet ou o app do banco: "Compra de R$ 45,90 em PADARIA") → a mesma pergunta do iPhone."""
+        ent = str(ev.data.get("entity_id") or "")
+        if not ent.startswith("sensor.") or not ent.endswith("_last_notification"):
+            return
+        novo = ev.data.get("new_state")
+        if not novo:
+            return
+        at = novo.attributes or {}
+        if str(at.get("package") or "").startswith("io.homeassistant"):  # os avisos do próprio CoFinance
+            return
+        titulo = str(at.get("android.title") or "")
+        texto = str(at.get("android.bigText") or at.get("android.text") or novo.state or "")
+        pg = _pagamento(titulo, texto, str(at.get("package") or ""))
+        if not pg:
+            return
+        celular = ent[len("sensor."):-len("_last_notification")]
+        pessoas = (await self.rodar({"acao": "pagamento_telefones"})).get("pessoas") or []
+        quem = next((x["quem"] for x in pessoas if str(x.get("celular") or "").removeprefix("notify.mobile_app_") == celular), None)
+        if not quem:
+            return
+        agora = time.monotonic()
+        self._vistos = {k: v for k, v in self._vistos.items() if agora - v < 300}
+        if (quem, pg["valor"]) in self._vistos:  # o banco e a carteira avisam a mesma compra
+            return
+        self._vistos[(quem, pg["valor"])] = agora
+        r = await self.rodar({"acao": "applepay", "valor": f"{pg['valor']:.2f}".replace(".", ","), "loja": pg["loja"], "cartao": pg["cartao"], "quem": quem})
+        await self.avisar(tipo="applepay" if r.get("status") == "applepay" else "compra", status=r.get("status"), titulo=r.get("titulo", ""),
+                          mensagem=r.get("mensagem", ""), quem=r.get("quem") or quem, id=r.get("id", ""))
+        self.diario(f"Pagamento pelo telefone (Android): {r.get('mensagem', '')}")
+
     # ---------------------------------------------------------------- respostas às notificações
     async def acao_notificacao(self, ev: Event) -> None:
         acao = str(ev.data.get("action") or "")
@@ -184,3 +219,37 @@ def _parece_pedido(remetente: str, assunto: str, corpo: str) -> bool:
             or "shop.tiktok.com" in r or ("tiktok" in c and ("id do pedido" in c or "cancelamento do pedido" in c))
             or "mercadolivre.com.br" in r or ("mercado livre" in c and "você comprou de" in c)
             or "7me.app" in r or ("7me" in s and "transa" in s))
+
+
+_VALOR = re.compile(r"R\$\s?(\d{1,3}(?:\.\d{3})*,\d{2}|\d+,\d{2})")
+_COMPRA = re.compile(r"(?i)\b(compra|pagamento|pago|paga|aprovad|transa[cç][aã]o|d[eé]bito|cr[eé]dito)")
+_NAO = re.compile(r"(?i)\b(recebe|recebid|pix recebido|transfer[eê]ncia recebida|estorn|reembols|cashback|fatura|boleto|limite|negad|recusad|n[aã]o aprovad)")
+_LOJA = re.compile(r"(?i)\b(?:em|no|na|para)\s+([^\n]{2,40}?)(?=\s+(?:com|no|na|para|pelo|pela)\s+(?:o\s+|seu\s+)?(?:cart|final|visa|master|elo)|\s+(?:às|as|em)\s+\d|[.,;!\n]|$)")
+_FINAL = re.compile(r"(?i)(?:final|••••|\*{2,4}|x{2,4})\s*(\d{4})")
+
+
+_CARTEIRAS = ("com.google.android.apps.walletnfcrel", "com.samsung.android.spay")  # Google Wallet, Samsung Wallet
+
+
+def _pagamento(titulo: str, texto: str, pacote: str = "") -> dict | None:
+    """Aviso de pagamento → {valor, loja, cartao}. Google Wallet/Samsung Wallet: o título é a loja e o texto traz o valor;
+    banco: "Compra aprovada… R$ 45,90 em PADARIA… final 1234". Pix recebido, estorno, fatura, compra negada: não é pagamento."""
+    tudo = f"{titulo}\n{texto}"
+    m = _VALOR.search(tudo)
+    if not m or _NAO.search(tudo):
+        return None
+    valor = float(m[1].replace(".", "").replace(",", "."))
+    if valor <= 0:
+        return None
+    loja = ""
+    lm = _LOJA.search(texto[m.end() - len(titulo) - 1:] if m.start() > len(titulo) else texto) or _LOJA.search(texto)
+    if lm and not _VALOR.search(lm[1]):
+        loja = lm[1].strip(" -:")
+    elif pacote in _CARTEIRAS and titulo and not _COMPRA.search(titulo) and not _VALOR.search(titulo):  # carteira: o título é o comerciante
+        loja = titulo.strip()
+    elif not _COMPRA.search(tudo):
+        return None
+    if pacote not in _CARTEIRAS and not _COMPRA.search(tudo):  # fora da carteira, só com "compra", "pagamento"…
+        return None
+    f = _FINAL.search(tudo)
+    return {"valor": round(valor, 2), "loja": loja[:60], "cartao": f"final {f[1]}" if f else ""}
