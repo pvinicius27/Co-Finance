@@ -7987,7 +7987,8 @@ function registrarCartoes({ layouts = {}, modelos = {}, bancos = [], css = "", v
 // estilo comum a todos os cartões (frente, vidro do valor, peças)
 const CARTOES_CSS_BASE = `
     .v3 .fcface.v3f.vert{aspect-ratio:.632!important;width:58%!important;max-width:58%!important;margin-left:auto!important;margin-right:auto!important}  /* cartão em pé */
-    .v3f.vert .v3f-info{left:7%;right:auto;top:57%;bottom:auto;max-width:86%}
+    .v3f.vert .v3f-info{left:8%;right:auto;top:44%;bottom:auto;max-width:88%}  /* em pé: no meio, letras do mesmo tamanho dos deitados (a frente é 58% da largura) */
+    .v3f.vert .v3f-info small{font-size:5.5cqw}.v3f.vert .v3f-info b{font-size:11cqw}.v3f.vert .v3f-info em{font-size:5.3cqw}
     .v3 .fcface.v3f{position:relative;overflow:hidden;display:block;aspect-ratio:1.586;box-sizing:border-box;padding:0;border:0;border-radius:16px;background:var(--cg,var(--cf));color:var(--ct);text-align:left;font-family:Manrope,system-ui,sans-serif;box-shadow:0 10px 24px -12px rgba(0,0,0,.55);container-type:inline-size}
     .v3 .fcface.v3f.preto{background:linear-gradient(160deg,#2b2b2f 0%,#161618 50%,#0b0b0c 100%)}
     .v3 .fcface.v3f.preto::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 3px);pointer-events:none}
@@ -8014,7 +8015,7 @@ const CARTOES_CSS_BASE = `
     .v3f-bdm{width:16cqw;height:6.6cqw;-webkit-mask-position:right center;mask-position:right center}
     .v3f-bdm.discover{width:24cqw;height:4.4cqw}
     .v3f-info{left:6%;bottom:8%;display:grid;line-height:1.15;max-width:60%}
-    .v3f.foto .v3f-info{left:4%;bottom:5%;padding:1.4cqw 2.6cqw 1.6cqw;border-radius:2.8cqw;background:color-mix(in srgb,var(--cf) 58%,transparent);-webkit-backdrop-filter:blur(7px) saturate(1.2);backdrop-filter:blur(7px) saturate(1.2);box-shadow:0 0 0 1px color-mix(in srgb,var(--ct) 14%,transparent)}
+    .v3f.foto .v3f-info{left:6%;bottom:7%}  /* só o texto, sem caixa (como na dashboard antiga) */
     .v3f-info small{font-size:3.2cqw;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .v3f-info b{font:700 6.4cqw/1.15 Sora,Manrope,sans-serif;letter-spacing:-.01em}
     .v3f-info em{font-style:normal;font-size:3.1cqw;opacity:.8}
@@ -8249,34 +8250,35 @@ registrarCartoes({
 //   BB-001  Visa                 Ourocard Fácil  →  bb-ourocard-facil
 //   BB-002  Visa                 Ourocard Universitário  →  bb-ourocard-universitario
 //   BB-003  Visa                 Ourocard Visa Gold  →  bb-ourocard-visa-gold
-//   BB-004  Visa                 Ourocard Visa Platinum  →  bb-ourocard-visa-platinum
-//   BB-005  Visa                 Ourocard Visa Infinite  →  bb-ourocard-infinite
-//   BB-006  Visa                 Ourocard Pré-pago  →  bb-ourocard-pre-pago
-//   BB-007  Visa                 Ourocard TravelMoney  →  bb-ourocard-travelmoney
-//   BB-008  Visa                 GOL Smiles Gold  →  bb-smiles-gold
-//   BB-009  Visa                 GOL Smiles Platinum  →  bb-smiles-platinum
-//   BB-010  Visa                 GOL Smiles Infinite  →  bb-smiles-infinite
-//   BB-011  Visa                 Saraiva  →  bb-saraiva
-//   BB-012  Visa                 Petrobras  →  bb-petrobras
-//   BB-013  Visa                 Dotz International  →  bb-dotz-international
-//   BB-014  Visa                 Dotz Platinum  →  bb-dotz-platinum
-//   BB-015  Mastercard           Ourocard Platinum Mastercard  →  bb-ourocard-platinum-mastercard
-//   BB-016  Mastercard           Ourocard Mastercard Black  →  bb-ourocard-mastercard-black
-//   BB-017  Mastercard           AME  →  bb-ame
-//   BB-018  Elo                  Ourocard Elo  →  bb-ourocard-elo
-//   BB-019  Elo                  Ourocard Elo Mais  →  bb-ourocard-elo-mais
-//   BB-020  Elo                  Ourocard Elo Grafite  →  bb-ourocard-grafite
-//   BB-021  Elo                  Ourocard Elo Nanquim  →  bb-ourocard-nanquim
+//   BB-004  Visa                 Ourocard Visa Platinum (modelo antigo)  →  bb-ourocard-visa-platinum
+//   BB-005  Visa                 Ourocard Visa Infinite (modelo antigo)  →  bb-ourocard-infinite
+//   BB-006  Visa                 Ourocard Visa Platinum  →  bb-ourocard-visa-platinum-v
+//   BB-007  Visa                 Ourocard Visa Infinite  →  bb-ourocard-infinite-v
+//   BB-008  Visa                 Ourocard Pré-pago  →  bb-ourocard-pre-pago
+//   BB-009  Visa                 Ourocard TravelMoney  →  bb-ourocard-travelmoney
+//   BB-010  Visa                 GOL Smiles Gold  →  bb-smiles-gold
+//   BB-011  Visa                 GOL Smiles Platinum  →  bb-smiles-platinum
+//   BB-012  Visa                 GOL Smiles Infinite  →  bb-smiles-infinite
+//   BB-013  Visa                 Saraiva  →  bb-saraiva
+//   BB-014  Visa                 Petrobras  →  bb-petrobras
+//   BB-015  Visa                 Dotz International  →  bb-dotz-international
+//   BB-016  Visa                 Dotz Platinum  →  bb-dotz-platinum
+//   BB-017  Mastercard           Ourocard Platinum Mastercard  →  bb-ourocard-platinum-mastercard
+//   BB-018  Mastercard           Ourocard Mastercard Black  →  bb-ourocard-mastercard-black
+//   BB-019  Elo                  Ourocard Elo  →  bb-ourocard-elo
+//   BB-020  Elo                  Ourocard Elo Mais  →  bb-ourocard-elo-mais
+//   BB-021  Elo                  Ourocard Elo Grafite  →  bb-ourocard-grafite
+//   BB-022  Elo                  Ourocard Elo Nanquim  →  bb-ourocard-nanquim
 // fim da lista
 
 
-// Família Ourocard (BB-001…005, 015, 016, 018…021): o mesmo cartão — símbolo do BB no alto à esquerda, "ourocard" no alto à
+// Família Ourocard deitada (o desenho antigo, com trilhos): o mesmo cartão — símbolo do BB no alto à esquerda, "ourocard" no alto à
 // direita, chip e aproximação, os trilhos atrás, a faixa amarela na borda esquerda (menos nos amarelos) e a bandeira embaixo.
 // Muda só: as cores (fundo, trilhos, letras), a bandeira e a categoria escrita (platinum, black...). Cores tiradas das fotos.
 const OURO_AMARELO = { fundo: ["#ffe94a", "#fde100"], linha: "#c2ac00", op: 0.85, tinta: "#1d4f9c", faixa: false };
 const OURO_DOURADO = { fundo: ["#d2bf80", "#c4ad69"], linha: "#9a8640", op: 0.85, tinta: "#ffffff", faixa: true };
 const OURO_PRATA = { fundo: ["#a0a1a4", "#8c8d90"], linha: "#76777a", op: 0.8, tinta: "#dcdcde", faixa: true };
-// o desenho deitado, com trilhos: o Universitário (assim no site) e os dois modelos que já existiram (BB-004 e BB-005)
+// o desenho deitado, com trilhos: o Universitário (assim no site) e os dois modelos antigos de Visa Platinum e Visa Infinite
 const OUROCARD = {
   "bb-ourocard-universitario": OURO_AMARELO,
   "bb-ourocard-visa-platinum": OURO_PRATA,
@@ -8323,7 +8325,7 @@ registrarCartoes({
         <span class="v3f-ow" style="--ouro:${ouro}">${tem.has("bb") ? `<span class="v3f-ovbb">${logo("bb", "bb ovbb")}</span>` : ""}<b class="v3f-ovnome">ourocard</b>
         ${o.cat ? `<span class="v3f-ovcat">${e(o.cat)}</span>` : ""}<span class="v3f-ovchip">${chipSvg.replace("#d7d9dc", "#efd9a0").replace("#8f959b", "#a88a45").replace("#f1f2f4", "#f8e9bf")}</span>${info}${bandeira}</span>`;
     },
-    // Dotz (BB-013, BB-014): em pé, azul ou prata; chip e aproximação no alto, a bola laranja do Dotz no meio, VISA branco embaixo
+    // Dotz International e Dotz Platinum: em pé, azul ou prata; chip e aproximação no alto, a bola laranja do Dotz no meio, VISA branco embaixo
     dotzv: (p) => {
       const { k, tier, chipSvg, nfc, info, e, LOGO } = p;
       const prata = /platinum/.test(k.modelo), id = e(k.id);
@@ -8334,7 +8336,7 @@ registrarCartoes({
         <span class="v3f-ow" style="color:#fff;--ct:#fff"><span class="v3f-dzchip">${chipSvg}${nfc}</span>${info}
         ${prata ? "" : `<span class="v3f-dzint">INTERNATIONAL</span>`}<span class="v3f-ovband dz"><i class="v3f-logo v3f-ovvisa" style="--logo:url('${LOGO("visa")}')" role="img" aria-label="Visa"></i>${prata && tier ? `<small>${e(tier)}</small>` : ""}</span></span>`;
     },
-    // Petrobras (BB-012): em pé, branco; chip no alto, "CARTÃO PETROBRAS" em verde, a linha laranja e o VISA dourado embaixo
+    // Petrobras: em pé, branco; chip no alto, "CARTÃO PETROBRAS" em verde, a linha laranja e o VISA dourado embaixo
     petrobrasv: (p) => {
       const { chipSvg, info, LOGO } = p;
       return `<svg class="v3f-arte" viewBox="0 0 240 380" preserveAspectRatio="none" aria-hidden="true"><rect width="240" height="380" fill="#fff"/>`
@@ -8399,7 +8401,7 @@ registrarCartoes({
     .v3f-ovcat{right:7%;bottom:15.5%;font:600 4.6cqw/1 Manrope,sans-serif;background:var(--ouro);-webkit-background-clip:text;background-clip:text;color:transparent}
     .v3 .fcface.v3f.ourocardv{background:none}.v3 .fcface.v3f.ourocardv::before{display:none}
     .v3f.dotzv .v3f-dzchip{left:49%;top:10.5%;display:flex;align-items:center;gap:3cqw}.v3f-dzchip .v3f-chip{width:16cqw;height:auto;transform:rotate(90deg)}.v3f-dzchip .v3f-nfc{width:10cqw;height:10cqw}
-    .v3f.dotzv .v3f-info{top:29%}.v3f.petrobrasv .v3f-info{top:50%}
+    .v3f.dotzv .v3f-info{top:27%}.v3f.petrobrasv .v3f-info{top:53%}
     .v3f-dzint{left:3%;bottom:4%;font:500 2.6cqw/1 Manrope,sans-serif;letter-spacing:.04em;opacity:.9}
     .v3f-ovband.dz .v3f-logo.v3f-ovvisa{background:#fff!important}.v3f-ovband.dz small{background:none;color:#fff}
     .v3f.petrobrasv .v3f-pbchip{left:50%;top:11%}.v3f-pbchip .v3f-chip{width:21cqw;height:auto;transform:rotate(90deg)}
@@ -8749,7 +8751,7 @@ registrarCartoes({
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.8";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.9";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
