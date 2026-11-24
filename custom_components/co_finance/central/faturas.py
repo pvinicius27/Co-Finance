@@ -426,7 +426,18 @@ def _ler_brb(L) -> dict[str, Any]:
 # ---------------------------------------------------------------- BTG Pactual
 def _ler_btg(L) -> dict[str, Any]:
     """Lançamentos em duas colunas (data "16 Set", descrição, valor na mesma altura). Cada bloco do cartão começa em
-    "Lançamentos do cartão ... | Final 1234 ... Total do cartão: R$ X"; o que vem antes (pagamentos) fica sem final."""
+    "Lançamentos do cartão ... | Final 1234 ... Total do cartão: R$ X"; o que vem antes (pagamentos) fica sem final.
+    Recebe as linhas com o tab do card: quando o PDF junta a data da coluna esquerda com o valor de uma compra da
+    coluna direita ("29 Mai<tab>R$ 8,93"), o valor volta para a coluna de valores da direita."""
+    sep = []
+    for p, x, y, t in L:
+        partes = t.split("\t")
+        if len(partes) == 2 and x < 300 and re.fullmatch(r"\d{2} [A-Za-zçÇ]{3}", partes[0].strip()) \
+                and re.fullmatch(rf"-?\s*R\$\s*{_VALOR}", partes[1].strip()):
+            sep += [[p, x, y, partes[0].strip()], [p, 513.0, y, partes[1].strip()]]  # o valor vai para a coluna da direita
+        else:
+            sep.append([p, x, y, t.replace("\t", " ")])
+    L = sep
     ano = _achar(L, r"fatura de \w+ de (\d{4})")
     mv = re.search(r"(\d{2})/(\d{2})", _achar(L, r"Vencimento:\s*(\d{2}/\d{2})") or "")
     vence = f"{ano}-{mv[2]}-{mv[1]}" if ano and mv else None
@@ -561,8 +572,26 @@ def _ler_inter(L) -> dict[str, Any]:
             parc, desc = f"{int(mp[1]):02d}/{int(mp[2]):02d}", desc[:mp.start()]
         out.append(_linha(f"{md[3]}-{MESES[_sem_acento(md[2]).upper()]:02d}-{md[1]}", desc, _valor(mv[2]) * (-1 if mv[1] else 1), final, parcela=parc))
     pago = -round(sum(l["valor"] for l in out if l["tipo"] == "pagamento"), 2)
-    return {"vence": vence, "inicio": None, "fecha": None, "total": _valor(total) if total else None,
-            "anterior": pago, "linhas": out, "subtotais": subtot, "sub_conta": lambda l: l["tipo"] != "pagamento",
+    total = _valor(total) if total else None
+
+    def resumo(rotulo):  # o resumo da página 2: "Despesas do mês  R$ 5.445,13" (o valor à direita, na mesma altura)
+        for p, x, y, t in L:
+            if p <= 2 and re.fullmatch(rotulo, t.strip()):
+                v = sorted((xx, tt) for pp, xx, yy, tt in L if pp == p and abs(yy - y) < 3 and xx > x and re.search(r"R\$", tt))
+                if v and (m := re.search(rf"(-\s*)?R\$\s*({_VALOR})", v[0][1])):
+                    return _valor(m[2]) * (-1 if m[1] else 1)
+        return None
+    despesas, atual = resumo(r"Despesas do m[êe]s"), resumo(r"Fatura atual")
+    if atual is not None:
+        total = atual
+    if despesas is not None and total is not None:
+        # pagamento antecipado (e créditos) só aparecem no resumo: a conferência vira compras = despesas do mês.
+        # "anterior" fica o saldo que a fatura carrega (negativo = crédito do que foi pago antes)
+        creditos = sum(l["valor"] for l in out if l["valor"] < 0 and l["tipo"] != "pagamento")
+        pago = round(total - (despesas + creditos - pago), 2)
+    return {"vence": vence, "inicio": None, "fecha": None, "total": total,
+            "anterior": pago, "linhas": out, "subtotais": subtot,
+            "sub_conta": lambda l: l["tipo"] != "pagamento" and l["valor"] > 0,  # o "Total CARTÃO" do Inter conta só as compras
             "titulares": titulares}
 
 
@@ -638,7 +667,7 @@ def ler_fatura(linhas_pdf) -> dict[str, Any]:
     texto = "\n".join(t for *_r, t in linhas_pdf)
     for banco, rx, leitor in LEITORES:
         if re.search(rx, texto):
-            f = leitor(com_tab if leitor is _ler_bradesco_oficial else linhas_pdf)
+            f = leitor(com_tab if leitor in (_ler_bradesco_oficial, _ler_btg) else linhas_pdf)
             break
     else:
         raise Falha("Não reconheci essa fatura. Hoje leio Santander, Banco do Brasil, Bradesco (e Bradescard), Itaú, BRB, BTG, Caixa, Inter e Nubank.")
