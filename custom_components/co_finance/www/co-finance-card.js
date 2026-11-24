@@ -1728,7 +1728,7 @@ function instalarFinancas(Classe) {
         : `<button class="fcart novo${ed === "agua" ? " on" : ""}" data-a="f-cc-ed" data-k="agua">+ Água</button>`,
       ...(cc.recorrentes || []).map((x) => bt(`recorrente:${x.id}`, `${this._e(x.icone || "🏠")} <b>${this._e(x.nome)}</b> · todo dia ${x.dia} · ${this._brl(x.valor)}${x.ate ? ` · até ${mes(x.ate)}` : ""}${de(x)}`)),
       ...(cc.parceladas || []).map((x) => bt(`parcelada:${x.id}`, `${this._e(x.icone || "🏠")} <b>${this._e(x.nome)}</b> · ${x.vencimentos.length} datas · ${this._brl(x.valor)}${de(x)}`)),
-      `<button class="fcart novo${/^(recorrente|parcelada):novo$/.test(ed || "") ? " on" : ""}" data-a="f-cc-ed" data-k="recorrente:novo">+ Conta fixa</button>`,
+      `<button class="fcart novo${/^(recorrente|parcelada):novo$/.test(ed || "") ? " on" : ""}" data-a="f-cc-ed" data-k="recorrente:novo">+ Conta</button>`,
     ].join("");
     return `<div class="fcard"><div class="fhd"><h2>Contas da casa</h2><small>aparecem em A pagar</small></div><div class="fcarts">${lista}</div>${this._finFormConta()}
       ${cc.agua || cc.luz ? `<div class="fimp">${this._finImportarConta("agua")}${this._finImportarConta("luz")}</div>` : ""}
@@ -8846,7 +8846,7 @@ registrarCartoes({
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.12";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.13";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
