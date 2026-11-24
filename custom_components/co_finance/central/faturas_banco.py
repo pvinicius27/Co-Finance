@@ -12,6 +12,7 @@ import re
 from typing import Any
 
 from .base import Falha, fmt_brl, now_iso
+from .config import MARCO_ZERO
 from .dados import file_lock, load_db, save_db
 from .faturas import LEITORES, assinaturas, conciliar, e_credito, ler_fatura, periodo
 from .lista import anotar_mudanca
@@ -75,8 +76,28 @@ def conferir_supostas(db: dict[str, Any], cid: str) -> list[str]:
     return feito
 
 
+def detalhar(db: dict[str, Any], f: dict[str, Any]) -> str:
+    """"Detalhar a fatura e trazer as parcelas que faltam": se a fatura tem compras de antes do início do controle, o início
+    volta para o 1º dia do mês da compra mais antiga (só volta, nunca avança; o "pago até" não muda: o passado segue pago).
+    Assim a fatura mostra as compras dentro dela e as parcelas que ainda vão vencer entram nas próximas faturas."""
+    datas = [l["data"] for l in f["linhas"] if l.get("tipo") in ("compra", "anuidade", "juros", "iof") and (l.get("valor") or 0) > 0 and l.get("data")]
+    marco = db.get("marco", MARCO_ZERO)
+    if not datas or min(datas)[:7] + "-01" >= marco:
+        return ""
+    novo = min(datas)[:7] + "-01"
+    db["marco"] = novo
+    faltam = 0
+    for l in f["linhas"]:
+        m = re.fullmatch(r"(\d+)/(\d+)", str(l.get("parcela") or ""))
+        if l.get("tipo") == "compra" and m and int(m[1]) < int(m[2]):
+            faltam += int(m[2]) - int(m[1])
+    return (f" · início do controle: {marco[8:10]}/{marco[5:7]}/{marco[:4]} → {novo[8:10]}/{novo[5:7]}/{novo[:4]} (fatura detalhada"
+            + (f"; {faltam} {'parcela que falta entra' if faltam == 1 else 'parcelas que faltam entram'} nas próximas faturas" if faltam else "") + ")")
+
+
 def fatura_ler(p: dict[str, Any]) -> dict[str, Any]:
-    """{arquivo, conteudo: base64 do JSON [[página, x, y, texto], ...]}. A mesma fatura lida de novo substitui a anterior."""
+    """{arquivo, conteudo: base64 do JSON [[página, x, y, texto], ...], detalhar?}. A mesma fatura lida de novo substitui a anterior.
+    detalhar: traz o início do controle para a compra mais antiga da fatura (ver detalhar())."""
     arquivo = re.sub(r"[\\/]+", "/", str(p.get("arquivo") or "")).split("/")[-1][:120]
     try:
         linhas_pdf = json.loads(base64.b64decode(re.sub(r"\s", "", str(p.get("conteudo") or ""))).decode("utf-8"))
@@ -134,6 +155,7 @@ def fatura_ler(p: dict[str, Any]) -> dict[str, Any]:
         religar_da_fatura(db)  # lida de novo: as compras já trazidas dela voltam a ficar ligadas (não são oferecidas de novo)
         paradas = revisar_parceladas(db)  # parcelada estornada que parou de vir: valor real (vai para o sino)
         debitos = conferir_supostas(db, k["id"])  # Apple Pay no crédito suposto que não veio na fatura: débito (sino)
+        inicio = detalhar(db, guardadas[fid]) if p.get("detalhar") else ""
         save_db(db)
         r = _resumo(guardadas[fid], k)
     msg = (f"{rotulo_cartao(k, db.get('cartoes') or [])} {f['vence'][8:10]}/{f['vence'][5:7]}/{f['vence'][:4]}: {fmt_brl(f['total'])} · {r['linhas']} linhas"
@@ -142,7 +164,7 @@ def fatura_ler(p: dict[str, Any]) -> dict[str, Any]:
            f"{' · final novo: ' + ', '.join(r['finais_novos']) if r['finais_novos'] else ''}"
            f"{' · parcelada cancelada: ' + '; '.join(paradas) + ' (veja no sino)' if paradas else ''}"
            f"{' · pago pelo telefone, mas foi no débito: ' + '; '.join(debitos) + ' (veja no sino)' if debitos else ''}"
-           f"{'' if nova else ' (lida de novo)'}.")
+           f"{inicio}{'' if nova else ' (lida de novo)'}.")
     return {"ok": True, "status": "nova" if nova else "atualizada", "id": fid, "mensagem": msg}
 
 

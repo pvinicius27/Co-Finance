@@ -2155,7 +2155,7 @@ function instalarFinancas(Classe) {
     if (!pdfs.length) { this._fFat = { ...this._fFat, log: [{ txt: "Nenhum PDF nessa escolha.", erro: true }] }; return this._render(); }
     const lidos = new Set((this._fFat.dados?.faturas || []).map((f) => f.arquivo).filter(Boolean));
     const novos = pdfs.filter((f) => !lidos.has(f.name)).sort((a, b) => a.name.localeCompare(b.name));
-    const log = [];
+    const log = [], det = this._fFatDet = this.shadowRoot.getElementById("ft-det")?.checked ?? this._fFatDet ?? true;
     if (pdfs.length > novos.length) log.push({ txt: `${pdfs.length - novos.length} ${pdfs.length - novos.length === 1 ? "PDF já lido" : "PDFs já lidos"} (pulei).` });
     if (!novos.length) { this._fFat = { ...this._fFat, log: [...log, { txt: "Nenhuma fatura nova." }] }; return this._render(); }
     for (let n = 0; n < novos.length; n++) {
@@ -2168,10 +2168,10 @@ function instalarFinancas(Classe) {
         for (let i = 0; i < by.length; i += 0x8000) bin += String.fromCharCode(...by.subarray(i, i + 0x8000));
         const b64 = btoa(bin), partes = b64.match(/[\s\S]{1,30000}/g) || [""];
         let r = null;
-        if (partes.length === 1) r = await this._api({ acao: "fatura_ler", arquivo: f.name, conteudo: b64 });
+        if (partes.length === 1) r = await this._api({ acao: "fatura_ler", arquivo: f.name, conteudo: b64, detalhar: det });
         else {
           const envio = `fatura${Date.now()}`;
-          for (let p = 1; p <= partes.length; p++) r = await this._api({ acao: "pedaco", para: "fatura", envio, n: p, total: partes.length, dados: partes[p - 1], arquivo: f.name });
+          for (let p = 1; p <= partes.length; p++) r = await this._api({ acao: "pedaco", para: "fatura", envio, n: p, total: partes.length, dados: partes[p - 1], arquivo: f.name, detalhar: det });
         }
         log.push({ txt: r?.mensagem || `${f.name}: lida.` });
       } catch (e) { log.push({ txt: `${f.name}: ${e.message || e}`, erro: true }); }
@@ -2196,6 +2196,8 @@ function instalarFinancas(Classe) {
     const ler = A.lendo ? `<div class="aviso" role="status">Lendo ${A.lendo.i}/${A.lendo.n} · ${this._e(A.lendo.nome)}…</div>`
       : `<div class="fag-bt"><label class="btn prim escolher fag-esc">📁 Ler a pasta das faturas<input id="ft-pasta" type="file" webkitdirectory multiple></label>
           <label class="btn escolher fag-esc">📄 Escolher PDFs<input id="ft-arqs" type="file" multiple accept=".pdf,application/pdf"></label></div>
+        <label class="chk"><input type="checkbox" id="ft-det" ${this._fFatDet === false ? "" : "checked"}> Detalhar a fatura e trazer as parcelas que faltam</label>
+        <div class="fs">${F.marco ? `O controle começa em ${this._dataCurta(F.marco + "T12:00")}. ` : ""}Marcado: se a fatura tiver compras de antes disso, o início volta para o mês da compra mais antiga. A fatura mostra as compras dentro dela, as parcelas que ainda vão vencer entram nas próximas faturas, e as faturas antigas continuam pagas.</div>
         <div class="fs">Pode escolher a pasta com as subpastas dos cartões. O PDF não é copiado: o navegador tira o texto e o HA guarda só data, loja, parcela, valor e final do cartão de cada linha (nada de nome, CPF, endereço ou limite). Só os PDFs novos são lidos.</div>`;
     const log = (A.log || []).length ? `<div class="fag-log">${A.log.map((l) => `<div class="${l.erro ? "fatras" : ""}">${this._e(l.txt)}</div>`).join("")}</div>` : "";
     const L = D?.faturas || [], porK = {};
@@ -2237,7 +2239,9 @@ function instalarFinancas(Classe) {
         <div class="fbox"><span class="frot">Compras</span><span class="fv">${f.compras}</span><span class="fs">${f.ligadas} já no sistema · ${f.parcelas} parcelas</span></div>
         <div class="fbox"><span class="frot">Conferência</span><span class="fv">${c.bate ? "✓ bate" : "⚠ não bate"}</span><span class="fs">soma das linhas = total do banco</span></div>
       </div>
-      <div class="fpe"><button class="lnk" data-a="f-fat-volta">‹ Todas as faturas</button></div>
+      <div class="fpe"><button class="lnk" data-a="f-fat-volta">‹ Todas as faturas</button>
+        ${this._fFatApagar === f.id ? `<span class="fs">Apagar esta fatura? As compras que vieram dela ficam (lida de novo, ela volta a ligar nelas).</span><button class="btn perigo" data-a="f-fat-apagar" data-k="${this._e(f.id)}">Apagar</button>`
+          : `<button class="lnk perigo" data-a="f-fat-apagar" data-k="${this._e(f.id)}">Apagar esta fatura</button>`}</div>
       ${blocos}
       <div class="fs">✓ = compra lançada aqui (toque para abrir). As outras ainda não estão no sistema: por enquanto ficam só na fatura.</div>
     </dialog>`;
@@ -2353,7 +2357,14 @@ function instalarFinancas(Classe) {
       return this._api({ acao: "faturas_banco", id: k }).then((r) => { if (this._fFat?.abrindo === k) this._fFat = { ...this._fFat, abrindo: null, det: r.fatura }; },
         (e) => { if (this._fFat) this._fFat = { ...this._fFat, abrindo: null, erro: e.message || String(e) }; }).then(() => { if (!this._fFat?.dados) this._finFatCarregar(); this._render(); });
     }
-    if (a === "f-fat-volta") { this._fFat = { ...this._fFat, det: null }; return this._render(); }
+    if (a === "f-fat-volta") { this._fFat = { ...this._fFat, det: null }; this._fFatApagar = null; return this._render(); }
+    if (a === "f-fat-apagar") {  // tira a fatura lida (para ler o PDF de novo); as compras dela ficam
+      if (this._fFatApagar !== k) { this._fFatApagar = k; return this._render(); }
+      this._fFatApagar = null;
+      return this._api({ acao: "fatura_apagar", id: k }).then((r) => { this._fFat = { ...this._fFat, det: null, log: [{ txt: r.mensagem + " Pode ler o PDF de novo." }] }; },
+        (e) => { this._fFat = { ...this._fFat, log: [{ txt: e.message || String(e), erro: true }] }; })
+        .then(async () => { try { this._fFin = await this._api({ acao: "financeiro" }); this._fLinhasDe = null; } catch (_) { /* segue */ } return this._finFatCarregar(); });
+    }
     if (a === "f-dig-salvar") return this._finDigSalvar(el.getAttribute("data-k"));
     if (a === "f-luz") { this._fConta = null; this._fSecao = null; this._fLuz = { carregando: !this._fLuzCache, dados: this._fLuzCache, log: [] }; this._render(); return this._finLuzCarregar(); }
     if (a === "f-agua") { this._fConta = null; this._fSecao = null; this._fAgua = { carregando: !this._fAguaCache, dados: this._fAguaCache, log: [] }; this._render(); return this._finAguaCarregar(); }
@@ -8846,7 +8857,7 @@ registrarCartoes({
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.13";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.14";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
