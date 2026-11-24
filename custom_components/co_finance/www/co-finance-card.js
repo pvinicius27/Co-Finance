@@ -1716,7 +1716,7 @@ function instalarFinancas(Classe) {
       <div class="fs" style="margin-top:8px">Uma placa terminada nesse final, escrita na nota da oficina, liga a compra ao carro; pneu, óleo e revisão também. Chassi e placa inteira não ficam guardados.</div></div>`;
   };
 
-  // contas da casa (Configurações): luz e água vêm de fora (só nome e de quem); mensais sem boleto e carnês, completos
+  // contas da casa (Configurações): luz e água vêm de fora (só nome e de quem); contas fixas (todo mês no mesmo dia ou em datas certas), num cadastro só
   P._finContasCfg = function () {
     const cc = this._fFin?.contas_casa || {}, ed = this._fCcEd, mes = (m) => m ? `${m.slice(5, 7)}/${m.slice(0, 4)}` : "";
     const bt = (k, html) => `<button class="fcart${ed === k ? " on" : ""}" data-a="f-cc-ed" data-k="${this._e(k)}">${html} ✎</button>`;
@@ -1727,13 +1727,12 @@ function instalarFinancas(Classe) {
       cc.agua ? bt("agua", `${this._e(cc.agua.icone || "💧")} <b>${this._e(cc.agua.nome)}</b> · ${cc.agua.fonte === "manual" ? "digitada todo mês" : "contas em PDF da Saneago"}${de(cc.agua)}`)
         : `<button class="fcart novo${ed === "agua" ? " on" : ""}" data-a="f-cc-ed" data-k="agua">+ Água</button>`,
       ...(cc.recorrentes || []).map((x) => bt(`recorrente:${x.id}`, `${this._e(x.icone || "🏠")} <b>${this._e(x.nome)}</b> · todo dia ${x.dia} · ${this._brl(x.valor)}${x.ate ? ` · até ${mes(x.ate)}` : ""}${de(x)}`)),
-      ...(cc.parceladas || []).map((x) => bt(`parcelada:${x.id}`, `${this._e(x.icone || "🏠")} <b>${this._e(x.nome)}</b> · ${x.vencimentos.length}x ${this._brl(x.valor)}${de(x)}`)),
-      `<button class="fcart novo${ed === "recorrente:novo" ? " on" : ""}" data-a="f-cc-ed" data-k="recorrente:novo">+ Conta mensal sem boleto</button>`,
-      `<button class="fcart novo${ed === "parcelada:novo" ? " on" : ""}" data-a="f-cc-ed" data-k="parcelada:novo">+ Carnê com datas</button>`,
+      ...(cc.parceladas || []).map((x) => bt(`parcelada:${x.id}`, `${this._e(x.icone || "🏠")} <b>${this._e(x.nome)}</b> · ${x.vencimentos.length} datas · ${this._brl(x.valor)}${de(x)}`)),
+      `<button class="fcart novo${/^(recorrente|parcelada):novo$/.test(ed || "") ? " on" : ""}" data-a="f-cc-ed" data-k="recorrente:novo">+ Conta fixa</button>`,
     ].join("");
     return `<div class="fcard"><div class="fhd"><h2>Contas da casa</h2><small>aparecem em A pagar</small></div><div class="fcarts">${lista}</div>${this._finFormConta()}
       ${cc.agua || cc.luz ? `<div class="fimp">${this._finImportarConta("agua")}${this._finImportarConta("luz")}</div>` : ""}
-      <div class="fs" style="margin-top:8px">Mensal: o CoFinance cria uma conta por mês. Carnê: uma por data. Mudar o valor vale para o que ainda não foi pago.</div></div>`;
+      <div class="fs" style="margin-top:8px">Conta fixa: a que não chega sozinha (internet, condomínio, IPTU). Todo mês no mesmo dia: uma conta por mês, sem fim ou até o mês que vocês escolherem. Em datas certas (carnê): uma conta por data, com a parcela (3/10). Mudar o valor vale para o que ainda não foi pago.</div></div>`;
   };
 
   P._finImportarConta = function (tipo) {
@@ -1750,8 +1749,9 @@ function instalarFinancas(Classe) {
     if (!ed) return "";
     const cc = this._fFin?.contas_casa || {}, [tipo, id] = ed.split(":"), pessoas = this._dados?.compradores || [];
     if (!pessoas.length) return `<div class="form fcartform"><div class="fs">Cadastre primeiro quem mora na casa (em Pessoas): toda conta é de alguém.</div></div>`;
+    const r = id === "novo" ? this._fCcRasc || {} : {};  // conta fixa nova: o que já foi digitado fica ao trocar "como vence"
     const x = tipo === "luz" || tipo === "agua" ? cc[tipo] || { nome: tipo === "luz" ? "Luz" : "Água", quem: pessoas[0], fonte: "pdf" } : id === "novo"
-      ? { nome: "", icone: tipo === "parcelada" ? "🏛️" : "🌐", quem: pessoas[0], dia: "", valor: "", valor_depois: "", desde: this._mesDe(new Date()), vencimentos: [] }
+      ? { nome: "", icone: tipo === "parcelada" ? "🏛️" : "🌐", quem: pessoas[0], dia: "", valor: "", valor_depois: "", desde: this._mesDe(new Date()), vencimentos: [], ...r }
       : (cc[tipo + "s"] || []).find((y) => y.id === id);
     if (!x) return "";
     const op = (l, a) => l.map((v) => `<option ${v === a ? "selected" : ""}>${this._e(v)}</option>`).join("");
@@ -1769,13 +1769,17 @@ function instalarFinancas(Classe) {
     if (tipo === "agua") f += `<label>Companhia<select id="kk-fonte"><option value="saneago">Saneago (o CoFinance lê o PDF)</option><option value="manual" ${x.fonte === "manual" ? "selected" : ""}>Outra (digito o valor todo mês)</option></select></label>
       <div class="fs">Saneago: o CoFinance lê as contas em PDF. Outra companhia: vocês digitam o valor e o vencimento de cada mês (Sabesp, Copasa, Caesb… ganham leitor quando alguém mandar uma conta).</div>`;
     if (fora && cc[tipo] && this._finImportarConta(tipo)) f += `<div class="fimp">${this._finImportarConta(tipo)}<span class="fs">${cc[tipo].fonte === "manual" ? "Digite o valor e o vencimento de cada mês." : tipo === "luz" && cc.luz.fonte !== "pdf" ? "Valor e consumo vêm de lá." : "Escolha a pasta ou os PDFs: só as contas novas são lidas."}</span></div>`;
-    if (tipo === "recorrente") f += `<div class="duas" style="grid-template-columns:5em minmax(0,1fr) minmax(0,1fr)"><label>Vence dia<input id="kk-dia" type="number" inputmode="numeric" min="1" max="31" value="${x.dia ?? ""}"></label>
-        <label>Valor<input id="kk-val" type="text" inputmode="decimal" value="${num(x.valor)}"></label>
-        <label>Depois do vencimento <small>(se muda)</small><input id="kk-dep" type="text" inputmode="decimal" value="${x.valor_depois !== x.valor ? num(x.valor_depois) : ""}"></label></div>
-      <div class="duas fkk-mes" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"><label>Desde<input id="kk-desde" type="month" value="${this._e(x.desde || "")}"></label>
+    if (!fora) {  // conta fixa: um cadastro só; "como vence" escolhe entre todo mês no mesmo dia e datas certas (carnê)
+      const modo = (t, rot) => `<button class="btn${tipo === t ? " prim" : ""}" data-a="f-cc-modo" data-k="${t}" ${tipo === t ? 'aria-pressed="true"' : ""}>${rot}</button>`;
+      f += id === "novo" ? `<span class="fl">Como vence</span><div class="fpe" style="justify-content:flex-start">${modo("recorrente", "Todo mês no mesmo dia")}${modo("parcelada", "Em datas certas (carnê)")}</div>`
+        : `<span class="fs">Vence ${tipo === "recorrente" ? "todo mês no mesmo dia" : "em datas certas (carnê)"}.</span>`;
+      f += `<div class="duas" style="grid-template-columns:${tipo === "recorrente" ? "5em " : ""}minmax(0,1fr) minmax(0,1fr)">${tipo === "recorrente" ? `<label>Vence dia<input id="kk-dia" type="number" inputmode="numeric" min="1" max="31" value="${x.dia ?? ""}"></label>` : ""}
+        <label>Valor${tipo === "parcelada" ? " de cada parcela" : ""}<input id="kk-val" type="text" inputmode="decimal" value="${num(x.valor)}"></label>
+        <label>Depois do vencimento <small>(se muda)</small><input id="kk-dep" type="text" inputmode="decimal" value="${x.valor_depois != null && x.valor_depois !== "" && x.valor_depois !== x.valor ? num(x.valor_depois) : ""}"></label></div>`;
+    }
+    if (tipo === "recorrente") f += `<div class="duas fkk-mes" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"><label>Desde<input id="kk-desde" type="month" value="${this._e(x.desde || "")}"></label>
         <label>Até <small>(vazio: sem fim)</small><input id="kk-ate" type="month" value="${this._e(x.ate || "")}"></label></div>`;
-    if (tipo === "parcelada") f += `<label>Valor de cada parcela<input id="kk-val" type="text" inputmode="decimal" value="${num(x.valor)}"></label>
-      <label>Vencimentos <small>(um por linha: 20/02/2026)</small><textarea id="kk-venc" rows="${Math.max(3, (x.vencimentos || []).length)}">${this._e((x.vencimentos || []).map((d) => `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}`).join("\n"))}</textarea></label>`;
+    if (tipo === "parcelada") f += `<label>Vencimentos <small>(um por linha: 20/02/2026)</small><textarea id="kk-venc" rows="${Math.max(3, (x.vencimentos || []).length)}">${this._e(x.vencTxt ?? (x.vencimentos || []).map((d) => `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}`).join("\n"))}</textarea></label>`;
     const apagar = id === "novo" || (fora && !cc[tipo]) ? "" : this._fCcApagar ? `<span class="fs">Tirar ${this._e(x.nome)}?</span><button class="btn perigo" data-a="f-cc-apagar">Tirar</button>` : `<button class="lnk perigo" data-a="f-cc-apagar">Tirar das contas</button>`;
     return `<div class="form fcartform">${f}<div class="fpe"><button class="btn prim" data-a="f-cc-salvar">Salvar</button><button class="btn" data-a="f-cc-ed" data-k="${this._e(ed)}">Cancelar</button>${apagar}</div></div>`;
   };
@@ -1788,7 +1792,7 @@ function instalarFinancas(Classe) {
     try {
       const r = await this._api(p);
       this._aviso = r.mensagem;
-      this._fCcEd = null; this._fCcApagar = false;
+      this._fCcEd = null; this._fCcApagar = false; this._fCcRasc = null;
       this._fFin = await this._api({ acao: "financeiro" });
       this._fLinhasDe = null;
     } catch (e) { this._aviso = "⚠ " + (e.message || e); }
@@ -2453,7 +2457,16 @@ function instalarFinancas(Classe) {
         : { acao: "bem_salvar", id: ed === "novo" ? "" : ed, nome: g2("kb-nome")?.value || "", placas: g2("kb-placas")?.value || "" };
       return this._finSalvarCfg(p, () => { this._fBemEd = null; this._fBemApagar = false; });
     }
-    if (a === "f-cc-ed") { this._fCcEd = this._fCcEd === k ? null : k; this._fCcApagar = false; this._aviso = null; return this._render(); }
+    if (a === "f-cc-ed") { this._fCcEd = this._fCcEd === k || (/:novo$/.test(k) && /^(recorrente|parcelada):novo$/.test(this._fCcEd || "")) ? null : k; this._fCcApagar = false; this._fCcRasc = null; this._aviso = null; return this._render(); }
+    if (a === "f-cc-modo") {  // conta fixa nova: troca "como vence" guardando o que já foi digitado
+      const v = (i) => this.shadowRoot.getElementById(i)?.value;
+      this._fCcRasc = { nome: v("kk-nome") || "", icone: v("kk-ic"), quem: v("kk-quem"), valor: v("kk-val") ? (parseFloat(v("kk-val").replace(/\./g, "").replace(",", ".")) || "") : "",
+        valor_depois: v("kk-dep") ? (parseFloat(v("kk-dep").replace(/\./g, "").replace(",", ".")) || "") : "", ...(v("kk-dia") ? { dia: v("kk-dia") } : {}),
+        ...(v("kk-desde") ? { desde: v("kk-desde") } : {}), ...(v("kk-ate") ? { ate: v("kk-ate") } : {}), ...(v("kk-venc") != null ? { vencTxt: v("kk-venc") } : {}),
+        ...(this._fCcRasc?.vencTxt != null && v("kk-venc") == null ? { vencTxt: this._fCcRasc.vencTxt } : {}),
+        ...(this._fCcRasc?.dia && !v("kk-dia") ? { dia: this._fCcRasc.dia, desde: this._fCcRasc.desde, ate: this._fCcRasc.ate } : {}) };
+      this._fCcEd = `${k}:novo`; return this._render();
+    }
     if (a === "f-cc-salvar") return this._finSalvarConta(false);
     if (a === "f-cc-apagar") { if (!this._fCcApagar) { this._fCcApagar = true; return this._render(); } return this._finSalvarConta(true); }
     if (a === "f-pes-apagar") { if (!this._fPesApagar) { this._fPesApagar = true; return this._render(); } return this._finSalvarPessoa(true); }
@@ -8833,7 +8846,7 @@ registrarCartoes({
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.11";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.12";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";

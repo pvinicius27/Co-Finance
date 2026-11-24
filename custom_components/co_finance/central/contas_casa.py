@@ -1,5 +1,6 @@
-"""⚙ Configurações › Contas da casa: luz (do painel de energia, das contas em PDF ou digitada), água (PDF da Saneago ou digitada), contas mensais sem boleto
-(internet: valor até o vencimento e outro depois) e carnês com datas fixas (IPTU). A marca de pago fica em db["pagos"]
+"""⚙ Configurações › Contas da casa: luz (do painel de energia, das contas em PDF ou digitada), água (PDF da Saneago ou digitada) e as contas fixas
+(as que não chegam sozinhas), num cadastro só na tela: "todo mês no mesmo dia" (recorrente: internet) ou "em datas certas" (parcelada: carnê, IPTU);
+as duas com valor até o vencimento e outro depois (se muda). A marca de pago fica em db["pagos"]
 com o id "<conta>:AAAA-MM", por isso o id não muda depois de criado."""
 from __future__ import annotations
 
@@ -105,6 +106,10 @@ def conta_casa(p: dict[str, Any]) -> dict[str, Any]:
             if valor <= 0:
                 raise Falha("Qual o valor?")
             x["valor"] = valor
+            depois = round(_valor_txt(p.get("valor_depois")) or 0, 2) or valor  # depois do vencimento (internet, multa do carnê); vazio = o mesmo
+            if depois < valor:
+                raise Falha("O valor depois do vencimento não pode ser menor.")
+            x["valor_depois"] = depois
         if tipo == "recorrente":
             try:
                 dia = int(p.get("dia") or 0)
@@ -112,14 +117,11 @@ def conta_casa(p: dict[str, Any]) -> dict[str, Any]:
                 dia = 0
             if not 1 <= dia <= 31:
                 raise Falha("Vence em que dia? De 1 a 31.")
-            depois = round(_valor_txt(p.get("valor_depois")) or 0, 2) or x["valor"]
-            if depois < x["valor"]:
-                raise Falha("O valor depois do vencimento não pode ser menor.")
             desde = _mes(p.get("desde"), "Desde")
             ate = _mes(p.get("ate"), "Até") if p.get("ate") else None
             if ate and ate < desde:
                 raise Falha("O mês final não pode ser antes do inicial.")
-            x.update({"dia": dia, "valor_depois": depois, "desde": desde})
+            x.update({"dia": dia, "desde": desde})
             if ate:
                 x["ate"] = ate
             else:

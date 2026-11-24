@@ -59,8 +59,9 @@ def _recorrentes(db: dict[str, Any], hoje: date | None = None) -> list[dict[str,
     return out
 
 
-def _parceladas(db: dict[str, Any]) -> list[dict[str, Any]]:
-    """Carnê com datas fixas (IPTU): todas as parcelas, pagas ou não."""
+def _parceladas(db: dict[str, Any], hoje: date | None = None) -> list[dict[str, Any]]:
+    """Carnê com datas fixas (IPTU): todas as parcelas, pagas ou não. Valor depois do vencimento, se houver, igual à mensal."""
+    hoje = hoje or date.today()
     out = []
     for r in (db.get("contas_casa") or {}).get("parceladas") or []:
         n = len(r["vencimentos"])
@@ -70,7 +71,8 @@ def _parceladas(db: dict[str, Any]) -> list[dict[str, Any]]:
             out.append({"id": cid, "tipo": "conta", "fonte": "parcelada", "fonte_txt": "carnê", "nome": r["nome"], "icone": r["icone"],
                         "vence": venc, "referencia": f"{i}/{n}", "parcela": i, "de": n, "categoria": r["categoria"],
                         "subcategoria": r["subcategoria"], "quem": r["quem"], "pago": pg,
-                        "total": round(pg["valor"], 2) if pg and pg.get("valor") else r["valor"]})
+                        "faixas": {"ate": venc, "valor": r["valor"], "depois": r.get("valor_depois") or r["valor"]}})
+            out[-1]["total"] = round(pg["valor"], 2) if pg and pg.get("valor") else valor_pela_data({**out[-1], "total": r["valor"]}, hoje.isoformat())
     return out
 
 
