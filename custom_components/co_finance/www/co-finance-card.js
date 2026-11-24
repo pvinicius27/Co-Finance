@@ -1499,9 +1499,46 @@ function instalarFinancas(Classe) {
       <div class="duas" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"><label class="chk"><input type="checkbox" id="ka-atr" ${a.atrasadas !== false ? "checked" : ""}> Atrasadas: avisar todo dia até pagar</label>
         <label>Às${sel("ka-hatr", a.hora_atrasadas ?? 10)}</label></div>
       <label>Endereço do painel <small>(o caminho depois do endereço do HA; tocar no aviso abre aqui)</small><input id="ka-painel" type="text" placeholder="/lovelace/compras" value="${this._e(a.painel || "")}" autocomplete="off"></label>
+      ${this._finAvisosQuem()}
       <div class="fpe"><button class="btn prim" data-a="f-av-salvar">Salvar</button></div>
-      <span class="fs">Quem recebe cada aviso se escolhe em Pessoas (celular e o que recebe).</span></div></div>`;
+      <span class="fs">Que compras cada pessoa recebe e a pergunta do pagamento pelo telefone ficam em Pessoas.</span></div></div>`;
   };
+
+  // os celulares que o HA conhece (o app do Home Assistant instalado e logado neste HA): notify.mobile_app_…
+  P._finCelulares = function (atual) {
+    const cels = Object.keys(this._hass?.services?.notify || {}).filter((s) => s.startsWith("mobile_app_")).map((s) => `notify.${s}`).sort();
+    if (atual && !cels.includes(atual)) cels.push(atual);
+    return cels;
+  };
+  P._finCelNome = (s) => s.replace(/^notify\.mobile_app_/, "").replace(/_/g, " ");
+
+  // Avisos › quem recebe: o celular de cada pessoa e se recebe os lembretes de contas (o mesmo campo do cadastro em Pessoas)
+  P._finAvisosQuem = function () {
+    const ps = this._dados?.pessoas || [], todos = this._finCelulares();
+    const linhas = ps.map((x, i) => {
+      const a = x.aviso || {}, cels = this._finCelulares(a.celular);
+      return `<div class="duas" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:end"><label>${this._e(x.nome)}<select id="kav-cel-${i}">
+          <option value="">— sem celular —</option>${cels.map((c) => `<option value="${this._e(c)}" ${a.celular === c ? "selected" : ""}>${this._e(this._finCelNome(c))}</option>`).join("")}</select></label>
+        <label class="chk"><input type="checkbox" id="kav-ct-${i}" ${a.contas ? "checked" : ""}> Lembretes de contas e faturas</label></div>`;
+    }).join("");
+    return `<span class="fl">Quem recebe no celular</span>${linhas || `<span class="fs">Cadastre as pessoas primeiro (Pessoas).</span>`}
+      <span class="fs">${todos.length ? `Celulares encontrados neste Home Assistant: ${todos.map((c) => this._e(this._finCelNome(c))).join(", ")}.`
+        : "Nenhum celular neste Home Assistant: instale o app do Home Assistant no celular e entre neste servidor."}</span>`;
+  };
+
+  // salva o celular / lembretes escolhidos em Avisos no cadastro de cada pessoa que mudou (o resto do cadastro vai igual)
+  P._finAvisosSalvarQuem = async function () {
+    const g = (i) => this.shadowRoot.getElementById(i), ps = this._dados?.pessoas || [];
+    for (const [i, x] of ps.entries()) {
+      const sel = g(`kav-cel-${i}`), ct = g(`kav-ct-${i}`);
+      if (!sel) continue;
+      const a = { celular: "", compras: "nenhuma", applepay: false, contas: false, ...(x.aviso || {}) };
+      if (sel.value === (a.celular || "") && !!ct?.checked === !!a.contas) continue;
+      await this._api({ acao: "pessoa", nome: x.nome, cor: x.cor, apelidos: (x.apelidos || []).join(", "), artigo: x.artigo || "", reembolso: !!x.reembolso,
+        aviso: { ...a, celular: sel.value, contas: !!ct?.checked } });
+    }
+  };
+
 
   // ⚙ Atalho do iPhone: o endereço que o Atalho usa para mandar o cupom (endereço do HA + código do webhook)
   P._finAtalhoCfg = function () {
@@ -1790,9 +1827,7 @@ function instalarFinancas(Classe) {
   const F_AV_COMPRAS = [["todas", "Todas as compras (quem cuida das finanças)"], ["novas_e_minhas", "As compras novas e as minhas"], ["minhas", "Só as minhas"], ["nenhuma", "Nenhuma"]];
   P._finPesAvisos = function (x) {
     const a = { celular: "", compras: "nenhuma", applepay: false, contas: false, ...(x.aviso || {}) };
-    const cels = Object.keys(this.hass?.services?.notify || {}).filter((s) => s.startsWith("mobile_app_")).map((s) => `notify.${s}`);
-    if (a.celular && !cels.includes(a.celular)) cels.push(a.celular);
-    const nome = (s) => s.replace(/^notify\.mobile_app_/, "").replace(/_/g, " ");
+    const cels = this._finCelulares(a.celular), nome = this._finCelNome;
     return `<fieldset class="fkc-sec2"><legend>Avisos no telefone</legend>
       <label>Celular <small>(o app do Home Assistant instalado nele)</small><select id="kp-cel"><option value="">— sem celular (não recebe avisos) —</option>${cels.map((c) => `<option value="${this._e(c)}" ${a.celular === c ? "selected" : ""}>${this._e(nome(c))}</option>`).join("")}</select></label>
       <label>Compras que recebe<select id="kp-comp">${F_AV_COMPRAS.map(([v, t]) => `<option value="${v}" ${a.compras === v ? "selected" : ""}>${t}</option>`).join("")}</select></label>
@@ -2345,9 +2380,9 @@ function instalarFinancas(Classe) {
     if (a === "f-cart-salvar") return this._finSalvarCartao(false);
     if (a === "f-pes-ed") { this._fPesEd = this._fPesEd === k ? null : k; this._fPesApagar = false; this._aviso = null; return this._render(); }
     if (a === "f-pes-salvar") return this._finSalvarPessoa(false);
-    if (a === "f-av-salvar") return this._finSalvarCfg({ acao: "config_avisos", dias_antes: Number(g2("ka-dias")?.value || 0), hora_antes: g2("ka-hantes")?.value,
+    if (a === "f-av-salvar") return this._finAvisosSalvarQuem().then(() => this._finSalvarCfg({ acao: "config_avisos", dias_antes: Number(g2("ka-dias")?.value || 0), hora_antes: g2("ka-hantes")?.value,
       horas_dia: [...this.shadowRoot.querySelectorAll("[data-kahora]")].filter((c) => c.checked).map((c) => Number(c.dataset.kahora)),
-      atrasadas: !!g2("ka-atr")?.checked, hora_atrasadas: g2("ka-hatr")?.value, painel: g2("ka-painel")?.value || "" });
+      atrasadas: !!g2("ka-atr")?.checked, hora_atrasadas: g2("ka-hatr")?.value, painel: g2("ka-painel")?.value || "" }), (e) => { this._aviso = "⚠ " + (e.message || e); this._render(); });
     if (a === "f-pd-print") {  // Mercado Livre: o texto do print colado (Android, ou o atalho falhou)
       const texto = (g2("pd-print")?.value || "").trim();
       if (!texto) { this._fPdPrintMsg = { txt: "Cole o texto do print primeiro.", erro: true }; return this._render(); }
@@ -8798,7 +8833,7 @@ registrarCartoes({
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.10";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.11";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
