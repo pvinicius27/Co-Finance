@@ -341,6 +341,9 @@ def pedaco(p: dict[str, Any]) -> dict[str, Any]:
     if pedido.get("para") == "pedido":  # e-mail de pedido de loja online em PDF (pela tela)
         from .pedidos import pedido_email
         return pedido_email({**pedido, "linhas": conteudo, "via": "pdf"})
+    if pedido.get("para") == "financiamento":  # extrato do financiamento (aba Financiamento)
+        from .financiamento import financiamento_ler
+        return financiamento_ler({**pedido, "conteudo": conteudo})
     if pedido.get("para") == "fatura":
         from .faturas_banco import fatura_ler
         return fatura_ler({**pedido, "conteudo": conteudo})

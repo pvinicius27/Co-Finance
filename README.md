@@ -9,6 +9,7 @@ Compras, cartões, faturas e contas da casa dentro do Home Assistant. O CoFinanc
 - **Lançamento à mão** do que não tem nota.
 - **Resumo do mês**, áreas de gasto (mercado, casa, carro…), contas a pagar e comparação de preço do mesmo produto entre mercados.
 - **Avisos no telefone** do que vence, com o botão "✓ Paguei".
+- **Financiamento imobiliário (SAC + TR):** lê o extrato do banco em PDF e mostra o saldo devedor, a próxima parcela calculada com a TR do Banco Central, a projeção até a quitação, o simulador de amortização extra e o que informar no Imposto de Renda. A parcela entra em A pagar como conta da casa.
 - **Pessoas, cartões e áreas** saem do seu cadastro. Nada vem com nomes prontos.
 
 ## Privacidade
@@ -19,6 +20,8 @@ Tudo fica no seu Home Assistant, na pasta `/config/co_dados/co_finance/`:
 - `notas/`: a cópia de cada nota.
 
 Nome, CPF e endereço do consumidor **não** entram nas compras. Eles ficam só na cópia da nota.
+
+No extrato do financiamento, o navegador manda ao Home Assistant só a tabela de números (parcelas, datas, valores e índices). Nome, CPF, endereço e número do contrato ficam no aparelho, e o PDF não é guardado. Para prever a parcela, o Home Assistant consulta a TR no site oficial do Banco Central (`api.bcb.gov.br`), no máximo uma vez a cada 6 horas e só quando há financiamento cadastrado. A consulta leva apenas o intervalo de datas.
 
 ## Antes de começar
 

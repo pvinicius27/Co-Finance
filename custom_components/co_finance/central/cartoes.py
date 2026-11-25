@@ -443,6 +443,13 @@ def lembretes(p: dict[str, Any]) -> dict[str, Any]:
     hora = str(p.get("hora") or "10")
     with file_lock():
         db0 = load_db()
+        if db0.get("financiamentos"):  # TR nova do Banco Central (no máximo uma consulta a cada 6 horas; sem rede, segue)
+            from .financiamento import atualizar_tr
+            try:
+                if atualizar_tr(db0):
+                    save_db(db0)
+            except Exception:  # noqa: BLE001 - a TR é acessório dos lembretes
+                pass
     from .avisos import lembretes as _lembretes  # aqui dentro: avisos importa dados, e cartões é importado cedo
     avisar = _lembretes(db0, faturas(db0) + contas(db0), int(hora) if hora.isdigit() else 10)
     hoje = date.today()

@@ -22,6 +22,8 @@ from .applepay import applepay, applepay_decidir
 from .contas_agua import agua, agua_ler
 from .energia import luz, luz_apagar, luz_ler
 from .faturas_banco import fatura_apagar, fatura_ler, faturas_banco
+from .financiamento import (financiamento, financiamento_ajustar, financiamento_apagar, financiamento_ler, financiamento_pago,
+                            financiamento_simular)
 from .importar_faturas import faturas_classificar, faturas_importar, faturas_lojas, faturas_lote, faturas_previa
 from .painel import itens, painel, visao
 from .cartao_aviso import cartao_aviso
@@ -37,6 +39,8 @@ ACOES = {"completar_codigos": completar_codigos, "completar_bandeiras": completa
          "financeiro": financeiro, "pagar": pagar, "lembretes": lembretes, "cartao": cartao, "final_cartao": final_cartao, "pessoa": pessoa, "conta_casa": conta_casa, "conta_mes": conta_mes,
          "applepay": applepay, "applepay_decidir": applepay_decidir, "cartao_aviso": cartao_aviso, "agua": agua, "agua_ler": agua_ler, "luz": luz, "luz_ler": luz_ler, "luz_apagar": luz_apagar, "mudanca": mudanca,
          "fatura_ler": fatura_ler, "faturas_banco": faturas_banco, "fatura_apagar": fatura_apagar,
+         "financiamento": financiamento, "financiamento_ler": financiamento_ler, "financiamento_simular": financiamento_simular,
+         "financiamento_pago": financiamento_pago, "financiamento_ajustar": financiamento_ajustar, "financiamento_apagar": financiamento_apagar,
          "faturas_previa": faturas_previa, "faturas_importar": faturas_importar, "faturas_lote": faturas_lote,
          "faturas_lojas": faturas_lojas, "faturas_classificar": faturas_classificar,
          "pedido_email": pedido_email, "pedidos_config": pedidos_config, "pedidos_caixa": pedidos_caixa, "pagamento_telefones": pagamento_telefones, "pedido_decidir": pedido_decidir,

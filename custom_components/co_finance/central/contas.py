@@ -22,7 +22,7 @@ def _pago(db: dict[str, Any], fid: str, vence: str) -> dict[str, Any] | None:
 
 def contas(db: dict[str, Any]) -> list[dict[str, Any]]:
     """Contas da casa (luz, água, mensais e carnês do cadastro), por vencimento."""
-    out = _contas_luz(db) + contas_agua(db, _pago) + _recorrentes(db) + _parceladas(db)
+    out = _contas_luz(db) + contas_agua(db, _pago) + _recorrentes(db) + _parceladas(db) + _financiamentos(db)
     out.sort(key=lambda x: x["vence"])
     return out
 
@@ -73,6 +73,45 @@ def _parceladas(db: dict[str, Any], hoje: date | None = None) -> list[dict[str, 
                         "subcategoria": r["subcategoria"], "quem": r["quem"], "pago": pg,
                         "faixas": {"ate": venc, "valor": r["valor"], "depois": r.get("valor_depois") or r["valor"]}})
             out[-1]["total"] = round(pg["valor"], 2) if pg and pg.get("valor") else valor_pela_data({**out[-1], "total": r["valor"]}, hoje.isoformat())
+    return out
+
+
+def _financiamentos(db: dict[str, Any], hoje: date | None = None) -> list[dict[str, Any]]:
+    """Financiamento (aba Financiamento): uma conta por parcela, do início do controle até a próxima a vencer. Valor: o
+    pago (extrato ou "Paguei" com valor) ou o previsto pela TR. Débito automático: no dia do vencimento entra como paga
+    com o valor previsto (quem paga corrige o valor se saiu diferente)."""
+    fins = db.get("financiamentos") or []
+    if not fins:
+        return []
+    from .financiamento import projetar  # só quando há financiamento
+    hoje = hoje or date.today()
+    out = []
+    for f in fins:
+        try:
+            pj = projetar(f, db.get("tr_bcb") or {})
+        except Exception:  # noqa: BLE001 - um financiamento com problema não derruba as outras contas
+            continue
+        proxima_vista = False
+        for x in pj["pagas"] + pj["futuras"]:
+            venc = x["vence"]
+            if venc < db.get("marco", MARCO_ZERO):
+                continue
+            if venc > hoje.isoformat() and proxima_vista:
+                break
+            cid = f"{f['id']}:{venc[:7]}"
+            pg = _pago(db, cid, venc)
+            if not pg and x.get("tipo") == "paga":
+                pg = {"em": x.get("pago_em") or venc, "via": "extrato do banco", "valor": x.get("pago") or x["total"]}
+            elif not pg and f.get("debito", True) and venc <= hoje.isoformat():
+                pg = {"em": venc, "via": "débito automático"}
+            if venc > hoje.isoformat() and not pg:  # a próxima a pagar (a paga adiantada aparece e a seguinte também)
+                proxima_vista = True
+            out.append({"id": cid, "tipo": "conta", "fonte": "financiamento", "fonte_txt": "débito automático" if f.get("debito", True) else "boleto",
+                        "nome": f["nome"], "icone": "🏠", "vence": venc, "referencia": f"{x['n']}/{f['prazo']}", "parcela": x["n"], "de": f["prazo"],
+                        "categoria": "Casa", "subcategoria": "Contas fixas", "quem": f.get("quem"), "pago": pg,
+                        "total": round(pg["valor"], 2) if pg and pg.get("valor") else x["total"],
+                        "financiamento": {"id": f["id"], "previsto": x["total"], "tipo": x.get("tipo"), "tr": x.get("tr"),
+                                          "amort": x["amort"], "juros": x["juros"], "seguros": round((x.get("mip") or 0) + (x.get("dfi") or 0), 2)}})
     return out
 
 
