@@ -81,7 +81,14 @@ class Ponte:
         if e_consulta:  # "Já comprei?"
             pedido = {"acao": "consultar", "codigo": j.get("codigo", ""), "termo": j.get("termo", ""), "quem": quem}
         elif acao == "applepay":  # automação "Transação" do Atalhos
-            pedido = {"acao": "applepay", **{k: str(j.get(k) or "") for k in ("valor", "loja", "cartao", "quem")}}
+            # a compra solta ({valor, loja, cartao, quem, quando}) ou a fila do iPhone ({quem, fila}: um JSON por linha, ou uma
+            # lista) com o que ainda não tinha subido; sem a fila o valor "não vinha" (ela era jogada fora aqui)
+            pedido = {"acao": "applepay", **{k: str(j.get(k) or "") for k in ("valor", "loja", "cartao", "quem", "quando")}}
+            fila = j.get("fila")
+            if isinstance(fila, list):
+                pedido["fila"] = [x for x in fila if isinstance(x, dict)]
+            elif fila:
+                pedido["fila"] = str(fila)
         elif acao == "pedaco":  # nota grande (página do portal / XML) em pedaços
             pedido = {"acao": "pedaco", **{k: j.get(k) for k in ("envio", "n", "total", "dados", "tipo", "quem")}, "reembolso": j.get("reembolso", False)}
         else:

@@ -1323,6 +1323,11 @@ function instalarFinancas(Classe) {
       ["pedidos", "Pedidos de lojas online", `${nPed ? `${nPed} ${nPed === 1 ? "pedido" : "pedidos"}` : (pdc.lojas || ["Shopee"]).join(", ")} · ${ligado ? "automático ✓" : "automático desligado"}`, pd.html],
       ["contas", "Contas da casa", lista(cc.nomes, "nenhuma conta"), cc.html],
       ["veiculos", "Veículos", (d.bens || []).length ? `${lista(bs.nomes, "")}${km ? ` · ${Number(km).toLocaleString("pt-BR")} km` : ""}` : "nenhum veículo", bs.html],
+      ...(typeof this._v3Layout === "function" ? [["resumo", "Tela do Resumo", `layout ${this._v3Layout()} · neste aparelho`, `<div class="fcfg-corpo"><div class="flay">
+        ${[["A", "Layout A", "Compras do mês e Pagamentos realizados um embaixo do outro, à esquerda, e os Próximos pagamentos ao lado (linha do tempo com 8 vencimentos). Embaixo, os Cartões e o calendário lado a lado."],
+           ["B", "Layout B", "Compras do mês e Pagamentos realizados num quadro só, de ponta a ponta. Embaixo, os Próximos pagamentos na largura toda (linha do tempo com 10 vencimentos) e, depois, o calendário e os Cartões lado a lado."]]
+          .map(([k, n, d]) => `<button class="flay-op${this._v3Layout() === k ? " on" : ""}" data-a="f-layout" data-k="${k}" aria-pressed="${this._v3Layout() === k}"><b>${n}</b><small>${d}</small></button>`).join("")}</div>
+        <div class="fs" style="margin-top:8px">Os dois mostram os mesmos quadros e os mesmos números; muda só a posição, no computador. No celular a tela é sempre uma coluna só. A escolha fica guardada neste aparelho: no computador e no celular, escolha em cada um.</div></div>`]] : []),
       ["categorias", "Categorias e regras", "áreas, subcategorias e a regra de cada loja", `<div class="fcfg-corpo"><div class="fs">A árvore de áreas e subcategorias e a área que cada loja recebe nas próximas notas.</div>
         <div class="fimp" style="margin-top:8px"><button class="btn" data-a="f-cats">Abrir categorias e regras</button></div></div>`],
       ...(ex.html ? [["excluidas", "Excluídas recentemente", `${(d.excluidas || []).length} de 10`, ex.html]] : []),
@@ -2292,6 +2297,7 @@ function instalarFinancas(Classe) {
       if (pv) pv.innerHTML = this._finKcPrevia();
       return;
     }
+    if (a === "f-layout") { this._fLayout = k === "B" ? "B" : "A"; try { localStorage.setItem("co-finance-layout", this._fLayout); } catch (_) { /* sem armazenamento */ } return this._render(); }
     if (a === "f-deitar") { this._fDeitar = !this._v3Deitar(); try { localStorage.setItem("co-finance-deitados", this._fDeitar ? "1" : "0"); } catch (_) { /* sem armazenamento */ } return this._render(); }
     if (a === "f-cart-ed") { this._fCartEd = this._fCartEd === k ? null : k; this._fCartApagar = false; this._fCartErro = null; this._fCartTudo = 0; this._aviso = null; return this._render(); }
     if (a === "f-cart-salvar") return this._finSalvarCartao(false);
@@ -2641,6 +2647,9 @@ function instalarFinancas(Classe) {
     .fsem{font:inherit;cursor:pointer;width:100%;text-align:left;border:1px dashed var(--c-alerta);background:color-mix(in srgb,var(--c-alerta) 10%,transparent);color:var(--c-txt);border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:13.5px}
     .fmesp{display:flex;justify-content:space-between;padding:10px 2px 2px;font-size:13.5px;color:var(--c-sub)}
     .fcarts{display:grid;gap:6px}.fcart{font-size:13.5px}
+    .flay{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+    .flay-op{display:grid;gap:3px;text-align:left;font:inherit;color:inherit;background:none;border:1.5px solid var(--divider-color,rgba(127,127,127,.3));border-radius:10px;padding:10px 12px;cursor:pointer}
+    .flay-op b{font-size:14px}.flay-op small{font-size:12.5px;opacity:.75;line-height:1.35}.flay-op.on{border-color:var(--primary-color);box-shadow:0 0 0 1px var(--primary-color) inset}
     .fdeitar{display:flex;align-items:center;gap:8px;padding:6px 10px;margin:8px 0 4px;border:1px solid var(--divider-color,rgba(127,127,127,.3));border-radius:8px;cursor:pointer}
     .fdeitar input{width:16px;height:16px;margin:0;flex:none;accent-color:var(--primary-color)}.fdeitar span{display:grid;gap:0}.fdeitar b{font-size:13px;font-weight:600}.fdeitar small{font-size:11.5px;opacity:.75}
     .fcramo{padding:10px 0;border-top:1px solid var(--c-linha)}.fcramo:first-of-type{border-top:0}
@@ -8886,13 +8895,13 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.18";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.19";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
 const V3_BANCOS = { santander: "Santander", bb: "Banco do Brasil", bradesco: "Bradesco", itau: "Itaú" };
 const V3_NA_HORA = ["Débito", "Pix", "Benefício", "Dinheiro", "Saldo em carteira", "Boleto"];
-const V3_PONTOS = 8;  // quantos vencimentos a linha do tempo mostra antes do "depois"
+const V3_PONTOS_A = 8;  // quantos vencimentos a linha do tempo mostra antes do "depois" (no layout B, de ponta a ponta: 10)
 const V3_MENU = [["inicio", "Resumo", "grade"], ["contas", "A pagar", "cartao"], ["gastos", "Áreas", "areas"], ["compras", "Compras", "sacola"], ["produtos", "Produtos", "etiqueta"]];
 
 // ícones de traço (24×24); a engrenagem é cheia
@@ -9331,7 +9340,7 @@ class ComprasV3Card extends BaseV2 {
     const onde = vazio ? "" : this._v3Onde(lst, total), mes = modo === "mes" ? this._v3MesAMes(false) : "", pagos = vazio ? "" : this._v3ComoPago(lst);
     const ultimasV = vazio ? "" : ultimas;
     const listaPop = this._v3ListaK ? this._v3ListaPop(itensC, idx) : "";
-    if (!this._v2Largo) return `<div class="v3-resumo">${alerta}${heroi}${futuro}${cartoes}${cal}${onde}${modo === "mes" ? "" : ultimasV}${mes}${modo === "mes" ? "" : pagos}${listaPop}</div>`;
+    if (!this._v2Largo) return `<div class="v3-resumo">${alerta}${heroi}${futuro}${cal}${cartoes}${onde}${modo === "mes" ? "" : ultimasV}${mes}${modo === "mes" ? "" : pagos}${listaPop}</div>`;
     if (modo !== "mes") return `<div class="v3-resumo larga">${alerta}<div class="v3-grade v3-alinha"><div class="v3-col">${heroi}${cal}</div><div class="v3-col">${cartoes}</div>
       <div class="v3-col">${onde}${pagos}</div><div class="v3-col">${ultimas}</div></div></div>`;
     // mês de hoje: à direita do topo, os Próximos pagamentos; outro mês: as últimas compras dele
@@ -9340,6 +9349,7 @@ class ComprasV3Card extends BaseV2 {
     const sk = (h, alt) => `<section class="v3-card v3-sk${alt}"><div class="v3-hd"><h2>${h}</h2></div><i class="v3-skb" style="width:45%;height:28px"></i><i class="v3-skb" style="width:100%;height:60px;margin-top:14px"></i><i class="v3-skb" style="width:100%;flex:1;min-height:60px;margin-top:14px"></i></section>`;
     const direita = futuro || (F ? ult6 || `<section class="v3-card"></section>` : sk("Próximos pagamentos", " v3-prx"));
     const cartoesV = F ? cartoes : sk("Cartões – Faturas", " v3-carts");
+    if (this._v3Layout() === "B") return `<div class="v3-resumo larga lay-b">${alerta}${heroi}${direita}<div class="v3-rf2 v3-rf2b">${cal}${cartoesV}</div><div class="v3-par">${onde}${mes}</div>${listaPop}</div>`;
     return `<div class="v3-resumo larga">${alerta}<div class="v3-rf1${futuro || !F ? "" : " solto"}">${heroi}${direita}</div><div class="v3-rf2">${cartoesV}${cal}</div>
       <div class="v3-par">${onde}${mes}</div>${listaPop}</div>`;
   }
@@ -9352,7 +9362,7 @@ class ComprasV3Card extends BaseV2 {
     const pgs = (c) => (c.pago_com || []).filter((pg) => pg.tipo);
     let tit = "", linhas = [], total = 0, dica = "";
     if (/^[fm]-resto/.test(k)) {
-      const fut = k.startsWith("f-"), desde = k.endsWith("3") ? 3 : V3_PONTOS, hoje = F.hoje, mesHoje = hoje.slice(0, 7);
+      const fut = k.startsWith("f-"), desde = k.endsWith("3") ? 3 : this._v3Pontos(), hoje = F.hoje, mesHoje = hoje.slice(0, 7);
       const valor = (x) => x.tipo === "fatura" && pessoa ? (x.itens || []).filter((i) => i.quem === pessoa).reduce((s, i) => s + (i.valor || 0), 0) : x.total;
       const tarde = (x) => x.pago && x.pago.via !== "antes do controle" && String(x.pago.em || "").slice(0, 10) > x.vence;
       const sel = this._finObrigacoes().filter((x) => (fut ? !x.pago : x.vence.slice(0, 7) === this._mes) && (x.tipo === "fatura" || this._finDoFiltro(x)) && valor(x) > 0.004)
@@ -9496,7 +9506,7 @@ class ComprasV3Card extends BaseV2 {
     const hd = `<div class="v3-hd"><h2>Pagamentos de ${nomeM}</h2><button class="v3-link" data-a="v3-menu" data-k="contas">Ver todos ${V3_SVG("dir")}</button></div>`;
     if (total < 0.004) return `<section class="v3-card v3-prx">${hd}<div class="v3-vazio">Nada venceu em ${nomeM}.</div></section>`;
     const dm = (s) => `${s.slice(8, 10)} ${V3_MESES[Number(s.slice(5, 7)) - 1].slice(0, 3)}`;
-    const vis = lst.slice(0, V3_PONTOS), resto = lst.slice(V3_PONTOS);
+    const vis = lst.slice(0, this._v3Pontos()), resto = lst.slice(this._v3Pontos());
     const pts = vis.map((x) => `<button class="v3-rp ${x.pago && !tarde(x) ? "ok" : "atr"}" data-a="f-conta" data-k="${this._e(x.id)}"><i></i><em>${dm(x.vence)}</em><b>${this._e(nome(x).replace(/^Fatura /, ""))}</b><small>${this._brl(valor(x))}</small></button>`).join("")
       + (lst.length > 3 ? `<button class="v3-rp fim cel" data-a="v3-lista" data-k="m-resto3"><i></i><em>e mais</em><b>+ ${lst.length - 3}</b><small>ver todos</small></button>` : "")
       + (resto.length ? `<button class="v3-rp fim" data-a="v3-lista" data-k="m-resto"><i></i><em>e mais</em><b>+ ${resto.length}</b><small>até ${dm(resto[resto.length - 1].vence)}</small></button>` : "");
@@ -9523,7 +9533,7 @@ class ComprasV3Card extends BaseV2 {
     const hd = `<div class="v3-hd"><h2>Próximos pagamentos</h2><button class="v3-link" data-a="v3-menu" data-k="contas">Ver todos ${V3_SVG("dir")}</button></div>`;
     if (total < 0.004) return `<section class="v3-card v3-prx">${hd}<div class="v3-vazio">Nada a pagar pela frente.</div></section>`;
     const dm = (s) => `${s.slice(8, 10)} ${V3_MESES[Number(s.slice(5, 7)) - 1].slice(0, 3)}`;
-    const prox = abertas.slice(0, V3_PONTOS), resto = abertas.slice(V3_PONTOS);
+    const prox = abertas.slice(0, this._v3Pontos()), resto = abertas.slice(this._v3Pontos());
     const pts = prox.map((x) => `<button class="v3-rp${x.vence < hoje ? " atr" : ""}" data-a="f-conta" data-k="${this._e(x.id)}"><i></i><em>${x.vence < hoje ? "atrasada" : dm(x.vence)}</em><b>${this._e(nome(x).replace(/^Fatura /, ""))}</b><small>${this._brl(valor(x))}</small></button>`).join("")
       + (abertas.length > 3 ? `<button class="v3-rp fim cel" data-a="v3-lista" data-k="f-resto3"><i></i><em>depois</em><b>+ ${abertas.length - 3}</b><small>ver todos</small></button>` : "")
       + (resto.length ? `<button class="v3-rp fim" data-a="v3-lista" data-k="f-resto"><i></i><em>depois</em><b>+ ${resto.length}</b><small>até ${V3_MESES[Number(resto[resto.length - 1].vence.slice(5, 7)) - 1].slice(0, 3)}/${resto[resto.length - 1].vence.slice(2, 4)}</small></button>` : "");
@@ -9566,7 +9576,7 @@ class ComprasV3Card extends BaseV2 {
     for (let i = 0; i < ini; i++) cel.push(`<span></span>`);
     for (let d = 1; d <= dias; d++) {
       const k = `${this._mes}-${String(d).padStart(2, "0")}`, q = [...(porDia[k] || [])];
-      cel.push(`<button class="v3-d${k === sel ? " sel" : ""}${k === hoje ? " hoje" : ""}" data-a="v3-dia" data-k="${k}" ${k > hoje ? "disabled" : ""} aria-label="${d}${q.length ? `: compras de ${q.join(", ")}` : ""}"><span>${d}</span>${valDia[k] > 0.004 ? `<small>${curto(valDia[k])}</small>` : ""}<i>${q.map((p) => `<em style="background:${this._cor(p)}"></em>`).join("")}</i></button>`);
+      cel.push(`<button class="v3-d${k === sel ? " sel" : ""}${k === hoje ? " hoje" : ""}${valDia[k] > 0.004 ? " tem" : ""}" data-a="v3-dia" data-k="${k}" ${k > hoje ? "disabled" : ""} aria-label="${d}${q.length ? `: compras de ${q.join(", ")}` : ""}"><span>${d}</span>${valDia[k] > 0.004 ? `<small>${curto(valDia[k])}</small>` : ""}<i>${q.map((p) => `<em style="background:${this._cor(p)}"></em>`).join("")}</i></button>`);
     }
     const ps = [...new Set(lst.map((l) => l.c.quem))].filter(Boolean);
     const doDia = sel ? this._v3Itens(lst.filter((l) => String(l.c.emissao).slice(0, 10) === sel)) : [];
@@ -9993,6 +10003,14 @@ class ComprasV3Card extends BaseV2 {
       : `<div class="${cls}" style="${est}">${corpo}</div>`;
   }
 
+  _v3Pontos() { return this._v2Largo && this._v3Layout() === "B" ? 10 : V3_PONTOS_A; }
+
+  // ⚙ › Tela do Resumo: layout A (o de sempre) ou B (Compras + Pagamentos num quadro só, o resto um embaixo do outro)
+  _v3Layout() {
+    if (this._fLayout === undefined) { try { this._fLayout = localStorage.getItem("co-finance-layout") === "B" ? "B" : "A"; } catch (_) { this._fLayout = "A"; } }
+    return this._fLayout;
+  }
+
   // ⚙ › Cartões › "Mostrar todos os cartões deitados": vale neste aparelho (guardado no navegador)
   _v3Deitar() {
     if (this._fDeitar === undefined) { try { this._fDeitar = localStorage.getItem("co-finance-deitados") === "1"; } catch (_) { this._fDeitar = false; } }
@@ -10300,7 +10318,7 @@ class ComprasV3Card extends BaseV2 {
 
   async _clique(ev, el) {
     const acao = el.getAttribute("data-a");
-    if (acao === "f-mes" && !this._v2Largo) this._v3Parado = true;  // celular: as setas do mês não mexem na tela (fica vendo o cartão, a fatura…)
+    if ((acao === "f-mes" || acao === "f-quem") && !this._v2Largo) this._v3Parado = true;  // celular: setas do mês e trocar a pessoa não mexem na tela (fica onde estava)
     else if (["f-quem", "f-modo", "f-mes", "f-vai-mes", "f-vai-ano"].includes(acao)) this._v3IrTopo = true;  // pessoa/período: começa do alto
     this._v3Antes = new Set(this._v3Abriveis().map((x) => this._v3Assin(x))); this._v3AntesEm = Date.now(); this._v3AntesAba = this._abaAtual?.();
     const a = el.getAttribute("data-a"), k = el.getAttribute("data-k");
@@ -10432,7 +10450,8 @@ class ComprasV3Card extends BaseV2 {
     .v3-seg>button.v3-seta{padding:6px 4px}.v3-seg>button.v3-seta .v3-ic{width:16px;height:16px}.v3-seg>button:disabled{opacity:.35;cursor:default}
     .v3 .v-pop{top:calc(100% + 6px);left:0;background:var(--v3-card);border:1px solid var(--v3-borda);box-shadow:var(--v3-sombra)}
     .v3-pag{padding:16px 22px 32px}
-    .v3-app.cel .v3-topo{padding:12px 16px 10px}.v3-app.cel .v3-pag{padding:14px 16px 32px}
+    .v3-app.cel .v3-topo{padding:12px 16px 10px;background:var(--v3-bg);-webkit-backdrop-filter:none;backdrop-filter:none}
+    .v3-app.cel .v3-topo::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:calc(var(--v3-ha) + 60px);background:var(--v3-bg);pointer-events:none}  /* celular: nada aparece acima do cabeçalho preso (faixa da barra do HA / do iPhone) */.v3-app.cel .v3-pag{padding:14px 16px 32px}
     .v3-app.cel .v3-tit h1{font-size:20px}
     .v3-app.cel .v3-filtros{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}.v3-app.cel .v3-filtros::-webkit-scrollbar{display:none}
     .v3-app.cel .v-perw{position:static}.v3-app.cel .v-pop{left:16px;right:16px}
@@ -10475,7 +10494,13 @@ class ComprasV3Card extends BaseV2 {
     .v3-rf1 .v3-rk,.v3-rf1 .v3-prx{padding-top:12px;padding-bottom:12px}.v3-rk .v3-hd,.v3-prx .v3-hd{height:30px!important;min-height:30px!important;margin-bottom:4px!important}
     .v3-rk-t>.v3-rq{margin-top:10px!important;padding-top:8px}.v3-rk .v3-total{margin-bottom:2px}.v3-rks{gap:10px}
     .v3-prx>.v3-rl{margin:12px 0 2px}.v3-prx .v3-prx-s{margin:14px 0 6px!important;padding-top:12px;border-top:1px solid var(--v3-lin,rgba(127,127,127,.25));font-size:13.5px!important;font-weight:700;color:var(--primary-text-color,inherit)!important}.v3-prx .v3-rb{height:72px}
-    .v3-card.v3-prx{display:flex;flex-direction:column}.v3-sk{display:flex;flex-direction:column}.v3-sk .v3-rk-t{gap:8px!important}
+    .v3-card.v3-prx{display:flex;flex-direction:column}
+    .v3-d.tem:not(.sel){background:color-mix(in srgb,var(--v3-mut-fg) 13%,transparent)}.v3-d.tem:not(.sel):hover{background:color-mix(in srgb,var(--v3-mut-fg) 22%,transparent)}
+    .lay-b .v3-rks{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-auto-rows:auto;gap:0;margin:0 0 12px;background:var(--v3-card);border:1px solid var(--v3-borda);border-radius:16px;overflow:hidden}
+    .lay-b .v3-rks>.v3-rk{border:0!important;border-radius:0;background:none;margin:0}.lay-b .v3-rks>.v3-rk+.v3-rk{border-left:1px solid var(--v3-borda)!important}
+    .lay-b>.v3-card{margin:0 0 12px}.lay-b .v3-rf2b{grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr)}.lay-b>.v3-cal .v3-d{height:52px}
+    .lay-b>.v3-carts{display:grid;grid-template-columns:minmax(260px,330px) minmax(0,1fr);column-gap:24px;align-items:center}
+    .lay-b>.v3-carts>.v3-hd{grid-column:1/-1}.lay-b>.v3-carts .v3-pilha{grid-column:1;margin:0!important}.lay-b>.v3-carts .v3-ciclo{grid-column:2;margin:0;font-size:13.5px}.v3-sk{display:flex;flex-direction:column}.v3-sk .v3-rk-t{gap:8px!important}
     .v3-skb{display:block;height:12px;border-radius:6px;background:var(--v3-mut);animation:v3sk 1.2s ease-in-out infinite alternate}@keyframes v3sk{from{opacity:.55}to{opacity:1}}
     @media (prefers-reduced-motion:reduce){.v3-skb{animation:none}}.v3-prx>.v3-rb{flex:1;min-height:64px;height:auto}.v3-rk .v3-total{font:700 28px/1.2 Sora,Manrope,system-ui,sans-serif;letter-spacing:-.02em;white-space:nowrap;margin:0 0 6px}
     .v3-prx-t{line-height:1.2}.v3-rk .v3-num-d{margin-top:2px}
@@ -10504,7 +10529,7 @@ class ComprasV3Card extends BaseV2 {
     .v3-rb i{display:block;width:100%;border-radius:5px 5px 2px 2px;background:color-mix(in srgb,#3b82f6 70%,var(--v3-mut))}.v3-rb .ag i{background:#f6b94a}
     .v3-rb b{font-size:11.5px;font-weight:600;white-space:nowrap}.v3-rb b .c{display:none}.v3-rb .v3-mm-mil{font-weight:500}
     .v3-rf1.solto{align-items:start}.v3-rf1.solto .v3-rks{grid-auto-rows:auto}.v3-rb small{font-size:11.5px;color:var(--v3-mut-fg)}
-    .v3,.v3-resumo{font-variant-numeric:tabular-nums}
+    .v3,.v3-resumo{font-variant-numeric:tabular-nums}.v3-resumo:not(.larga)>.v3-rks{margin:0 0 12px;gap:12px}  /* celular: o mesmo espaço dos outros quadros */
     .v3-cfg{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--v3-card,var(--card-background-color));border:1px solid var(--v3-lin,rgba(127,127,127,.25));border-radius:12px;padding:6px 8px 6px 14px;margin:0 0 12px;font-size:13.5px}
     .v3-cfg .v3-link{margin-left:auto}.v3-cfg-b{flex:0 1 160px;height:6px;border-radius:3px;background:var(--v3-mut);overflow:hidden}.v3-cfg-b em{display:block;height:100%;background:var(--v3-pri)}
     .v3-tend-c{color:var(--v3-mut-fg);font-weight:400}.v3-i{display:inline-flex;color:var(--v3-mut-fg);cursor:help}.v3-i .v3-ic{width:15px;height:15px}
@@ -10740,7 +10765,7 @@ class ComprasV3Card extends BaseV2 {
     .v3-corr{background:var(--v3-acc);color:var(--v3-acc-fg)}
     @media (max-width:760px){.v3-tres{grid-template-columns:1fr}.v3-tres .v3-card{margin:0}.v3-tres{gap:10px;margin-bottom:16px}
       .v3-tres.v3-tresp{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.v3-tresp>:nth-child(3){grid-column:1/-1}}  /* Produtos no celular: subiram e baixaram lado a lado; onde mais compra embaixo */
-    @media (max-width:520px){.v3-dois{grid-template-columns:1fr}.v3-rb b .l{display:none}.v3-rb b .c{display:inline}.v3-rl{display:flex;gap:4px}.v3-rl>.v3-rp{flex:1}.v3-rl>.v3-rp:nth-child(n+4):not(.fim){display:none}.v3-rl>.v3-rp.fim:not(.cel){display:none}.v3-rl>.v3-rp.cel{display:grid}.v3-rq{grid-template-columns:repeat(2,minmax(0,1fr))}.v3-rks{grid-auto-rows:auto}.v3-rp b{white-space:normal}.v3-num-pago{border-left:0;padding-left:0;border-top:1px solid var(--v3-lin,rgba(127,127,127,.25));padding-top:12px}
+    @media (max-width:520px){.v3-dois{grid-template-columns:1fr}.v3-rb b .l{display:none}.v3-rb b .c{display:inline}.v3-rl{display:flex;gap:4px}.v3-rl>.v3-rp{flex:1}.v3-rl>.v3-rp:nth-child(n+4):not(.fim){display:none}.v3-rl>.v3-rp.fim:not(.cel){display:none}.v3-rl>.v3-rp.cel{display:grid}.v3-rq{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 6px}.v3-rq b{font-size:12.5px!important}.v3-rks{grid-auto-rows:auto}.v3-rp b{white-space:normal}.v3-num-pago{border-left:0;padding-left:0;border-top:1px solid var(--v3-lin,rgba(127,127,127,.25));padding-top:12px}
       .v3-num .v3-total{font-size:34px}.v3-num .v3-tend{display:none}.v3-total{font-size:38px}.v3-heroi-l{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;align-items:start;gap:var(--v3-hgap,10px) 22px}
       .v3-totlinha{display:flex;grid-column:1/-1;justify-content:flex-start;align-items:flex-start;gap:8px}.v3-tendx{display:flex;margin-top:var(--v3-hexp,-2px)}
       .v3-heroi>.v3-tend{display:none}.v3-heroi .v3-mini{padding-bottom:0}.v3-heroi .v3-heroi-l{margin-bottom:var(--v3-hbase,2px)}.v3-heroi{padding-top:11px}  /* embaixo, o mesmo respiro de cima */.v3-d{border-radius:12px;font-size:14px}.v3-sem,.v3-dias{gap:3px}
