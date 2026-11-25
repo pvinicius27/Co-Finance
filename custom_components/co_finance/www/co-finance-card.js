@@ -217,13 +217,13 @@ function instalarFinancas(Classe) {
   P._finCurto = function (v) { return Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
 
   // "Mês típico": mediana dos meses com compra entre os 12 anteriores, até o mesmo dia quando o mês está em andamento
-  P._finTipico = function (soDia) {  // soDia: sem os bens duráveis (compara o dia a dia)
+  P._finTipico = function (soDia, semContas) {  // semContas: sem as contas da casa (Compras do mês)  // soDia: sem os bens duráveis (compara o dia a dia)
     if (this._fModo !== "mes") return null;
     const hoje = new Date(), atual = this._mes === this._mesDe(hoje), ate = atual ? hoje.getDate() : 31;
     const vals = [];
     for (let k = 1; k <= 12; k++) {
       const m = this._finSomaMes(this._mes, -k);
-      const v = this._finLinhas().filter((l) => (l.c.emissao || "").slice(0, 7) === m && Number(l.c.emissao.slice(8, 10)) <= ate && this._finDaPessoa(l) && !(soDia && this._finBem(l)))
+      const v = this._finLinhas().filter((l) => (l.c.emissao || "").slice(0, 7) === m && Number(l.c.emissao.slice(8, 10)) <= ate && this._finDaPessoa(l) && !(soDia && this._finBem(l)) && !(semContas && l.c.conta))
         .reduce((s, l) => s + l.valor, 0);
       if (v > 0) vals.push(v);
     }
@@ -1291,7 +1291,8 @@ function instalarFinancas(Classe) {
     if (!F) return `<div class="fin"><div class="vazio">Carregando…</div></div>`;
     const cartoes = (F.cartoes || []).map((k) => `<button class="fcart${this._fCartEd === k.id ? " on" : ""}${k.ativo === false ? " inativo" : ""}" data-a="f-cart-ed" data-k="${this._e(k.id)}">💳 <b>${this._e(this._finNomeCartao(k))}</b>${k.visual?.produto ? ` <small>${this._e(k.visual.produto)}</small>` : ""} ${this._e([k.bandeira, k.categoria].filter(Boolean).join(" "))} · ${this._e(k.dono || "")} · ${k.vale ? "vale" : k.credito === false ? "débito" : `${k.fecha ? `fecha ${k.fecha} · vence ${k.vence}` : "crédito sem dias"}${k.debito ? " · crédito e débito" : ""}`}${k.ativo === false ? " · fora de uso" : ""} ✎</button>`).join("")
       + `<button class="fcart novo${this._fCartEd === "novo" ? " on" : ""}" data-a="f-cart-ed" data-k="novo">+ Novo cartão</button>`;
-    const cartoesHtml = `<div class="fcard"><div class="fhd"><h2>Cartões</h2><small>controle desde ${this._dataCurta(F.marco + "T12:00")}</small></div><div class="fcarts">${cartoes}</div>${this._finFormCartao()}
+    const deitar = typeof this._v3Deitar === "function" ? `<label class="fdeitar"><input type="checkbox" data-a="f-deitar" ${this._v3Deitar() ? "checked" : ""}><span><b>Mostrar todos os cartões deitados</b><small>Os cartões em pé aparecem deitados, como os outros; o valor fica embaixo, no centro. Vale neste aparelho.</small></span></label>` : "";
+    const cartoesHtml = `<div class="fcard"><div class="fhd"><h2>Cartões</h2><small>controle desde ${this._dataCurta(F.marco + "T12:00")}</small></div><div class="fcarts">${cartoes}</div>${deitar}${this._finFormCartao()}
           <div class="fs" style="margin-top:8px">Toque num cartão para editar. Compra até o dia do fechamento entra na fatura que fecha no mês; depois, na seguinte. Compra no próprio dia do fechamento vai para a seguinte. Parcelas caem nas faturas seguintes; os centavos que sobram ficam na 1ª.</div></div>
       </div>`;
     return this._finCfgAcordeao(cartoesHtml);
@@ -2291,6 +2292,7 @@ function instalarFinancas(Classe) {
       if (pv) pv.innerHTML = this._finKcPrevia();
       return;
     }
+    if (a === "f-deitar") { this._fDeitar = !this._v3Deitar(); try { localStorage.setItem("co-finance-deitados", this._fDeitar ? "1" : "0"); } catch (_) { /* sem armazenamento */ } return this._render(); }
     if (a === "f-cart-ed") { this._fCartEd = this._fCartEd === k ? null : k; this._fCartApagar = false; this._fCartErro = null; this._fCartTudo = 0; this._aviso = null; return this._render(); }
     if (a === "f-cart-salvar") return this._finSalvarCartao(false);
     if (a === "f-pes-ed") { this._fPesEd = this._fPesEd === k ? null : k; this._fPesApagar = false; this._aviso = null; return this._render(); }
@@ -2639,6 +2641,8 @@ function instalarFinancas(Classe) {
     .fsem{font:inherit;cursor:pointer;width:100%;text-align:left;border:1px dashed var(--c-alerta);background:color-mix(in srgb,var(--c-alerta) 10%,transparent);color:var(--c-txt);border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:13.5px}
     .fmesp{display:flex;justify-content:space-between;padding:10px 2px 2px;font-size:13.5px;color:var(--c-sub)}
     .fcarts{display:grid;gap:6px}.fcart{font-size:13.5px}
+    .fdeitar{display:flex;align-items:center;gap:8px;padding:6px 10px;margin:8px 0 4px;border:1px solid var(--divider-color,rgba(127,127,127,.3));border-radius:8px;cursor:pointer}
+    .fdeitar input{width:16px;height:16px;margin:0;flex:none;accent-color:var(--primary-color)}.fdeitar span{display:grid;gap:0}.fdeitar b{font-size:13px;font-weight:600}.fdeitar small{font-size:11.5px;opacity:.75}
     .fcramo{padding:10px 0;border-top:1px solid var(--c-linha)}.fcramo:first-of-type{border-top:0}
     .fctit{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:6px}
     .fcsubs{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
@@ -7489,7 +7493,10 @@ class ComprasV2Card extends Base {
         fat ? ["Cartão", this._e(`${k?.nome || x.cartao}${k?.bandeira ? ` · ${k.bandeira}` : ""}`)]
           : ["Área", `<i style="background:${this._finInfo(x.categoria).cor}"></i>${this._e(x.categoria)}${x.subcategoria ? ` › ${this._e(x.subcategoria)}` : ""}`],
         ["Vencimento", dc(x.vence)],
-        ["Pagamento", pg ? (largada ? "antes do controle" : `${this._finQuando(pg.em)}${pg.valor != null && Math.abs(pg.valor - x.total) > 0.009 ? ` · ${this._brl(pg.valor)}` : ""}`) : "ainda não"],
+        // paga depois do vencimento: a linha fica em vermelho, "Pagamento com atraso"
+        pg && !largada && String(pg.em || "").slice(0, 10) > x.vence
+          ? ['<span class="v-atr">Pagamento com atraso</span>', `<span class="v-atr">${this._finQuando(pg.em)}${pg.valor != null && Math.abs(pg.valor - x.total) > 0.009 ? ` · ${this._brl(pg.valor)}` : ""}</span>`]
+          : ["Pagamento", pg ? (largada ? "antes do controle" : `${this._finQuando(pg.em)}${pg.valor != null && Math.abs(pg.valor - x.total) > 0.009 ? ` · ${this._brl(pg.valor)}` : ""}`) : "ainda não"],
         x.fonte === "parcelada" ? ["Parcela", `${x.parcela || ""} de ${x.de || ""}`] : null,
         // preço com prazo (internet): a pagar mostra os dois valores; paga no prazo não precisa; paga com o valor maior explica
         x.fonte === "recorrente" && x.faixas && !pg ? ["Valor", `${this._brl(x.faixas.valor)} até ${dc(x.faixas.ate)} · depois ${this._brl(x.faixas.depois)}`] : null,
@@ -8104,7 +8111,11 @@ const CARTOES_CSS_BASE = `
     .v3f-bdm{width:16cqw;height:6.6cqw;-webkit-mask-position:right center;mask-position:right center}
     .v3f-bdm.discover{width:24cqw;height:4.4cqw}
     .v3f-info{left:6%;bottom:8%;display:grid;line-height:1.15;max-width:60%}
-    .v3f.foto .v3f-info{left:6%;bottom:7%}  /* só o texto, sem caixa (como na dashboard antiga) */
+    .v3f.foto .v3f-info{left:6%;bottom:7%}
+    .v3 .v3f.deitado>.v3f-gira{position:absolute;inset:0;z-index:0;pointer-events:none}  /* cartão em pé mostrado deitado: o desenho girado */
+    .v3 .v3f-gira>.fcface.v3f{position:absolute!important;left:50%!important;top:50%!important;width:63.05%!important;max-width:none!important;margin:0!important;
+      aspect-ratio:.632!important;transform:translate(-50%,-50%) rotate(-90deg);box-shadow:none!important;border-radius:16px}
+    .v3f.deitado>.v3f-info{left:5%;right:auto;top:auto;bottom:7%;z-index:2;max-width:70%}  /* só o texto, sem caixa, na cor do cartão (como nos outros) */
     .v3f-info small{font-size:3.2cqw;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .v3f-info b{font:700 6.4cqw/1.15 Sora,Manrope,sans-serif;letter-spacing:-.01em}
     .v3f-info em{font-style:normal;font-size:3.1cqw;opacity:.8}
@@ -8875,12 +8886,13 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.17";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.18";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
 const V3_BANCOS = { santander: "Santander", bb: "Banco do Brasil", bradesco: "Bradesco", itau: "Itaú" };
 const V3_NA_HORA = ["Débito", "Pix", "Benefício", "Dinheiro", "Saldo em carteira", "Boleto"];
+const V3_PONTOS = 8;  // quantos vencimentos a linha do tempo mostra antes do "depois"
 const V3_MENU = [["inicio", "Resumo", "grade"], ["contas", "A pagar", "cartao"], ["gastos", "Áreas", "areas"], ["compras", "Compras", "sacola"], ["produtos", "Produtos", "etiqueta"]];
 
 // ícones de traço (24×24); a engrenagem é cheia
@@ -8902,6 +8914,8 @@ const V3_IC = {
   sobe: '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
   desce: '<path d="M3 7l6 6 4-4 8 8"/><path d="M15 17h6v-6"/>',
   check: '<path d="M5 12.5l4.5 4.5L19 7"/>',
+  pago: '<circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.2l2.4 2.4 4.6-5"/>',
+  info: '<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 8v.01"/>',
   relogio: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
   esq: '<path d="M15 6l-6 6 6 6"/>',
   dir: '<path d="M9 6l6 6-6 6"/>',
@@ -9024,6 +9038,7 @@ class ComprasV3Card extends BaseV2 {
     const alt = this.offsetHeight; if (alt && mesmaTela) this.style.minHeight = `${alt}px`;
     this.shadowRoot.innerHTML = `<style>${this._css()}${this._finCss()}${this._v2Css()}${this._v3Css()}</style><ha-card class="v2 v3${largo ? " larga" : ""}${this._v3Escuro() ? " escuro" : ""}">${app}${this._folha()}</ha-card>`;
     this._ligar();
+    this._v3PosDeitados();
     {  // o showModal põe o foco no X (lá em cima) e o iPhone rola até ele: o foco fica na própria janela, sem rolar
       const jan = this.shadowRoot.querySelector("dialog.folha"), foco = this.shadowRoot.activeElement;
       if (jan && (!foco || foco.matches?.("[data-a=fechar]"))) { jan.tabIndex = -1; try { jan.focus({ preventScroll: true }); } catch (_) { /* navegador antigo */ } }
@@ -9154,7 +9169,7 @@ class ComprasV3Card extends BaseV2 {
   _v3Corpo(d) {
     const aba = this._v2Aba;
     const aviso = this._aviso && !this._aberta && !this._fConta ? `<div class="aviso" role="status">${this._e(this._aviso)}</div>` : "";
-    if (aba === "inicio") return aviso + this._v2Passos() + this._v3Resumo();
+    if (aba === "inicio") return aviso + this._v3Passos() + this._v3Resumo();
     if (aba === "contas") return aviso + this._v3Pagar();
     if (aba === "produtos") return this._prodVista === "precos" ? `<div class="v-velho">${this._telaProdutos()}</div>` : aviso + this._v3Produtos();
     if (aba === "config") return `<div class="v-velho">${this._finConfig()}</div>`;
@@ -9239,7 +9254,7 @@ class ComprasV3Card extends BaseV2 {
     const ic = { ok: "check", ok2: "check", aviso: "alerta", rec: "alerta", "": "relogio" }[tom];
     return `<button class="v3-it${sel}" ${abre}><span class="v3-it-ic">${V3_SVG(this._v3Icone(c))}</span>
       <span class="v3-it-t"><b><i style="background:${this._cor(c.quem)}"></i>${this._e(c.loja_curta || c.conta?.nome || "")}</b>
-        <small>${this._e(c.conta ? c.conta.fonte_txt || "conta da casa" : this._v3PagTxt(c))}${parc ? ` · ${parc.i.parcela} de ${parc.i.de}` : ""}</small></span>
+        <small>${this._e(c.conta ? c.conta.fonte_txt || "conta da casa" : this._v3PagTxt(c))}${parc ? ` · ${parc.i.parcela} de ${parc.i.de}` : lanc?.length === 1 ? ` · fatura de ${lanc[0].f.vence.slice(8, 10)}/${lanc[0].f.vence.slice(5, 7)}` : ""}</small></span>
       <span class="v3-it-v"><b>${valor}</b><em class="v3-st ${tom}">${V3_SVG(ic)}${st}</em></span></button>`;
   }
 
@@ -9267,35 +9282,262 @@ class ComprasV3Card extends BaseV2 {
     this._finGarantir();
     const F = this._fFin, modo = this._fModo, lst = this._finFiltradas(), idx = this._v3Faturas();
     const itens = this._v3Itens(lst), total = lst.reduce((s, l) => s + l.valor, 0);
-    const vals = itens.map((x) => x.v).filter((v) => v > 0);
     const quando = modo === "mes" ? `em ${V3_MESES[Number(this._mes.slice(5, 7)) - 1]}` : modo === "ano" ? `em ${this._fAno}` : "desde o início";
     const pessoa = this._fQuem !== "Todos" ? this._fQuem : null;
     // comparação com o normal (sem os bens duráveis), como na v2
-    const dia = total - lst.filter((l) => this._finBem(l)).reduce((s, l) => s + l.valor, 0), t = this._finTipico(true);
-    let tend = "", tendx = "";
-    if (t?.valor) {
+    const lstC = lst.filter((l) => !l.c.conta), itensC = this._v3Itens(lstC), totalC = lstC.reduce((s, l) => s + l.valor, 0);  // sem as contas fixas
+    const dia = totalC - lstC.filter((l) => this._finBem(l)).reduce((s, l) => s + l.valor, 0), t = this._finTipico(true, true);
+    let tend = "", tendx = "", tchip = "";
+    if (t?.valor && totalC > 0.004) {
       const v = (dia - t.valor) / t.valor, sobe = v > 0;
       // celular: o percentual sobe para a linha do valor, pequeno, no canto direito
       tendx = `<span class="v3-tendx ${sobe ? "sobe" : "desce"}" title="${sobe ? "Acima" : "Abaixo"} do normal: o gasto típico até este dia do mês nos últimos 12 meses (o do meio), sem as compras duráveis"><b>${V3_SVG(sobe ? "sobe" : "desce")}${Math.round(Math.abs(v) * 100)}%</b></span>`;
-      tend = `<div class="v3-tend ${sobe ? "sobe" : "desce"}" title="Normal: o gasto típico até este dia do mês nos últimos 12 meses (o do meio), sem as compras duráveis">${V3_SVG(sobe ? "sobe" : "desce")}${Math.round(Math.abs(v) * 100)}% ${sobe ? "acima" : "abaixo"} do normal${t.ate ? ` até o dia ${t.ate}` : ""}</div>`;
+      const crit = "Comparado com o normal: o meio dos últimos 12 meses até o mesmo dia do mês, sem as compras duráveis (eletrodomésticos, móveis…)";
+      tchip = `<span class="v3-tchip ${sobe ? "sobe" : "desce"}">${V3_SVG(sobe ? "sobe" : "desce")}${Math.round(Math.abs(v) * 100)}% ${sobe ? "acima" : "abaixo"} do normal<span class="v3-i" title="${crit}${t.ate ? ", para esta altura do mês" : ""}" aria-label="${crit}" tabindex="0">${V3_SVG("info")}</span></span>`;
+      tend = `<div class="v3-tend ${sobe ? "sobe" : "desce"}">${V3_SVG(sobe ? "sobe" : "desce")}${Math.round(Math.abs(v) * 100)}% ${sobe ? "acima" : "abaixo"} do normal <span class="v3-tend-c">${t.ate ? "para esta altura do mês" : "do mês"}</span><span class="v3-i" title="${crit}" aria-label="${crit}" tabindex="0">${V3_SVG("info")}</span></div>`;
     }
-    const [inteiro, cent] = this._brl(total).split(",");
-    const heroi = `<section class="v3-card v3-heroi"><span class="v3-rot">${pessoa ? `${this._e(pessoa)} gastou` : "Gastos"} ${quando}</span>
-      <div class="v3-heroi-l"><span class="v3-totlinha"><span class="v3-total">${inteiro}<small>,${cent}</small></span>${tendx}</span>
-        <span class="v3-mini"><b>${itens.length}</b><small>${itens.length === 1 ? "compra" : "compras"}</small></span>
-        ${vals.length ? `<span class="v3-mini"><b>${this._brl(Math.max(...vals))}</b><small>maior</small></span><span class="v3-mini"><b>${this._brl(Math.min(...vals))}</b><small>menor</small></span>` : ""}</div>
-      ${tend}</section>`;  // devemos / a receber: só no sino
+    // dois relógios, lado a lado: o que foi COMPRADO no período (pela data da compra; parcelado conta inteiro) e o que foi
+    // PAGO nele (a mesma conta do "Já paguei" de A pagar: pago na hora + faturas e contas pagas no período)
+    // divisão das compras por forma: cartões, Pix e débito (pago na hora), contas da casa, sem forma
+    const naHoraT = this._fFin?.pagos_na_hora || V3_NA_HORA, div = { c: 0, h: 0, k: 0, s: 0 };
+    for (const x of itensC) {
+      const pgs = (x.c.pago_com || []).filter((pg) => pg.tipo), soma = pgs.reduce((s, pg) => s + (pg.valor || 0), 0);
+      if (!pgs.length || soma < 0.004) { div.s += x.v || 0; continue; }
+      for (const pg of pgs) div[pg.tipo === "Crédito" ? "c" : naHoraT.includes(pg.tipo) ? "h" : "s"] += (x.v || 0) * (pg.valor || 0) / soma;
+    }
+    const quebra = (l) => { const z = l.filter(([, v]) => v > 0.004); return z.length ? `<div class="v3-rq">${z.map(([n, v, k]) => `<button class="v3-rqb" data-a="v3-lista" data-k="${k}" aria-label="${n}: ${this._brl(v)} (ver a lista)">${n}<b>${this._brl(v)}</b></button>`).join("")}</div>` : ""; };
+    const mesNome = modo === "mes" ? V3_MESES[Number(this._mes.slice(5, 7)) - 1] : "";
+    const P = F ? this._v3Pago() : null;
+    const kpiC = `<section class="v3-card v3-rk"><div class="v3-rk-t">
+      <div class="v3-hd"><h2>${pessoa ? `${this._e(pessoa)} comprou` : modo === "mes" ? "Compras do mês" : `Compras ${quando}`}</h2>${tchip}</div>
+      <span class="v3-total">${this._brl(totalC)}</span>
+      <span class="v3-num-d">${!itensC.length ? "nenhuma compra lançada ainda" : `${itensC.length} ${itensC.length === 1 ? "compra" : "compras"}${mesNome ? ` em ${mesNome}` : ""}`}</span>
+      ${quebra([["No cartão", div.c, "c-cartao"], ["À vista", div.h, "c-vista"], ["Sem forma", div.s, "c-sem"]])}</div></section>`;
+    const atual = modo === "mes" && this._mes === this._mesDe(new Date());
+    const kpiP = P ? `<section class="v3-card v3-rk"><div class="v3-rk-t">
+      <div class="v3-hd"><h2>Pagamentos realizados</h2>${this._v3PagoNormal(P.pago)}</div><span class="v3-total">${this._brl(P.pago)}</span>
+      <span class="v3-num-d">${P.pago > 0.004 ? `${P.n} ${P.n === 1 ? "pagamento" : "pagamentos"} ${quando}${atual ? " · até hoje" : ""}` : "nada pago neste período"}</span>
+      ${quebra([["Faturas", P.fat, "p-fat"], ["À vista", P.naHora, "p-vista"], ["Contas fixas", P.con, "p-contas"]])}</div></section>` : `<section class="v3-card v3-rk v3-sk"><div class="v3-rk-t"><div class="v3-hd"><h2>Pagamentos realizados</h2></div><i class="v3-skb" style="width:55%;height:30px"></i><i class="v3-skb" style="width:35%"></i><i class="v3-skb" style="width:90%;margin-top:auto"></i></div></section>`;
+    const heroi = `<div class="v3-rks">${kpiC}${kpiP}</div>`;  // devemos / a receber: só no sino
     const alerta = this._v3Alerta();
-    const cal = modo === "mes" ? this._v3Calendario(lst, idx) : this._v3MesAMes(true);
-    const cartoes = F ? this._v3Cartoes() : "";
+    const vazio = modo === "mes" && !itens.length;
+    const cal = vazio ? `<section class="v3-card v3-cal"><div class="v3-hd"><h2>Compras de ${V3_MESES[Number(this._mes.slice(5, 7)) - 1]} por dia</h2></div>
+        <div class="v3-vaziol"><span>Nenhuma compra lançada em ${V3_MESES[Number(this._mes.slice(5, 7)) - 1]}${pessoa ? ` de ${this._e(pessoa)}` : ""} ainda. Lance pela nota, pelo Apple Pay ou à mão.</span>
+        ${this._mes === this._mesDe(new Date()) ? `<button class="v3-bt prim" data-a="v2-mais">${V3_SVG("mais")}Lançar</button>` : ""}</div></section>`
+      : modo === "mes" ? this._v3Calendario(lst, idx) : this._v3MesAMes(true);
+    const cartoes = F ? this._v3Cartoes() : "", futuro = F ? this._v3Futuro() || this._v3PagosMes() : "";
     const ultimas = `<section class="v3-card v3-ult"><div class="v3-hd"><h2>Últimas compras</h2><button class="v3-link" data-a="v3-menu" data-k="compras">Todas ${V3_SVG("dir")}</button></div>
       ${this._v3Lista(itens.slice(0, this._v2Largo ? 15 : 5), idx)}</section>`;
-    const onde = this._v3Onde(lst, total), mes = modo === "mes" ? this._v3MesAMes(false) : "", pagos = this._v3ComoPago(lst);
-    if (!this._v2Largo) return `<div class="v3-resumo">${alerta}${heroi}${cal}${cartoes}${ultimas}${onde}${mes}${pagos}</div>`;
+    const onde = vazio ? "" : this._v3Onde(lst, total), mes = modo === "mes" ? this._v3MesAMes(false) : "", pagos = vazio ? "" : this._v3ComoPago(lst);
+    const ultimasV = vazio ? "" : ultimas;
+    const listaPop = this._v3ListaK ? this._v3ListaPop(itensC, idx) : "";
+    if (!this._v2Largo) return `<div class="v3-resumo">${alerta}${heroi}${futuro}${cartoes}${cal}${onde}${modo === "mes" ? "" : ultimasV}${mes}${modo === "mes" ? "" : pagos}${listaPop}</div>`;
     if (modo !== "mes") return `<div class="v3-resumo larga">${alerta}<div class="v3-grade v3-alinha"><div class="v3-col">${heroi}${cal}</div><div class="v3-col">${cartoes}</div>
       <div class="v3-col">${onde}${pagos}</div><div class="v3-col">${ultimas}</div></div></div>`;
-    return `<div class="v3-resumo larga">${alerta}<div class="v3-grade"><div class="v3-col">${heroi}${cal}<div class="v3-par">${onde}${mes}</div>${pagos}</div>
-      <div class="v3-col">${cartoes}${ultimas}</div></div></div>`;
+    // mês de hoje: à direita do topo, os Próximos pagamentos; outro mês: as últimas compras dele
+    const ult6 = vazio ? "" : `<section class="v3-card v3-ult"><div class="v3-hd"><h2>Últimas compras</h2><button class="v3-link" data-a="v3-menu" data-k="compras">Todas ${V3_SVG("dir")}</button></div>
+      ${this._v3Lista(itens.slice(0, 6), idx)}</section>`;
+    const sk = (h, alt) => `<section class="v3-card v3-sk${alt}"><div class="v3-hd"><h2>${h}</h2></div><i class="v3-skb" style="width:45%;height:28px"></i><i class="v3-skb" style="width:100%;height:60px;margin-top:14px"></i><i class="v3-skb" style="width:100%;flex:1;min-height:60px;margin-top:14px"></i></section>`;
+    const direita = futuro || (F ? ult6 || `<section class="v3-card"></section>` : sk("Próximos pagamentos", " v3-prx"));
+    const cartoesV = F ? cartoes : sk("Cartões – Faturas", " v3-carts");
+    return `<div class="v3-resumo larga">${alerta}<div class="v3-rf1${futuro || !F ? "" : " solto"}">${heroi}${direita}</div><div class="v3-rf2">${cartoesV}${cal}</div>
+      <div class="v3-par">${onde}${mes}</div>${listaPop}</div>`;
+  }
+
+  // a lista por trás de cada item de Compras do mês / Pagamentos realizados (tocar no item abre; tocar na compra ou na
+  // conta abre a janela dela, como em qualquer lista)
+  _v3ListaPop(itensC, idx) {
+    const F = this._fFin, k = this._v3ListaK, [ini, fim] = this._finIntervalo(), pessoa = this._fQuem !== "Todos" ? this._fQuem : null;
+    const naHoraT = F?.pagos_na_hora || V3_NA_HORA, dm = (s) => `${String(s).slice(8, 10)}/${String(s).slice(5, 7)}`;
+    const pgs = (c) => (c.pago_com || []).filter((pg) => pg.tipo);
+    let tit = "", linhas = [], total = 0, dica = "";
+    if (/^[fm]-resto/.test(k)) {
+      const fut = k.startsWith("f-"), desde = k.endsWith("3") ? 3 : V3_PONTOS, hoje = F.hoje, mesHoje = hoje.slice(0, 7);
+      const valor = (x) => x.tipo === "fatura" && pessoa ? (x.itens || []).filter((i) => i.quem === pessoa).reduce((s, i) => s + (i.valor || 0), 0) : x.total;
+      const tarde = (x) => x.pago && x.pago.via !== "antes do controle" && String(x.pago.em || "").slice(0, 10) > x.vence;
+      const sel = this._finObrigacoes().filter((x) => (fut ? !x.pago : x.vence.slice(0, 7) === this._mes) && (x.tipo === "fatura" || this._finDoFiltro(x)) && valor(x) > 0.004)
+        .sort((a, b) => a.vence.localeCompare(b.vence)).slice(desde);
+      total = sel.reduce((s, x) => s + valor(x), 0);
+      tit = fut ? "Próximos pagamentos (depois)" : `Mais pagamentos de ${V3_MESES[Number(this._mes.slice(5, 7)) - 1]}`;
+      dica = fut ? `do ${sel[0] ? dm(sel[0].vence) : ""} em diante` : "";
+      linhas = sel.map((x) => {
+        const st = !x.pago ? (x.vence < hoje ? ["atrasada", "aviso", "alerta"] : ["a pagar", "", "relogio"]) : tarde(x) ? ["paga com atraso", "aviso", "alerta"] : ["paga", "ok", "check"];
+        return `<button class="v3-it" data-a="f-conta" data-k="${this._e(x.id)}"><span class="v3-it-ic">${V3_SVG(x.tipo === "fatura" ? "cartao" : "conta")}</span>
+        <span class="v3-it-t"><b>${this._e(this._v3NomeObr(x))}</b><small>vence ${dm(x.vence)}${x.pago && x.pago.via !== "antes do controle" ? ` · paga em ${dm(x.pago.em)}` : ""}</small></span>
+        <span class="v3-it-v"><b>${this._brl(valor(x))}</b><em class="v3-st ${st[1]}">${V3_SVG(st[2])}${st[0]}</em></span></button>`;
+      });
+      void mesHoje;
+    } else
+    if (k === "c-cartao" || k === "c-vista" || k === "c-sem" || k === "p-vista") {
+      const de = (x) => {
+        const l = pgs(x.c), soma = l.reduce((s, pg) => s + (pg.valor || 0), 0);
+        if (k === "c-sem") return !l.length || soma < 0.004 ? x.v : l.filter((pg) => pg.tipo !== "Crédito" && !naHoraT.includes(pg.tipo)).reduce((s, pg) => s + (x.v || 0) * (pg.valor || 0) / soma, 0);
+        if (!l.length || soma < 0.004) return 0;
+        return l.filter((pg) => (k === "c-cartao" ? pg.tipo === "Crédito" : naHoraT.includes(pg.tipo))).reduce((s, pg) => s + (x.v || 0) * (pg.valor || 0) / soma, 0);
+      };
+      let base = itensC;
+      if (k === "p-vista") {  // o que foi pago na hora no período (a mesma conta do "À vista" dos Pagamentos)
+        base = this._v3Itens(this._finLinhas().filter((l) => !l.c.conta && String(l.c.emissao).slice(0, 10) >= ini && String(l.c.emissao).slice(0, 10) < fim && String(l.c.emissao).slice(0, 10) >= F.marco && (!pessoa || l.c.quem === pessoa)));
+      }
+      const sel = base.map((x) => ({ ...x, v: de(x) })).filter((x) => x.v > 0.004);
+      total = sel.reduce((s, x) => s + x.v, 0);
+      tit = { "c-cartao": "Compras no cartão", "c-vista": "Compras à vista", "c-sem": "Compras sem forma de pagamento", "p-vista": "Pago à vista" }[k];
+      dica = { "c-cartao": "Entram nas próximas faturas.", "c-vista": "Pix, débito e afins: saíram da conta no mesmo dia.", "c-sem": "Toque numa compra para escolher como foi paga.", "p-vista": "Pix, débito e afins: saíram da conta no mesmo dia." }[k];
+      linhas = sel.map((x) => this._v3Linha(x, idx));
+    } else {  // faturas ou contas pagas no período, com o dia em que foram pagas
+      const fat = k === "p-fat";
+      const sel = this._finObrigacoes().filter((x) => { const d = String(x.pago?.em || "").slice(0, 10); return x.pago && d >= ini && d < fim && (x.tipo === "fatura") === fat && (fat || this._finDoFiltro(x)); })
+        .map((x) => ({ x, v: fat && pessoa ? (x.itens || []).filter((i) => i.quem === pessoa).reduce((s, i) => s + (i.valor || 0), 0) : x.total })).filter((o) => o.v > 0.004)
+        .sort((a, b) => String(a.x.pago.em).localeCompare(String(b.x.pago.em)));
+      total = sel.reduce((s, o) => s + o.v, 0);
+      tit = fat ? "Faturas pagas" : "Contas fixas pagas";
+      dica = fat ? "Cada fatura cobra as compras de meses anteriores no cartão." : "";
+      linhas = sel.map(({ x, v }) => `<button class="v3-it" data-a="f-conta" data-k="${this._e(x.id)}"><span class="v3-it-ic">${V3_SVG(fat ? "cartao" : "conta")}</span>
+        <span class="v3-it-t"><b>${this._e(this._v3NomeObr(x))}</b><small>paga em ${dm(x.pago.em)}${x.pago.via && x.pago.via !== "antes do controle" ? ` · ${this._e(x.pago.via)}` : ""} · vencia ${dm(x.vence)}</small></span>
+        <span class="v3-it-v"><b>${this._brl(v)}</b><em class="v3-st ok">${V3_SVG("check")}Paga</em></span></button>`);
+    }
+    return `<div class="v3-pop" role="dialog" aria-modal="true" aria-label="${tit}"><div class="v3-pop-f" data-a="v3-lista-fechar"></div>
+      <div class="v3-pop-c"><div class="v3-pop-h"><span><b>${tit}</b><small>${linhas.length} ${linhas.length === 1 ? "item" : "itens"} · ${this._brl(total)}${dica ? ` · ${dica}` : ""}</small></span>
+        <button class="v3-ib" data-a="v3-lista-fechar" aria-label="Fechar">${V3_SVG("fechar")}</button></div>
+      <div class="v3-pop-l">${linhas.join("") || `<div class="v3-vazio">Nada neste período.</div>`}</div></div></div>`;
+  }
+
+  // casa nova: os primeiros passos numa linha (quantos prontos e o próximo); some quando os obrigatórios ficam prontos
+  _v3Passos() {
+    const h = this._v2Passos();
+    if (!h) return "";
+    const feitos = (h.match(/class="v-passo ok"/g) || []).length, total = (h.match(/class="v-passo/g) || []).length;
+    const m = h.match(/<b>([^<]+)<\/b><small>[^<]*<\/small><\/span>\s*<button class="btn prim" data-a="v2-passo" data-k="([^"]+)">/);
+    const prox = m ? [null, m[2]] : null, tit = m ? m[1] : "";
+    return `<div class="v3-cfg"><span>Configuração: <b>${feitos} de ${total}</b> prontos${tit ? ` · próximo: ${tit}` : ""}</span><i class="v3-cfg-b" aria-hidden="true"><em style="width:${(feitos / Math.max(1, total) * 100).toFixed(0)}%"></em></i>
+      ${prox ? `<button class="v3-link" data-a="v2-passo" data-k="${prox[1]}">Continuar ${V3_SVG("dir")}</button>` : ""}</div>`;
+  }
+
+  // o que foi pago no período: a mesma conta do "Já paguei" (A pagar), com o que entrou nela
+  _v3Pago(iv) {
+    const F = this._fFin, [ini, fim] = iv || this._finIntervalo();
+    let naHora = 0, fat = 0, nF = 0, con = 0, nC = 0, nH = 0;
+    const fats = [], comp = { antigas: [0, 0], novas: [0, 0], estornos: 0 };
+    for (const c of this._compras()) {
+      const d = (c.emissao || "").slice(0, 10);
+      if (d < ini || d >= fim || d < F.marco || (this._fQuem !== "Todos" && c.quem !== this._fQuem)) continue;
+      for (const pg of c.pago_com || []) if ((F.pagos_na_hora || []).includes(pg.tipo)) { naHora += pg.valor || 0; nH++; }
+    }
+    for (const x of this._finObrigacoes()) {
+      const d = String(x.pago?.em || "").slice(0, 10);
+      if (!x.pago || d < ini || d >= fim) continue;
+      const pessoa = this._fQuem !== "Todos" ? this._fQuem : null;
+      if (x.tipo === "fatura") {
+        const vx = pessoa ? (x.itens || []).filter((i) => i.quem === pessoa).reduce((s, i) => s + (i.valor || 0), 0) : x.total;
+        if (vx < 0.004) continue;
+        fat += vx; nF++; fats.push(x);
+        for (const i of x.itens || []) {
+          if ((i.valor || 0) < 0) comp.estornos += i.valor;
+          else if ((i.parcela || 1) > 1) { comp.antigas[0]++; comp.antigas[1] += i.valor; } else { comp.novas[0]++; comp.novas[1] += i.valor; }
+        }
+      } else if (this._finDoFiltro(x)) { con += x.total; nC++; }
+    }
+    const partes = [nF ? `${nF} ${nF === 1 ? "fatura" : "faturas"}` : "", nC ? `${nC} ${nC === 1 ? "conta" : "contas"}` : "", naHora > 0.004 ? `${this._brl(naHora)} no Pix, débito e afins` : ""].filter(Boolean);
+    const txt = partes.length ? `${partes.join(" · ")} · o que saiu da conta` : "nada pago neste período";
+    // a fatura (uma só): "Fatura Inter de 10/06 · compras de 02/05 a 01/06"
+    let fatTxt = "";
+    if (fats.length === 1 && !nC) {
+      const f = fats[0], k = (F.cartoes || []).find((y) => y.id === f.cartao), dm = (s) => `${s.slice(8, 10)}/${s.slice(5, 7)}`;
+      const ant = (F.faturas || []).filter((y) => y.cartao === f.cartao && y.vence < f.vence).sort((a, b) => a.vence.localeCompare(b.vence)).pop();
+      const ini = ant?.fecha ? (() => { const d = new Date(ant.fecha + "T12:00"); d.setDate(d.getDate() + 1); return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`; })() : null;
+      fatTxt = `<b>Fatura ${this._e(k ? this._finNomeCartao(k) : "do cartão")} de ${dm(f.vence)}</b>${f.fecha ? ` · compras ${ini ? `de ${ini} a ${dm(f.fecha)}` : `até ${dm(f.fecha)}`}` : ""}`;
+    }
+    return { pago: naHora + fat + con, txt, fatTxt, fat, con, naHora, n: nF + nC + nH, comp: fats.length && comp.antigas[1] + comp.novas[1] > 0.004 ? comp : null };
+  }
+
+  // "x% acima/abaixo do normal" do Pago: o meio dos últimos 12 meses (até o mesmo dia, no mês de hoje), como nas compras
+  _v3PagoNormal(pago) {
+    if (this._fModo !== "mes" || !this._fFin) return "";
+    const hoje = this._finHoje(), atual = this._mes === hoje.slice(0, 7), dia = Number(hoje.slice(8, 10)), vals = [];
+    for (let k = 1; k <= 12; k++) {
+      const m = this._finSomaMes(this._mes, -k);
+      if (`${m}-31` < this._fFin.marco) break;
+      const v = this._v3Pago([`${m}-01`, atual ? `${m}-${String(dia + 1).padStart(2, "0")}` : `${this._finSomaMes(m, 1)}-01`]).pago;
+      if (v > 0.004) vals.push(v);
+    }
+    if (vals.length < 3 || pago < 0.004) return "";
+    vals.sort((a, b) => a - b);
+    const med = vals.length % 2 ? vals[(vals.length - 1) / 2] : (vals[vals.length / 2 - 1] + vals[vals.length / 2]) / 2;
+    const v = (pago - med) / med, sobe = v > 0;
+    const crit = "Comparado com o normal: o meio do que foi pago nos últimos 12 meses" + (atual ? ", até o mesmo dia do mês" : "");
+    return `<span class="v3-tchip ${sobe ? "sobe" : "desce"}">${V3_SVG(sobe ? "sobe" : "desce")}${Math.round(Math.abs(v) * 100)}% ${sobe ? "acima" : "abaixo"} do normal<span class="v3-i" title="${crit}" aria-label="${crit}" tabindex="0">${V3_SVG("info")}</span></span>`;
+  }
+
+  // a barra do Pago: quanto foi parcela de compras antigas e quanto foi compra do próprio período
+  _v3Comp(c) {
+    const tot = c.antigas[1] + c.novas[1], pa = c.antigas[1] / tot * 100;
+    const frase = pa >= 50 ? `${Math.round(pa)}% eram parcelas de compras antigas` : `${Math.round(100 - pa)}% eram compras do período`;
+    return `<div class="v3-comp"><i class="v3-comp-b" aria-hidden="true"><em class="a" style="width:${pa.toFixed(1)}%"></em><em class="n" style="width:${(100 - pa).toFixed(1)}%"></em></i>
+      <span><i class="a"></i>${c.antigas[0]} ${c.antigas[0] === 1 ? "parcela" : "parcelas"} de compras antigas<b>${this._brl(c.antigas[1])}</b></span>
+      <span><i class="n"></i>${c.novas[0]} ${c.novas[0] === 1 ? "compra" : "compras"} do período<b>${this._brl(c.novas[1])}</b></span>
+      ${c.estornos < -0.004 ? `<span><i class="e"></i>estornos<b>${this._brl(c.estornos)}</b></span>` : ""}
+      <small>${frase}</small></div>`;
+  }
+
+  // Próximos pagamentos (só no mês de hoje: é daqui para a frente): o total, a linha do tempo dos próximos vencimentos e o
+  // total por mês. Segue a pessoa escolhida (nas faturas, só a parte dela)
+  // mês que já passou: no lugar dos Próximos pagamentos, o que venceu naquele mês (o mesmo quadro, olhando para trás):
+  // o total, a linha do tempo dos vencimentos (✓ paga, ⚠ não paga) e o que foi pago mês a mês até ele
+  _v3PagosMes() {
+    const F = this._fFin, hoje = F.hoje;
+    if (this._fModo !== "mes" || this._mes >= hoje.slice(0, 7)) return "";
+    const pessoa = this._fQuem !== "Todos" ? this._fQuem : null, nomeM = V3_MESES[Number(this._mes.slice(5, 7)) - 1];
+    const valor = (x) => x.tipo === "fatura" && pessoa ? (x.itens || []).filter((i) => i.quem === pessoa).reduce((s, i) => s + (i.valor || 0), 0) : x.total;
+    const nome = (x) => { if (x.tipo !== "fatura") return x.nome; const k = (F.cartoes || []).find((y) => y.id === x.cartao); return `Fatura ${k ? this._finBancoNome(k) || this._finNomeCartao(k) : "do cartão"}`; };
+    const lst = this._finObrigacoes().filter((x) => x.vence.slice(0, 7) === this._mes && (x.tipo === "fatura" || this._finDoFiltro(x)) && valor(x) > 0.004)
+      .sort((a, b) => a.vence.localeCompare(b.vence));
+    const tarde = (x) => x.pago && x.pago.via !== "antes do controle" && String(x.pago.em || "").slice(0, 10) > x.vence;  // paga depois do vencimento
+    const total = lst.reduce((s, x) => s + valor(x), 0), abertas = lst.filter((x) => !x.pago).length, atrasadas = lst.filter(tarde).length;
+    const hd = `<div class="v3-hd"><h2>Pagamentos de ${nomeM}</h2><button class="v3-link" data-a="v3-menu" data-k="contas">Ver todos ${V3_SVG("dir")}</button></div>`;
+    if (total < 0.004) return `<section class="v3-card v3-prx">${hd}<div class="v3-vazio">Nada venceu em ${nomeM}.</div></section>`;
+    const dm = (s) => `${s.slice(8, 10)} ${V3_MESES[Number(s.slice(5, 7)) - 1].slice(0, 3)}`;
+    const vis = lst.slice(0, V3_PONTOS), resto = lst.slice(V3_PONTOS);
+    const pts = vis.map((x) => `<button class="v3-rp ${x.pago && !tarde(x) ? "ok" : "atr"}" data-a="f-conta" data-k="${this._e(x.id)}"><i></i><em>${dm(x.vence)}</em><b>${this._e(nome(x).replace(/^Fatura /, ""))}</b><small>${this._brl(valor(x))}</small></button>`).join("")
+      + (lst.length > 3 ? `<button class="v3-rp fim cel" data-a="v3-lista" data-k="m-resto3"><i></i><em>e mais</em><b>+ ${lst.length - 3}</b><small>ver todos</small></button>` : "")
+      + (resto.length ? `<button class="v3-rp fim" data-a="v3-lista" data-k="m-resto"><i></i><em>e mais</em><b>+ ${resto.length}</b><small>até ${dm(resto[resto.length - 1].vence)}</small></button>` : "");
+    // pago mês a mês (a mesma conta do Pagamentos realizados), os 6 meses até este
+    const meses = Array.from({ length: 6 }, (_, i) => this._finSomaMes(this._mes, i - 5));
+    const por = meses.map((m) => [V3_MESES[Number(m.slice(5, 7)) - 1].slice(0, 3), this._v3Pago([`${m}-01`, `${this._finSomaMes(m, 1)}-01`]).pago]);
+    const mx = Math.max(1, ...por.map((x) => x[1]));
+    return `<section class="v3-card v3-prx">${hd}
+      <div class="v3-prx-t">${this._brl(total)} <span>venceu em ${nomeM}${abertas ? ` · ${abertas} não ${abertas === 1 ? "paga" : "pagas"}` : " · tudo pago"}${atrasadas ? ` · <span class="v3-atrtxt">${atrasadas} com atraso</span>` : ""}${pessoa ? ` · ${this._e(pessoa)}` : ""}</span></div>
+      ${(() => { const pm = this._v3Pago([`${this._mes}-01`, `${this._finSomaMes(this._mes, 1)}-01`]); return pm.pago > 0.004 && Math.abs(pm.pago - total) > 0.009 ? `<div class="v3-prx-x">Saiu da conta em ${nomeM}: <b>${this._brl(pm.pago)}</b>${pm.naHora > 0.004 ? ` · inclui ${this._brl(pm.naHora)} pagos à vista` : ""}${Math.abs(pm.pago - pm.naHora - total) > 0.009 ? " e contas de outros meses" : ""}</div>` : ""; })()}
+      <div class="v3-rl" style="--n:${vis.length + (resto.length ? 1 : 0)}">${pts}</div>
+      <div class="v3-prx-s">Pago mês a mês</div>
+      <div class="v3-rb" style="--n:${por.length}">${por.map(([n, v], i) => `<span class="${i === por.length - 1 ? "ag" : ""}" aria-label="${n}: ${this._brl(v)}"><b>${v > 0.004 ? `<span class="l">${this._brl(v)}</span><span class="c">${this._v3Curto(v)}</span>` : ""}</b><i style="height:${v > 0.004 ? Math.max(4, v / mx * 60).toFixed(0) : 2}px"></i><small>${n}</small></span>`).join("")}</div></section>`;
+  }
+
+  _v3Futuro() {
+    const F = this._fFin, hoje = F.hoje, mesHoje = hoje.slice(0, 7);
+    if (this._fModo !== "mes" || this._mes !== mesHoje) return "";
+    const pessoa = this._fQuem !== "Todos" ? this._fQuem : null;
+    const valor = (x) => x.tipo === "fatura" && pessoa ? (x.itens || []).filter((i) => i.quem === pessoa).reduce((s, i) => s + (i.valor || 0), 0) : x.total;
+    const nome = (x) => { if (x.tipo !== "fatura") return x.nome; const k = (F.cartoes || []).find((y) => y.id === x.cartao); return `Fatura ${k ? this._finBancoNome(k) || this._finNomeCartao(k) : "do cartão"}`; };
+    const abertas = this._finObrigacoes().filter((x) => !x.pago && (x.tipo === "fatura" || this._finDoFiltro(x)) && valor(x) > 0.004).sort((a, b) => a.vence.localeCompare(b.vence));
+    const total = abertas.reduce((s, x) => s + valor(x), 0);
+    const hd = `<div class="v3-hd"><h2>Próximos pagamentos</h2><button class="v3-link" data-a="v3-menu" data-k="contas">Ver todos ${V3_SVG("dir")}</button></div>`;
+    if (total < 0.004) return `<section class="v3-card v3-prx">${hd}<div class="v3-vazio">Nada a pagar pela frente.</div></section>`;
+    const dm = (s) => `${s.slice(8, 10)} ${V3_MESES[Number(s.slice(5, 7)) - 1].slice(0, 3)}`;
+    const prox = abertas.slice(0, V3_PONTOS), resto = abertas.slice(V3_PONTOS);
+    const pts = prox.map((x) => `<button class="v3-rp${x.vence < hoje ? " atr" : ""}" data-a="f-conta" data-k="${this._e(x.id)}"><i></i><em>${x.vence < hoje ? "atrasada" : dm(x.vence)}</em><b>${this._e(nome(x).replace(/^Fatura /, ""))}</b><small>${this._brl(valor(x))}</small></button>`).join("")
+      + (abertas.length > 3 ? `<button class="v3-rp fim cel" data-a="v3-lista" data-k="f-resto3"><i></i><em>depois</em><b>+ ${abertas.length - 3}</b><small>ver todos</small></button>` : "")
+      + (resto.length ? `<button class="v3-rp fim" data-a="v3-lista" data-k="f-resto"><i></i><em>depois</em><b>+ ${resto.length}</b><small>até ${V3_MESES[Number(resto[resto.length - 1].vence.slice(5, 7)) - 1].slice(0, 3)}/${resto[resto.length - 1].vence.slice(2, 4)}</small></button>` : "");
+    const mesDe = (x) => x.vence.slice(0, 7) < mesHoje ? mesHoje : x.vence.slice(0, 7);
+    const primeiro = mesDe(abertas[0]), meses = Array.from({ length: 5 }, (_, i) => this._finSomaMes(primeiro, i));
+    const por = meses.map((m) => [V3_MESES[Number(m.slice(5, 7)) - 1].slice(0, 3), abertas.filter((x) => mesDe(x) === m).reduce((s, x) => s + valor(x), 0)]);
+    const depois = abertas.filter((x) => mesDe(x) > meses[meses.length - 1]).reduce((s, x) => s + valor(x), 0);
+    if (depois > 0.004) por.push(["depois", depois]);
+    const mx = Math.max(1, ...por.map((x) => x[1]));
+    return `<section class="v3-card v3-prx">${hd}
+      <div class="v3-prx-t">${this._brl(total)} <span>nos próximos meses${pessoa ? ` · ${this._e(pessoa)}` : ""}</span></div>
+      <div class="v3-rl" style="--n:${prox.length + (resto.length ? 1 : 0)}">${pts}</div>
+      <div class="v3-prx-s">Total por mês</div>
+      <div class="v3-rb" style="--n:${por.length}">${por.map(([n, v], i) => `<span class="${i ? "" : "ag"}" aria-label="${n}: ${this._brl(v)}"><b>${v > 0.004 ? `<span class="l">${this._brl(v)}</span><span class="c">${this._v3Curto(v)}</span>` : ""}</b><i style="height:${v > 0.004 ? Math.max(4, v / mx * 60).toFixed(0) : 2}px"></i><small>${n}</small></span>`).join("")}</div></section>`;
   }
 
   // faixa do alto: a primeira conta ou fatura atrasada (ou que vence hoje)
@@ -9329,10 +9571,13 @@ class ComprasV3Card extends BaseV2 {
     const ps = [...new Set(lst.map((l) => l.c.quem))].filter(Boolean);
     const doDia = sel ? this._v3Itens(lst.filter((l) => String(l.c.emissao).slice(0, 10) === sel)) : [];
     const dt = sel ? new Date(sel + "T12:00") : null;
-    return `<section class="v3-card v3-cal"><div class="v3-hd"><h2>${V3_MESES[m - 1][0].toUpperCase()}${V3_MESES[m - 1].slice(1)} ${a}</h2>
+    return `<section class="v3-card v3-cal"><div class="v3-hd"><h2>Compras de ${V3_MESES[m - 1]} por dia</h2>
         <span class="v3-leg">${ps.map((p) => `<span><i style="background:${this._cor(p)}"></i>${this._e(p)}</span>`).join("")}</span></div>
       <div class="v3-sem">${V3_SEMANA.map((s) => `<span>${s}</span>`).join("")}</div><div class="v3-dias">${cel.join("")}</div>
-      ${sel ? `<div class="v3-dodia"><div class="v3-dia0 v3-diatot"><span>${dt.getDate()} de ${V3_MESES[dt.getMonth()]}</span>${doDia.length ? `<span>${doDia.length} ${doDia.length === 1 ? "compra" : "compras"} · <b>${this._brl(doDia.reduce((s, x) => s + (x.v || 0), 0))}</b></span>` : ""}</div>${doDia.map((x) => this._v3Linha(x, idx)).join("") || `<div class="v3-vazio">Nenhuma compra neste dia.</div>`}</div>` : ""}</section>`;
+      ${sel && this._v3DiaPop ? `<div class="v3-pop" role="dialog" aria-modal="true" aria-label="Compras de ${dt.getDate()} de ${V3_MESES[dt.getMonth()]}"><div class="v3-pop-f" data-a="v3-dia-fechar"></div>
+        <div class="v3-pop-c"><div class="v3-pop-h"><span><b>${dt.getDate()} de ${V3_MESES[dt.getMonth()]}</b>${doDia.length ? `<small>${doDia.length} ${doDia.length === 1 ? "compra" : "compras"} · ${this._brl(doDia.reduce((s, x) => s + (x.v || 0), 0))}</small>` : ""}</span>
+          <button class="v3-ib" data-a="v3-dia-fechar" aria-label="Fechar">${V3_SVG("fechar")}</button></div>
+        <div class="v3-pop-l">${doDia.map((x) => this._v3Linha(x, idx)).join("") || `<div class="v3-vazio">Nenhuma compra neste dia.</div>`}</div></div></div>` : ""}</section>`;
   }
 
   // pilha de cartões: a mesma da v2 (faixas com banco e produto; na frente, o cartão desenhado com chip, valor e bandeira).
@@ -9374,9 +9619,37 @@ class ComprasV3Card extends BaseV2 {
       face.setAttribute("aria-label", `${this._finNomeCartao(sel.k)}: abrir em A pagar`);
       if (face.tagName === "DIV") { face.setAttribute("role", "button"); face.setAttribute("tabindex", "0"); }
     }
-    return `<section class="v3-card"><div class="v3-hd"><h2>Cartões</h2><button class="v3-link" data-a="v3-menu" data-k="contas">A pagar ${V3_SVG("dir")}</button></div>
+    const ciclo = this._v3Ciclo(sel, faturas);
+    return `<section class="v3-card v3-carts"><div class="v3-hd"><h2>${ciclo.titulo}</h2><button class="v3-link" data-a="v3-menu" data-k="contas">A pagar ${V3_SVG("dir")}</button></div>
       <div class="v-pilha v3-pilha">${tpl.innerHTML}</div>
-      ${pessoa ? `<div class="v3-dica">Faturas só com as compras de ${this._e(pessoa)}</div>` : `<div class="v3-dica">Toque numa faixa para trazer o cartão à frente · toque no cartão para abrir em A pagar</div>`}</section>`;
+      ${ciclo.linhas.length ? `<div class="v3-ciclo">${ciclo.linhas.map(([ic, tx]) => `<div>${V3_SVG(ic)}<span>${tx}</span></div>`).join("")}</div>` : ""}
+      ${pessoa ? `<div class="v3-dica">Faturas só com as compras de ${this._e(pessoa)}</div>` : ""}</section>`;
+  }
+
+  // o título do quadro dos cartões e o ciclo da fatura da frente: de que compras ela é e onde caem as compras do mês
+  _v3Ciclo(sel, faturas) {
+    const mesN = (s) => V3_MESES[Number(s.slice(5, 7)) - 1], dm = (s) => `${s.slice(8, 10)}/${s.slice(5, 7)}`;
+    const x = sel?.x, k = sel?.k;
+    if (this._fModo !== "mes" || !x || k?.credito === false || String(x.id).startsWith("v2cart:")) return { titulo: "Cartões", linhas: [] };
+    const titulo = `Cartões – Faturas de ${mesN(this._mes)}`;
+    const doCartao = faturas.filter((f) => f.cartao === k.id).sort((a, b) => a.vence.localeCompare(b.vence));
+    const linhas = [];
+    if (sel.antes) linhas.push(["info", `A fatura de ${dm(sel.antes.vence)} (<b>${this._brl(sel.antes.total)}</b>) já foi paga em ${dm(String(sel.antes.pago?.em || sel.antes.vence).slice(0, 10))}. Esta é a próxima.`]);
+    else {
+      const ant = doCartao.filter((f) => f.vence < x.vence).pop();
+      const ini = ant?.fecha ? (() => { const d = new Date(ant.fecha + "T12:00"); d.setDate(d.getDate() + 1); return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`; })() : null;
+      const antigas = (x.itens || []).some((i) => (i.parcela || 1) > 1);
+      if (x.fecha) linhas.push(["info", `Esta fatura cobrou as <b>compras ${ini ? `de ${ini} a ${dm(x.fecha)}` : `até ${dm(x.fecha)}`}</b>${antigas ? " + parcelas de compras antigas" : ""}.`]);
+    }
+    // as compras feitas no mês escolhido, neste cartão: em que fatura caem (a 1ª parcela)
+    const pessoa = this._fQuem !== "Todos" ? this._fQuem : null, por = new Map();
+    for (const f of doCartao) for (const i of f.itens || []) {
+      if (String(i.data || "").slice(0, 7) !== this._mes || (i.parcela || 1) !== 1 || (pessoa && i.quem !== pessoa)) continue;
+      por.set(f.vence, (por.get(f.vence) || 0) + (i.valor || 0));
+    }
+    const alvo = [...por].sort((a, b) => b[1] - a[1])[0];
+    if (alvo) linhas.push(["seta", `As compras de ${mesN(this._mes)} no ${this._e(this._finNomeCartao(k))} (<b>${this._brl(alvo[1])}</b>) ${alvo[0] === x.vence ? "entram nesta fatura" : "vão para a fatura"} de <b>${dm(alvo[0])}</b>.`]);
+    return { titulo, linhas };
   }
 
   _v3Onde(lst, total) {
@@ -9708,10 +9981,53 @@ class ComprasV3Card extends BaseV2 {
     const foto = fundoN && this._finEhFoto?.(k.modelo);
     if (foto) corpo = `<img class="v3f-arte" src="${V3_LOGO(fundoN)}" alt="">${info}`;
     else if (fundoN) corpo = `<img class="v3f-arte" src="${V3_LOGO(fundoN)}" alt="" onerror="this.remove()">${corpo.replace(/^\s*<svg class="v3f-arte"[\s\S]*?<\/svg>/, "")}`;
-    const cls = `fcface v3f ${foto ? "foto" : b}${CARTOES.porPecas?.has(b) ? " pecas" : ""}${!foto && CARTOES.verticais.has(b) ? " vert" : foto && CARTOES.fotosEmPe.has(k.modelo) ? " vert fotov" : ""}${c.preto ? " preto" : ""}${ouro ? " ouro" : ""}`, est = this._finCartaoEstilo(c), nm = this._finNomeCartao(k);
+    let cls = `fcface v3f ${foto ? "foto" : b}${CARTOES.porPecas?.has(b) ? " pecas" : ""}${!foto && CARTOES.verticais.has(b) ? " vert" : foto && CARTOES.fotosEmPe.has(k.modelo) ? " vert fotov" : ""}${c.preto ? " preto" : ""}${ouro ? " ouro" : ""}`, est = this._finCartaoEstilo(c), nm = this._finNomeCartao(k);
+    if (/ vert\b/.test(cls) && this._v3Deitar()) {
+      // "Mostrar todos os cartões deitados" (⚙ › Cartões): o desenho em pé é o mesmo, só girado; logo e bandeira ficam de lado, como na mão
+      const dentro = `<span class="v3f-gira" aria-hidden="true"><span class="${cls}" style="${est}">${corpo.split(info).join("")}</span></span>`;
+      cls = cls.replace(/ vert\b| fotov\b/g, "") + " deitado";
+      corpo = dentro + info;
+    }
     if (x?.gasto) return x.acao ? `<button class="${cls}" data-a="${x.acao}" data-k="${this._e(k.id)}" style="${est}" aria-label="${this._e(`${nm}: ${x.rotulo}, ${this._brl(x.total)}`)}">${corpo}</button>` : `<div class="${cls}" style="${est}">${corpo}</div>`;
     return x ? `<button class="${cls}" data-a="f-conta" data-k="${this._e(x.id)}" style="${est}" aria-label="${this._e(`${nm}: fatura de ${this._brl(x.total)}, vence ${this._dataCurta(x.vence + "T12:00")}`)}">${corpo}</button>`
       : `<div class="${cls}" style="${est}">${corpo}</div>`;
+  }
+
+  // ⚙ › Cartões › "Mostrar todos os cartões deitados": vale neste aparelho (guardado no navegador)
+  _v3Deitar() {
+    if (this._fDeitar === undefined) { try { this._fDeitar = localStorage.getItem("co-finance-deitados") === "1"; } catch (_) { this._fDeitar = false; } }
+    return this._fDeitar;
+  }
+
+  // cartão em pé mostrado deitado: o texto (vence, valor, situação) vai para o canto mais livre do desenho girado, sem
+  // cobrir chip, bandeira, nome do banco nem os textos do cartão. Mede as peças depois de desenhar e testa 6 posições.
+  _v3PosDeitados() {
+    const faces = [...this.shadowRoot.querySelectorAll(".v3f.deitado")];
+    if (!faces.length) return;
+    // [left, right, top, bottom, transform]: lugar fixo, no centro da parte de baixo (escolha do usuário: sempre o mesmo lugar)
+    const POS = [["50%", null, null, "7%", "translateX(-50%)"]];
+    const area = (a, b) => Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+    requestAnimationFrame(() => {
+      for (const f of faces) {
+        const info = f.querySelector(":scope > .v3f-info");
+        if (!info || !f.offsetWidth) continue;
+        const fr = f.getBoundingClientRect();
+        // tudo o que está desenhado (peças, logos e textos do fundo), menos o que cobre boa parte do cartão; com uma folga em volta
+        const folga = fr.width * .015, grande = fr.width * fr.height * .22;
+        const pecas = [...f.querySelectorAll(".v3f-gira *")].filter((el) => !el.children.length || /^(img|i|b|svg|use)$/i.test(el.tagName))
+          .map((el) => el.getBoundingClientRect()).filter((r) => r.width > 2 && r.height > 2 && r.width * r.height < grande)
+          .map((r) => ({ left: r.left - folga, right: r.right + folga, top: r.top - folga, bottom: r.bottom + folga }));
+        let melhor = null;
+        for (const [l, r, t, b, tr] of POS) {
+          Object.assign(info.style, { left: l ?? "auto", right: r ?? "auto", top: t ?? "auto", bottom: b ?? "auto", transform: tr || "none" });
+          const ir = info.getBoundingClientRect();
+          const custo = pecas.reduce((s, p) => s + area(ir, p), 0);
+          if (!melhor || custo < melhor.custo - 0.5) melhor = { custo, l, r, t, b, tr };
+          if (custo === 0) break;
+        }
+        Object.assign(info.style, { left: melhor.l ?? "auto", right: melhor.r ?? "auto", top: melhor.t ?? "auto", bottom: melhor.b ?? "auto", transform: melhor.tr || "none" });
+      }
+    });
   }
 
   // ---------------------------------------------------------------- janela da compra: uma página só
@@ -9997,7 +10313,10 @@ class ComprasV3Card extends BaseV2 {
       try { localStorage.setItem(V3_ESCURO, this._v3Escuro() ? "0" : "1"); } catch (_) { /* navegador sem armazenamento */ }
       this._render(); return;
     }
-    if (a === "v3-dia") { this._v3Dia = k; this._v3Rolar = ".v3-dodia"; this._render(); return; }
+    if (a === "v3-dia") { this._v3Dia = k; this._v3DiaPop = true; this._v3Parado = true; this._render(); return; }
+    if (a === "v3-lista") { this._v3ListaK = k; this._v3Parado = true; this._render(); return; }
+    if (a === "v3-lista-fechar") { this._v3ListaK = null; this._v3Parado = true; this._render(); return; }
+    if (a === "v3-dia-fechar") { this._v3DiaPop = false; this._v3Parado = true; this._render(); return; }
     if (a === "v3-mmsel") { this._v3MmSel = k; this._render(); return; }
     if (a === "v3-ano-cmp") {  // liga/desliga o ano no gráfico; ligar o 4º desliga o mais antigo que estava ligado; sempre fica um
       const l = [...(this._v3Anos || [])];
@@ -10140,6 +10459,72 @@ class ComprasV3Card extends BaseV2 {
     .v3-tend{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500}.v3-tend .v3-ic{width:16px;height:16px}
     .v3-tend.sobe{color:var(--v3-des)}.v3-tend.desce{color:var(--v3-ok-forte)}
     .v3-totlinha{display:contents}.v3-tendx{display:none}  /* no computador o percentual fica na linha de baixo */
+    .v3-dois{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+    .v3-rf1,.v3-rf2{display:grid;grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr);gap:12px;margin:0 0 12px}.v3-rf1{align-items:stretch}.v3-rf2{align-items:stretch}
+    .v3-rf1>.v3-card,.v3-rf2>.v3-card,.v3-rks>.v3-card{margin:0}
+    .v3-rks{display:grid;gap:12px;grid-auto-rows:1fr}
+    .v3-rk{display:flex;gap:14px;align-items:stretch}.v3-rk-t{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}.v3-rk-t>.v3-rq{margin-top:auto}.v3-rk-t>.v3-num-d+.v3-rq,.v3-rk-t>.v3-tend+.v3-rq{margin-top:auto}
+    .v3-rk-t{padding-bottom:0}.v3-rk-t .v3-rq{border-top:1px solid var(--v3-lin,rgba(127,127,127,.25));margin-top:auto}
+    .v3-rf2>.v3-cal{display:flex;flex-direction:column}.v3-rf2>.v3-cal .v3-dias{flex:1;align-content:space-evenly}.v3-rf2>.v3-cal .v3-hd{margin-bottom:10px}
+    .v3-pop{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px}.v3-pop-f{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+    .v3-pop-c{position:relative;width:min(560px,100%);max-height:min(78vh,680px);display:flex;flex-direction:column;background:var(--v3-card,var(--card-background-color,#fff));color:inherit;border-radius:16px;box-shadow:0 20px 50px -12px rgba(0,0,0,.5);overflow:hidden}
+    .v3-pop-h{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--v3-lin,rgba(127,127,127,.25))}.v3-pop-h span{display:grid}.v3-pop-h b{font-size:16px}.v3-pop-h small{font-size:12.5px;color:var(--v3-mut-fg)}
+    .v3-pop-l{overflow:auto;padding:6px 12px 12px}
+    .v3-rk-ic{flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--v3-pri) 18%,transparent);color:var(--v3-pri)}.v3-rk-ic .v3-ic{width:23px;height:23px}
+    .v3-rk .v3-hd,.v3-prx .v3-hd{height:40px;min-height:40px;margin:0 0 8px!important;align-items:center}.v3-rk .v3-hd h2,.v3-prx .v3-hd h2{margin:0;line-height:1.2}.v3-prx-t{font-size:28px!important;margin:0 0 6px}.v3-card.v3-prx{row-gap:0;align-content:start}.v3-prx>.v3-rl{margin-top:16px}
+    .v3-rf1 .v3-rk,.v3-rf1 .v3-prx{padding-top:12px;padding-bottom:12px}.v3-rk .v3-hd,.v3-prx .v3-hd{height:30px!important;min-height:30px!important;margin-bottom:4px!important}
+    .v3-rk-t>.v3-rq{margin-top:10px!important;padding-top:8px}.v3-rk .v3-total{margin-bottom:2px}.v3-rks{gap:10px}
+    .v3-prx>.v3-rl{margin:12px 0 2px}.v3-prx .v3-prx-s{margin:14px 0 6px!important;padding-top:12px;border-top:1px solid var(--v3-lin,rgba(127,127,127,.25));font-size:13.5px!important;font-weight:700;color:var(--primary-text-color,inherit)!important}.v3-prx .v3-rb{height:72px}
+    .v3-card.v3-prx{display:flex;flex-direction:column}.v3-sk{display:flex;flex-direction:column}.v3-sk .v3-rk-t{gap:8px!important}
+    .v3-skb{display:block;height:12px;border-radius:6px;background:var(--v3-mut);animation:v3sk 1.2s ease-in-out infinite alternate}@keyframes v3sk{from{opacity:.55}to{opacity:1}}
+    @media (prefers-reduced-motion:reduce){.v3-skb{animation:none}}.v3-prx>.v3-rb{flex:1;min-height:64px;height:auto}.v3-rk .v3-total{font:700 28px/1.2 Sora,Manrope,system-ui,sans-serif;letter-spacing:-.02em;white-space:nowrap;margin:0 0 6px}
+    .v3-prx-t{line-height:1.2}.v3-rk .v3-num-d{margin-top:2px}
+    .v3-tchip{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:600;white-space:nowrap}.v3-tchip>.v3-ic{width:15px;height:15px}
+    .v3-tchip.sobe{color:var(--v3-des)}.v3-tchip.desce{color:var(--v3-ok-forte)}.v3-tchip .v3-i{margin-left:2px}.v3-rk .v3-tend{margin-top:6px;font-size:13px}
+    .v3-rk .v3-tend-v{min-height:19px}.v3-rk-t{gap:0!important}.v3-rk .v3-num-d{font-size:13px}
+    .v3-rq{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 10px;margin-top:auto;padding-top:10px;font-size:11.5px!important;border-top:1px solid var(--v3-lin,rgba(127,127,127,.25));font-size:12.5px;color:var(--v3-mut-fg)}
+    .v3-rqb{display:block;text-align:left;font:inherit;color:inherit;background:none;border:0;padding:3px 6px;margin:-3px -6px;border-radius:8px;cursor:pointer;min-width:0;white-space:nowrap}
+    .v3-rqb:focus-visible{outline:2px solid var(--v3-pri);outline-offset:1px}
+    .v3-rq b{display:block;color:var(--primary-text-color,inherit);font-weight:600;font-size:13px;white-space:nowrap}.v3-rq>span{min-width:0;white-space:nowrap}
+    .v3-rk-t>.v3-rq{margin-top:14px!important}
+    .v3-rf2 .v3-pilha{max-width:250px!important}.v3-rf2 .fpk{padding:6px 14px 18px;margin-bottom:-12px;font-size:12.5px}.v3-rf2>.v3-carts .v3-ciclo{font-size:12px}.v3-rf2>.v3-carts .v3-ciclo{margin-top:10px}
+    .v3-rf2>.v3-cal .v3-d{height:auto;min-height:34px}.v3-rf2>.v3-cal .v3-dias{gap:3px;grid-auto-rows:1fr;align-content:stretch}
+    .v3-prx-t{font-size:28px;font-weight:700;letter-spacing:-.02em;font-family:Sora,Manrope,system-ui,sans-serif}.v3-prx-t span{font-size:13px;font-weight:500;color:var(--v3-mut-fg);font-family:Manrope,system-ui,sans-serif;letter-spacing:0}
+    .v3-rl{position:relative;display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:6px;margin:16px 0 4px}
+    .v3-rl::before{content:"";position:absolute;left:8px;right:8px;top:7px;height:2px;background:var(--v3-mut)}
+    .v3-rp{position:relative;display:grid;justify-items:start;gap:1px;text-align:left;font:inherit;font-size:12px;color:inherit;background:none;border:0;padding:0;cursor:pointer;min-width:0}
+    .v3-rp>i{width:16px;height:16px;border-radius:50%;background:#f6b94a;border:3px solid var(--v3-card,var(--card-background-color,#1b1e25));box-shadow:0 0 0 1px #f6b94a;margin-bottom:6px}
+    .v3-rp em{font-style:normal;font-weight:700;color:#d99a22}.v3-rp b{font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.v3-rp small{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.v3-rl{gap:4px}.v3-rp small{color:var(--v3-mut-fg);font-size:12px}
+    .v3-atrtxt{color:var(--v3-des);font-weight:600}.v3-prx-x{font-size:12.5px;color:var(--v3-mut-fg);margin:-2px 0 2px}.v3-prx-x b{color:var(--primary-text-color,inherit);font-weight:600}.v-atr{color:var(--v3-des)!important;font-weight:700}.v3-rp.ok>i{background:var(--v3-ok-forte,#16a34a);box-shadow:0 0 0 1px var(--v3-ok-forte,#16a34a)}.v3-rp.ok em{color:var(--v3-ok-forte,#16a34a)}
+    .v3-rp.atr>i{background:var(--v3-des);box-shadow:0 0 0 1px var(--v3-des)}.v3-rp.atr em{color:var(--v3-des)}
+    .v3-rp.fim{cursor:pointer}.v3-rl>.v3-rp.cel{display:none}.v3-rp.fim>i{background:var(--v3-card,var(--card-background-color));box-shadow:0 0 0 1.5px var(--v3-mut-fg)}.v3-rp.fim em{color:var(--v3-mut-fg)}
+    .v3-prx-s{font-size:12.5px;color:var(--v3-mut-fg);margin:12px 0 4px}
+    .v3-rb{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:8px;align-items:end;height:96px}
+    .v3-rb>span{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px;min-width:0}
+    .v3-rb i{display:block;width:100%;border-radius:5px 5px 2px 2px;background:color-mix(in srgb,#3b82f6 70%,var(--v3-mut))}.v3-rb .ag i{background:#f6b94a}
+    .v3-rb b{font-size:11.5px;font-weight:600;white-space:nowrap}.v3-rb b .c{display:none}.v3-rb .v3-mm-mil{font-weight:500}
+    .v3-rf1.solto{align-items:start}.v3-rf1.solto .v3-rks{grid-auto-rows:auto}.v3-rb small{font-size:11.5px;color:var(--v3-mut-fg)}
+    .v3,.v3-resumo{font-variant-numeric:tabular-nums}
+    .v3-cfg{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--v3-card,var(--card-background-color));border:1px solid var(--v3-lin,rgba(127,127,127,.25));border-radius:12px;padding:6px 8px 6px 14px;margin:0 0 12px;font-size:13.5px}
+    .v3-cfg .v3-link{margin-left:auto}.v3-cfg-b{flex:0 1 160px;height:6px;border-radius:3px;background:var(--v3-mut);overflow:hidden}.v3-cfg-b em{display:block;height:100%;background:var(--v3-pri)}
+    .v3-tend-c{color:var(--v3-mut-fg);font-weight:400}.v3-i{display:inline-flex;color:var(--v3-mut-fg);cursor:help}.v3-i .v3-ic{width:15px;height:15px}
+    .v3-comp{display:grid;gap:4px;margin-top:8px;font-size:12.5px}.v3-comp>span{display:flex;align-items:center;gap:6px}.v3-comp>span b{margin-left:auto;font-weight:600}
+    .v3-comp-b{display:flex;height:9px;border-radius:5px;overflow:hidden;background:var(--v3-mut);margin-bottom:3px}.v3-comp-b em{display:block;height:100%}
+    .v3-comp .a{background:color-mix(in srgb,var(--v3-mut-fg) 70%,transparent)}.v3-comp .n{background:var(--v3-pri)}.v3-comp .e{background:var(--v3-des)}
+    .v3-comp>span>i{display:inline-block;width:9px;height:9px;border-radius:2px;flex:none}.v3-comp small{font-weight:600;color:var(--v3-mut-fg);margin-top:2px}
+    .v3-vaziol{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;color:var(--v3-mut-fg)}.v3-vaziol .v3-bt{flex:none;display:inline-flex;align-items:center;gap:6px}
+    .v3-prox{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;margin-top:10px;padding:9px 12px;border:0;border-radius:10px;background:var(--v3-mut);color:inherit;font:inherit;font-size:13.5px;cursor:pointer;text-align:left}
+    .v3-num{display:flex;flex-direction:column;gap:3px;min-width:0}.v3-num .v3-rot{display:flex;align-items:center;gap:6px}.v3-num .v3-rot .v3-ic{width:15px;height:15px}
+    .v3-num .v3-total{white-space:nowrap}.v3-num-d{font-size:12.5px;color:var(--v3-mut-fg);line-height:1.4}.v3-num .v3-tend{margin-top:6px}
+    .v3-num-pago{border-left:1px solid var(--v3-lin,rgba(127,127,127,.25));padding-left:14px}
+    .v3-ciclo{margin-top:12px;font-size:13px;line-height:1.45;display:grid;gap:6px}.v3-ciclo>div{display:flex;gap:7px;align-items:flex-start}
+    .v3-ciclo .v3-ic{flex:none;width:15px;height:15px;margin-top:2px;color:var(--v3-mut-fg)}.v3-ciclo>div:last-child .v3-ic{color:var(--v3-pri)}
+    .v3-selo{display:inline-block;font-size:11.5px;font-weight:600;color:var(--v3-mut-fg);background:var(--v3-mut);border-radius:99px;padding:1px 8px;margin-left:4px;vertical-align:2px;white-space:nowrap}
+    .v3-fut-t{font-size:26px;font-weight:700;letter-spacing:-.02em;font-family:Sora,Manrope,system-ui,sans-serif}
+    .v3-fut-b{display:flex;align-items:flex-end;gap:6px;height:100px;margin-top:10px}
+    .v3-fut-b>span{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+    .v3-fut-b i{display:block;width:100%;border-radius:4px 4px 2px 2px;background:color-mix(in srgb,var(--v3-mut-fg) 55%,transparent)}.v3-fut-b i.agora{background:var(--v3-mut-fg)}
+    .v3-fut-b b{font-size:11.5px;font-weight:600;margin-bottom:3px;white-space:nowrap}.v3-fut-b small{font-size:11.5px;color:var(--v3-mut-fg);margin-top:4px}
     .v3-tendx{align-items:center;font-size:14px;font-weight:500;flex:none;line-height:1}  /* mesmo tamanho e cor da linha de antes; só muda o lugar: "expoente" do valor */
     .v3-tendx b{display:flex;align-items:center;gap:4px;font:inherit}.v3-tendx .v3-ic{width:16px;height:16px}
     .v3-tendx.sobe{color:var(--v3-des)}.v3-tendx.desce{color:var(--v3-ok-forte)}
@@ -10355,7 +10740,8 @@ class ComprasV3Card extends BaseV2 {
     .v3-corr{background:var(--v3-acc);color:var(--v3-acc-fg)}
     @media (max-width:760px){.v3-tres{grid-template-columns:1fr}.v3-tres .v3-card{margin:0}.v3-tres{gap:10px;margin-bottom:16px}
       .v3-tres.v3-tresp{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.v3-tresp>:nth-child(3){grid-column:1/-1}}  /* Produtos no celular: subiram e baixaram lado a lado; onde mais compra embaixo */
-    @media (max-width:520px){.v3-total{font-size:38px}.v3-heroi-l{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;align-items:start;gap:var(--v3-hgap,10px) 22px}
+    @media (max-width:520px){.v3-dois{grid-template-columns:1fr}.v3-rb b .l{display:none}.v3-rb b .c{display:inline}.v3-rl{display:flex;gap:4px}.v3-rl>.v3-rp{flex:1}.v3-rl>.v3-rp:nth-child(n+4):not(.fim){display:none}.v3-rl>.v3-rp.fim:not(.cel){display:none}.v3-rl>.v3-rp.cel{display:grid}.v3-rq{grid-template-columns:repeat(2,minmax(0,1fr))}.v3-rks{grid-auto-rows:auto}.v3-rp b{white-space:normal}.v3-num-pago{border-left:0;padding-left:0;border-top:1px solid var(--v3-lin,rgba(127,127,127,.25));padding-top:12px}
+      .v3-num .v3-total{font-size:34px}.v3-num .v3-tend{display:none}.v3-total{font-size:38px}.v3-heroi-l{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;align-items:start;gap:var(--v3-hgap,10px) 22px}
       .v3-totlinha{display:flex;grid-column:1/-1;justify-content:flex-start;align-items:flex-start;gap:8px}.v3-tendx{display:flex;margin-top:var(--v3-hexp,-2px)}
       .v3-heroi>.v3-tend{display:none}.v3-heroi .v3-mini{padding-bottom:0}.v3-heroi .v3-heroi-l{margin-bottom:var(--v3-hbase,2px)}.v3-heroi{padding-top:11px}  /* embaixo, o mesmo respiro de cima */.v3-d{border-radius:12px;font-size:14px}.v3-sem,.v3-dias{gap:3px}
       .v3-par{grid-template-columns:1fr}.v3-faixa{font-size:14px}.v3-fr-top{font-size:16px}
