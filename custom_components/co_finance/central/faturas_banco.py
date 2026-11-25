@@ -24,6 +24,34 @@ BANCOS = {"santander": "Santander", "bb": "Banco do Brasil", "bradesco": "Brades
 assert set(BANCOS) == {b for b, *_ in LEITORES}
 
 
+def escolher_cartao(cartoes: list[dict[str, Any]], f: dict[str, Any], arquivo: str = "") -> dict[str, Any]:
+    """De qual cartão é a fatura. Vários cartões do mesmo banco (dois BTG, Itaú e Itaú Latam): vale o que tem os finais
+    impressos na fatura. Sem final que decida: o único cartão do banco (o marcado com o banco ou, sem ele, o único de
+    crédito com aquele desenho). O cartão escolhido pelo desenho (emissor) passa a ter o banco marcado."""
+    marcados = [x for x in cartoes if x.get("banco") == f["banco"]]
+    pelo_desenho = [x for x in cartoes if not x.get("banco") and x.get("emissor") == f["banco"]
+                    and x.get("credito", True) and x.get("ativo", True)]
+    cands = marcados + pelo_desenho
+    if not cands:
+        raise Falha(f"{arquivo}: fatura do {BANCOS[f['banco']]}, mas nenhum cartão tem esse banco. "
+                    "Escolha o banco no cadastro do cartão (A pagar › ✎ › Cartões).")
+    finais = {l["final"] for l in f["linhas"] if l.get("final")} | set((f.get("conferencia") or {}).get("finais") or {})
+    pontos = sorted(((len(finais & set(x.get("finais") or {})), i) for i, x in enumerate(cands)), reverse=True)
+    if pontos[0][0] and (len(pontos) == 1 or pontos[0][0] > pontos[1][0]):
+        k = cands[pontos[0][1]]
+    elif len(marcados) == 1:  # como antes: o cartão marcado com o banco
+        k = marcados[0]
+    elif not marcados and len(pelo_desenho) == 1:
+        k = pelo_desenho[0]
+    else:
+        raise Falha(f"{arquivo}: há {len(cands)} cartões {BANCOS[f['banco']]} e não sei de qual é esta fatura"
+                    f"{' (finais ' + ', '.join(sorted(finais)) + ')' if finais else ''}. "
+                    "Anote os finais no cadastro do cartão certo (A pagar › ✎ › Cartões) e leia de novo.")
+    if not k.get("banco"):
+        k["banco"] = f["banco"]
+    return k
+
+
 def _resumo(f: dict[str, Any], k: dict[str, Any]) -> dict[str, Any]:
     finais = (k or {}).get("finais") or {}
     cp = [l for l in f["linhas"] if l["tipo"] == "compra"]
@@ -112,16 +140,7 @@ def fatura_ler(p: dict[str, Any]) -> dict[str, Any]:
                     f"({fmt_brl(c['esperado'])}). Não gravei; me avise para eu ajustar a leitura.")
     with file_lock():
         db = load_db()
-        k = next((x for x in db.get("cartoes") or [] if x.get("banco") == f["banco"]), None)
-        if not k:  # cadastrado só com o banco do desenho (emissor): se houver um único cartão de crédito daquele banco, ele passa a ler a fatura
-            cands = [x for x in db.get("cartoes") or [] if x.get("emissor") == f["banco"] and not x.get("banco")
-                     and x.get("credito", True) and x.get("ativo", True)]
-            if len(cands) == 1:
-                k = cands[0]
-                k["banco"] = f["banco"]
-        if not k:
-            raise Falha(f"{arquivo}: fatura do {BANCOS[f['banco']]}, mas nenhum cartão tem esse banco. "
-                        "Escolha o banco no cadastro do cartão (A pagar › ✎ › Cartões).")
+        k = escolher_cartao(db.get("cartoes") or [], f, arquivo)
         guardadas = db.setdefault("faturas_banco", {})
         fid = f"{k['id']}:{f['vence']}"
         antes_dela = [x for x in guardadas.values() if x["cartao"] == k["id"] and x["vence"] < f["vence"]]

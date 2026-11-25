@@ -283,36 +283,128 @@ def _ler_bradesco_oficial(L) -> dict[str, Any]:
 
 # ---------------------------------------------------------------- Itaú
 def _ler_itau(L) -> dict[str, Any]:
+    """Itaú e Itaú Latam. As páginas de lançamentos têm duas colunas, e o PDF junta na mesma linha (separado por tab) o
+    que está na mesma altura nas duas: cada linha é partida em "coluna da esquerda" e "coluna da direita", e a leitura
+    segue a ordem da fatura (esquerda da página, depois a direita). Só entram as seções de pagamentos e de lançamentos;
+    parcelas das próximas faturas, limites, encargos e simulações ficam de fora. Vários cartões (adicionais): cada bloco
+    começa em "NOME (final 1234)" e fecha em "Lançamentos no cartão (final 1234) valor"."""
     junta = lambda s: re.sub(r"\s", "", s or "")
-    vence = _achar(L, r"Vencimento:\s*([\d/ ]{10,13})")
-    emis = _achar(L, r"Emiss[ãa]o:\s*([\d/ ]{10,13})")
-    total = _achar(L, r"Total desta fatura\s+(-?[\d., ]+,\s?\d\s?\d)")
-    anterior = _achar(L, r"Total da fatura anterior\s+(-?[\d., ]+,\s?\d\s?\d)")
-    final = _achar(L, r"Car\s?t[ãa]\s?o\s+\d{4}\.XXXX\.XXXX\.(\d{4})") or ""
+    rx_val = r"-?\s?\d[\d .]*,\s?\d\s?\d"
+    plano = [[p, x, y, t.replace("	", " ")] for p, x, y, t in L]
+    vence = _achar(plano, r"Vencimento:\s*([\d/ ]{10,13})")
+    emis = _achar(plano, r"Emiss[ãa]o:\s*([\d/ ]{10,13})")
+    total = _achar(plano, r"Total desta fatura\s+(-?[\d., ]+,\s?\d\s?\d)")
+    anterior = _achar(plano, r"Total da fatura anterior\s+(-?[\d., ]+,\s?\d\s?\d)")
+    final0 = _achar(plano, r"Car\s?t[ãa]\s?o\s+\d{4}\.XXXX\.XXXX\.(\d{4})") or ""
     vence = _iso(junta(vence)) if vence else None
-    out = []
-    for p, x, _y, t in L:  # página 2, coluna da esquerda, até o total dos lançamentos (depois vêm as parcelas futuras)
-        if p < 2 or x >= 340:
+    e_val = lambda s: bool(re.fullmatch(rx_val + r"\s*\.?", s.strip()))
+    e_parc = lambda s: bool(re.fullmatch(r"\d\s?\d\s?/\s?\d\s?\d", s.strip()))
+    rx_data = r"^(\d)\s?(\d)\s?/\s?(\d)\s?(\d)\s+(\S.*)$"
+    e_data = lambda s: bool(re.match(rx_data, s.strip()))
+    rx_fim = r"\s(-?\s?\d{1,3}(?:\.\d{3})*\s?,\s?\d\s?\d)\s*\.?$"  # valor no fim do próprio pedaço (sem tab antes)
+    chave = lambda s: _sem_acento(junta(s)).lower()  # o PDF do Itaú espalha espaços no meio das palavras
+
+    def item(segs, i):
+        """Um item da coluna a partir de segs[i]: devolve (pedaços do item, próximo índice)."""
+        s = segs[i].strip()
+        j = i + 1
+        if e_data(s) and not re.search(rx_fim, s):  # lançamento: a parcela e o valor podem vir em pedaços separados
+            while j < len(segs) and e_parc(segs[j]):
+                j += 1
+            if j < len(segs) and e_val(segs[j]):
+                j += 1
+        elif chave(s).startswith("data") and j < len(segs) and chave(segs[j]).startswith(("valor", "estabelecimento")):
+            j += 1
+            if j < len(segs) and chave(segs[j]).startswith("valor"):
+                j += 1
+        elif not e_val(s) and not e_data(s):
+            if j < len(segs) and e_val(segs[j]):  # "Lançamentos no cartão (final 1234) | 1.234,56"
+                j += 1
+        return [x.strip() for x in segs[i:j]], j
+
+    def colunas(x, t):
+        # valor colado no texto da outra coluna, sem tab ("12,34 L Total dos lançamentos atuais"): separa
+        t = re.sub(r"(,\s?\d\s?\d)\s+(?=[A-Za-zÀ-ú(])", "\\1\t", t)
+        segs = [s for s in t.split("\t") if s.strip()]
+        if not segs:
+            return [], []
+        if x >= 300:  # a linha só tem a coluna da direita
+            return [], [segs]
+        esq, k = item(segs, 0)
+        dir_ = []
+        while k < len(segs):
+            it, k = item(segs, k)
+            dir_.append(it)
+        return [esq], dir_
+
+    ordem = []  # itens na ordem da fatura: por página, a coluna da esquerda inteira e depois a da direita
+    for pag in sorted({p for p, *_r in L}):
+        esq, dir_ = [], []
+        for p, x, _y, t in L:
+            if p == pag:
+                a, b = colunas(x, t)
+                esq += a
+                dir_ += b
+        ordem += esq + dir_
+
+    out, subtot, final, dentro, pagos = [], {}, "", False, False
+    for segs in ordem:
+        cab = re.sub(r"^[A-Z]\s+(?=[A-ZÀ-Ú])", "", segs[0])  # "P Total dos pagamentos", "L Total dos lançamentos"
+        n = chave(cab)
+        if n.startswith("pagamentosefetuados"):
+            dentro, final = True, ""
             continue
-        if "Totaldoslançamentosatuais" in junta(t):
-            break
-        m = re.match(r"^(\d{2})/(\d)\s?(\d)\s+(.+)$", t.strip())
-        if not m:
+        if re.match(r"lancamentos(:|internacionais|produtos)", n):
+            dentro = True
+            if n.startswith("lancamentos:compras") and not final:
+                final = final0
             continue
-        resto = re.sub(r"(,\s?\d\s?\d)\s+[A-Za-zÀ-ú].*$", r"\1", m[4])  # tira o texto da coluna da direita
-        mv = re.search(r"\s(\d{2}/\s?\d\s?\d)\s+(-?\d[\d .]*,\s?\d\s?\d)$", resto)
-        parc = None
-        if mv:
-            parc, val, desc = junta(mv[1]), mv[2], resto[:mv.start()]
+        if re.match(r"(comprasparceladas|limitesdecredito|encargoscobrados|fiqueatento|simulacao|novotetodejuros|"
+                    r"jurosmaximos|opcoesdepagamento|casovocepague|opagamentoobrigatorio|totaldoslancamentosatuais)", n):
+            dentro = False
+            continue
+        m = re.search(r"\(final(\d{4})\)", n)
+        if n.startswith("lancamentosnocartao"):
+            k = m[1] if m else final0
+            if k and len(segs) > 1 and e_val(segs[-1]):
+                subtot[k] = _valor(junta(segs[-1]).rstrip("."))
+            final = ""
+            continue
+        if m:
+            final = m[1]
+            continue
+        if not dentro or not e_data(cab):
+            continue
+        if len(segs) > 1 and e_val(segs[-1]):
+            val, corpo = segs[-1], " ".join(segs[:-1])
         else:
-            mv = re.search(r"\s(-?\d[\d .]*,\s?\d\s?\d)$", resto)
+            mv = re.search(rx_fim, cab)
             if not mv:
                 continue
-            val, desc = mv[1], resto[:mv.start()]
-        out.append(_linha(_dia(int(m[1]), int(m[2] + m[3]), vence), desc, _valor(val), final, parcela=parc))
+            val, corpo = mv[1], cab[:mv.start()]
+        md = re.match(rx_data, corpo.strip())
+        desc, parc = md[5], None
+        mp = re.search(r"(\d\s?\d\s?/\s?\d\s?\d)\s*$", desc)
+        if mp:
+            parc, desc = junta(mp[1]), desc[:mp.start()]
+        l = _linha(_dia(int(md[1] + md[2]), int(md[3] + md[4]), vence), desc, _valor(junta(val).rstrip(".")), final, parcela=parc)
+        pagos |= l["tipo"] == "pagamento"
+        out.append(l)
+    if not pagos:  # layout em que o pagamento só aparece no resumo da primeira página
+        for _p, _x, _y, t in plano:
+            m = re.search(r"Pagamento efetuado em (\d{2}/\d{2}/\d{4})\s+(-\s?[\d.]+,\d{2})", t)
+            if m:
+                out.append(_linha(_iso(m[1]), "Pagamento efetuado", _valor(junta(m[2])), "", tipo="pagamento"))
+    # encargos do rotativo (pagou menos que o total): às vezes só vêm no resumo da primeira página, sem lançamento.
+    # Entram só se faltarem exatamente eles para a conta fechar (quando vêm como lançamento, já estão nas linhas).
+    enc = _achar(plano, r"Encargos \(financiamento[^)]*\)\s+(-?[\d., ]+,\s?\d\s?\d)")
+    if enc and total and vence:
+        falta = round(_valor(junta(total)) - (_valor(junta(anterior)) if anterior else 0) - sum(l["valor"] for l in out), 2)
+        if _valor(junta(enc)) > 0 and abs(falta - _valor(junta(enc))) < 0.011:
+            out.append(_linha(_iso(junta(emis)) if emis else vence, "Encargos (financiamento + moratório)", _valor(junta(enc)), "", tipo="juros"))
     return {"vence": vence, "inicio": None, "fecha": _iso(junta(emis)) if emis else None,
             "total": _valor(total) if total else None, "anterior": _valor(anterior) if anterior else None,
-            "linhas": out, "subtotais": {}}
+            "linhas": out, "subtotais": subtot}
 
 
 # ---------------------------------------------------------------- ajudantes dos leitores novos
@@ -353,7 +445,7 @@ def _ler_bradescard(L) -> dict[str, Any]:
     parcela "(02/09)" no fim da descrição; o final vem no cabeçalho do cartão ("1234.56**.****.0000")."""
     vence = _primeira_data(L)
     total = _achar(L, rf"^\(=\) Total\s+R\$\s*({_VALOR})")
-    anterior = _achar(L, rf"^Saldo anterior\s+R\$\s*({_VALOR})")
+    anterior = _achar(L, rf"^Saldo anterior\s+R\$\s*({_VALOR}\s*-?)")  # "R$ 12,34-": saldo a favor (crédito)
     fecha = _primeira_data(L, 2)  # "Limites · Disponível em: 24/06/2026": dia do fechamento
     out, final = [], ""
     for p, x, _y, t in L:
@@ -372,8 +464,11 @@ def _ler_bradescard(L) -> dict[str, Any]:
         if mp:
             parc, desc = mp[1], desc[:mp.start()]
         out.append(_linha(_dia(int(m[1]), int(m[2]), vence), desc, _valor(m[4]) * (-1 if m[5] else 1), final, parcela=parc))
+    ant = None
+    if anterior:
+        ant = _valor(anterior.rstrip(" -")) * (-1 if anterior.rstrip().endswith("-") else 1)
     return {"vence": vence, "inicio": None, "fecha": fecha, "total": _valor(total) if total else None,
-            "anterior": _valor(anterior) if anterior else None, "linhas": out, "subtotais": {}}
+            "anterior": ant, "linhas": out, "subtotais": {}}
 
 
 # ---------------------------------------------------------------- BRB (página deitada)
@@ -389,6 +484,9 @@ def _ler_brb(L) -> dict[str, Any]:
                 grupos.append([p, x, [(y, t.strip())]])
         return [(p, [t for _y, t in sorted(c, key=lambda c: -c[0]) if t]) for p, _x, c in grupos]
 
+    em_pe = _brb_linhas_em_pe(L)
+    if any(re.search(r"O total da sua fatura.*Com vencimento", t) for _p, _y, _x, t in em_pe):
+        return _ler_brb_em_pe(em_pe)
     vence = _primeira_data(L)
     total = _depois(L, r"O total da sua fatura", rf"R\$\s*({_VALOR})", 1)
     resumo = {}
@@ -421,6 +519,62 @@ def _ler_brb(L) -> dict[str, Any]:
                           parcela=f"{int(mp[1]):02d}/{int(mp[2]):02d}" if mp else None, usd=_valor(nums[0]) if nums else None))
     return {"vence": vence, "inicio": None, "fecha": None, "total": _valor(total) if total else None,
             "anterior": anterior, "linhas": out, "subtotais": subtot, "sub_conta": lambda l: l["valor"] > 0}  # "Total desse cartão": sem os créditos
+
+
+def _brb_linhas_em_pe(L):
+    """Página em pé: junta os pedaços da mesma altura numa linha (o PDF às vezes repete o texto em negrito: sai uma vez)."""
+    vistos, unicos = set(), []
+    for p, x, y, t in L:
+        k = (p, round(x), round(y), t.strip())
+        if k not in vistos and t.strip():
+            vistos.add(k)
+            unicos.append([p, x, y, t])
+    return _por_altura(unicos, tol=3.5)
+
+
+def _ler_brb_em_pe(R) -> dict[str, Any]:
+    """BRB com a página em pé (faturas mais antigas): cada lançamento numa linha só ("05/12 OBRIGADO PELO PAGAMENTO
+    R$ 100,00−", "30/10 LOJA XParcela Lojista Visa Parc.2/10 R$ 12,34+"); o cartão abre em "0000**.******.1234 …
+    Total desse cartão: R$ X". O total e o vencimento vêm na linha de baixo dos rótulos do topo."""
+    vence = total = None
+    for i, (_p, _y, _x, t) in enumerate(R):
+        if re.search(r"O total da sua fatura.*Com vencimento", t) and i + 1 < len(R):
+            prox = R[i + 1][3]
+            mt, md = re.search(rf"R\$\s*({_VALOR})", prox), re.search(r"\d{2}/\d{2}/\d{4}", prox)
+            total, vence = (mt[1] if mt else None), (_iso(md[0]) if md else None)
+            break
+    resumo = {}
+    for _p, _y, _x, t in R:
+        for rot in ("Pagamentos", "Compras Nacionais", "Compras Internacionais"):
+            if (m := re.search(rf"(?:^|\s){rot}\s+R\$\s*({_VALOR})", t)):
+                resumo.setdefault(rot, _valor(m[1]))
+    anterior = None
+    if total and len(resumo) == 3:
+        anterior = round(_valor(total) + resumo["Pagamentos"] - resumo["Compras Nacionais"] - resumo["Compras Internacionais"], 2)
+    out, subtot, final = [], {}, ""
+    for p, _y, _x, t in R:
+        if p < 2 or not vence:
+            continue
+        t = re.sub(r"\s+", " ", t).strip()
+        m = re.search(r"\d{4}[.*]+\*{4,}[.*]*\.(\d{4})", t)  # 0000**.******.1234 ou 0000.****.****.1234
+        if m:
+            final = m[1]
+            if (mt := re.search(rf"Total desse cart[ãa]o:\s*R\$\s*({_VALOR})", t)):
+                subtot[final] = _valor(mt[1])
+            continue
+        m = re.fullmatch(rf"(\d{{2}})/(\d{{2}}) (.+?) R\$\s*({_VALOR})\s*([+−-])", t)
+        if not m:
+            continue
+        desc = m[3]
+        mp = re.search(r"Parc\.\s*(\d+)/(\d+)", desc)
+        usd = re.findall(rf"(?<!\S)({_VALOR})(?!\S)", desc)  # compra de fora: US$ e cotação antes do R$
+        desc = re.split(r"Parcela Lojista|Parcelad[oa]|Compra a Vista|Compra Parcelada|Saque", desc)[0]
+        desc = re.sub(rf"(?<!\S){_VALOR}(?!\S)", "", desc)
+        dd, mm = int(m[1]), int(m[2])
+        out.append(_linha(_dia(dd, mm, vence), desc, _valor(m[4]) * (-1 if m[5] in "−-" else 1), final,
+                          parcela=f"{int(mp[1]):02d}/{int(mp[2]):02d}" if mp else None, usd=_valor(usd[0]) if usd else None))
+    return {"vence": vence, "inicio": None, "fecha": None, "total": _valor(total) if total else None,
+            "anterior": anterior, "linhas": out, "subtotais": subtot, "sub_conta": lambda l: l["valor"] > 0}
 
 
 # ---------------------------------------------------------------- BTG Pactual
@@ -457,7 +611,10 @@ def _ler_btg(L) -> dict[str, Any]:
         m = re.fullmatch(rf"(\d{{2}}) ([A-Za-zçÇ]{{3}})\s+(.+?)\s+(-\s*)?R\$\s*({_VALOR})", t)
         if not m or not vence or _sem_acento(m[2]).upper()[:3] not in MESES:
             continue
-        final = next((f for pp, yy, f in sorted(cabecas, key=lambda c: c[1]) if pp == p and yy > y), "")
+        # o cartão do bloco: o cabeçalho mais perto acima, na mesma página; página que só continua o bloco (sem
+        # cabeçalho acima) fica com o último cartão aberto nas páginas de antes
+        acima = [(pp, -yy, f) for pp, yy, f in cabecas if pp < p or (pp == p and yy > y)]
+        final = max(acima)[2] if acima else ""
         desc, parc = m[3], None
         mp = re.search(r"\((\d{1,2})/(\d{1,2})\)$", desc)
         if mp:
@@ -649,10 +806,18 @@ def _ano_das_parcelas(f: dict[str, Any]) -> None:
     """Parcela k/n traz a data da compra original, que é de uns k-1 meses antes: "27/05 ... 12/12" na fatura de
     maio/2026 é uma compra de maio/2025 (só pelo mês, ficaria 2026)."""
     v = date.fromisoformat(f["vence"])
+    # antecipação: várias parcelas da mesma compra na mesma fatura (mesma data, descrição e total de parcelas). A compra
+    # é uma só, então o ano sai da MENOR parcela do grupo (a 1ª antecipada); cada uma recuar sozinha punha a mesma
+    # compra em anos diferentes
+    menor: dict[tuple, int] = {}
+    for l in f["linhas"]:
+        if l.get("parcela"):
+            g = (l["data"], l["descricao"], l["parcela"].split("/")[1])
+            menor[g] = min(menor.get(g, 99), int(l["parcela"].split("/")[0]))
     for l in f["linhas"]:
         if not l.get("parcela"):
             continue
-        k = int(l["parcela"].split("/")[0])
+        k = menor[(l["data"], l["descricao"], l["parcela"].split("/")[1])]
         d = date.fromisoformat(l["data"])
         while k > 1 and (v.year - d.year) * 12 + v.month - d.month < k - 1:
             d = d.replace(year=d.year - 1, day=min(d.day, 28) if d.month == 2 else d.day)
@@ -667,7 +832,7 @@ def ler_fatura(linhas_pdf) -> dict[str, Any]:
     texto = "\n".join(t for *_r, t in linhas_pdf)
     for banco, rx, leitor in LEITORES:
         if re.search(rx, texto):
-            f = leitor(com_tab if leitor in (_ler_bradesco_oficial, _ler_btg) else linhas_pdf)
+            f = leitor(com_tab if leitor in (_ler_bradesco_oficial, _ler_btg, _ler_itau) else linhas_pdf)
             break
     else:
         raise Falha("Não reconheci essa fatura. Hoje leio Santander, Banco do Brasil, Bradesco (e Bradescard), Itaú, BRB, BTG, Caixa, Inter e Nubank.")
@@ -682,12 +847,17 @@ def ler_fatura(linhas_pdf) -> dict[str, Any]:
                         "esperado": round((f.get("total") or 0) - (f.get("anterior") or 0), 2)}
     f["conferencia"]["bate"] = abs(f["conferencia"]["esperado"] - soma) < 0.011
     por_final: dict[str, float] = {}
-    conta = f.pop("sub_conta", lambda l: True)
+    tudo_final: dict[str, float] = {}
+    conta = f.pop("sub_conta", lambda l: True)  # o subtotal de alguns bancos não desconta os créditos (estorno, cashback)
     for l in f["linhas"]:
-        if l["final"] and conta(l):
-            por_final[l["final"]] = round(por_final.get(l["final"], 0) + l["valor"], 2)
-    f["conferencia"]["finais"] = {k: {"linhas": por_final.get(k, 0.0), "fatura": v,
-                                      "bate": abs(por_final.get(k, 0.0) - v) < 0.011} for k, v in f.pop("subtotais").items()}
+        if l["final"]:
+            tudo_final[l["final"]] = round(tudo_final.get(l["final"], 0) + l["valor"], 2)
+            if conta(l):
+                por_final[l["final"]] = round(por_final.get(l["final"], 0) + l["valor"], 2)
+    f["conferencia"]["finais"] = {}
+    for k, v in f.pop("subtotais").items():  # vale o jeito que bater: com ou sem os créditos (o banco muda de layout)
+        s = por_final.get(k, 0.0) if abs(por_final.get(k, 0.0) - v) < 0.011 else tudo_final.get(k, 0.0)
+        f["conferencia"]["finais"][k] = {"linhas": s, "fatura": v, "bate": abs(s - v) < 0.011}
     _sem_pessoal(f, linhas_pdf, titulares)
     return f
 

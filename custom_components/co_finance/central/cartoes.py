@@ -127,7 +127,9 @@ def faturas(db: dict[str, Any]) -> list[dict[str, Any]]:
             continue
         f = grupos.setdefault(fid, {"id": fid, "tipo": "fatura", "cartao": fb["cartao"], "fecha": fb.get("fecha") or fb["vence"],
                                     "vence": fb["vence"], "total": 0.0, "itens": []})
-        f["estimado"], f["total"] = f["total"], fb["total"]
+        f["estimado"], f["total"] = f["total"], max(fb["total"], 0.0)
+        if fb["total"] < -0.004:  # saldo a favor (pagou a mais, estorno): não há o que pagar; o crédito abate a próxima
+            f["saldo_credor"] = round(-fb["total"], 2)
         f["banco"] = {"linhas": len(fb["linhas"]), "lida_em": fb.get("lida_em")}
     out = []
     for f in sorted(grupos.values(), key=lambda f: f["vence"]):
