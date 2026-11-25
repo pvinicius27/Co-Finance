@@ -1291,7 +1291,7 @@ function instalarFinancas(Classe) {
     if (!F) return `<div class="fin"><div class="vazio">Carregando…</div></div>`;
     const cartoes = (F.cartoes || []).map((k) => `<button class="fcart${this._fCartEd === k.id ? " on" : ""}${k.ativo === false ? " inativo" : ""}" data-a="f-cart-ed" data-k="${this._e(k.id)}">💳 <b>${this._e(this._finNomeCartao(k))}</b>${k.visual?.produto ? ` <small>${this._e(k.visual.produto)}</small>` : ""} ${this._e([k.bandeira, k.categoria].filter(Boolean).join(" "))} · ${this._e(k.dono || "")} · ${k.vale ? "vale" : k.credito === false ? "débito" : `${k.fecha ? `fecha ${k.fecha} · vence ${k.vence}` : "crédito sem dias"}${k.debito ? " · crédito e débito" : ""}`}${k.ativo === false ? " · fora de uso" : ""} ✎</button>`).join("")
       + `<button class="fcart novo${this._fCartEd === "novo" ? " on" : ""}" data-a="f-cart-ed" data-k="novo">+ Novo cartão</button>`;
-    const deitar = typeof this._v3Deitar === "function" ? `<label class="fdeitar"><input type="checkbox" data-a="f-deitar" ${this._v3Deitar() ? "checked" : ""}><span><b>Mostrar todos os cartões deitados</b><small>Os cartões em pé aparecem deitados, como os outros; o valor fica embaixo, no centro. Vale neste aparelho.</small></span></label>` : "";
+    const deitar = typeof this._v3Deitar === "function" ? `<label class="fdeitar"><input type="checkbox" data-a="f-deitar" ${this._v3Deitar() ? "checked" : ""}><span><b>Mostrar todos os cartões na horizontal</b><small>Os cartões em pé aparecem na horizontal, como os outros; o valor fica embaixo, no centro. Vale neste aparelho.</small></span></label>` : "";
     const cartoesHtml = `<div class="fcard"><div class="fhd"><h2>Cartões</h2><small>controle desde ${this._dataCurta(F.marco + "T12:00")}</small></div><div class="fcarts">${cartoes}</div>${deitar}${this._finFormCartao()}
           <div class="fs" style="margin-top:8px">Toque num cartão para editar. Compra até o dia do fechamento entra na fatura que fecha no mês; depois, na seguinte. Compra no próprio dia do fechamento vai para a seguinte. Parcelas caem nas faturas seguintes; os centavos que sobram ficam na 1ª.</div></div>
       </div>`;
@@ -8895,7 +8895,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.19";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.20";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
@@ -8907,6 +8907,7 @@ const V3_MENU = [["inicio", "Resumo", "grade"], ["contas", "A pagar", "cartao"],
 // ícones de traço (24×24); a engrenagem é cheia
 const V3_IC = {
   atualizar: '<path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/>',
+  hoje: '<path d="M4 12a8 8 0 1 0 2.34-5.66"/><path d="M4 4v5h5"/>',
   grade: '<rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/>',
   cartao: '<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19"/>',
   areas: '<circle cx="7" cy="17" r="3.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.2"/><path d="M12 3.5l4 7H8z"/>',
@@ -9141,23 +9142,27 @@ class ComprasV3Card extends BaseV2 {
     const aba = this._v2Aba, largo = !!this._v2Largo, nAv = this._pendencias().total, modo = this._fModo;
     const titulo = aba === "config" ? "Configurações" : (V3_MENU.find(([k]) => k === aba) || V3_MENU[0])[1];
     const pessoas = ["Todos", ...(this._dados.compradores || [])];
-    const quem = `<div class="v3-seg" role="group" aria-label="De quem">${pessoas.map((p) => `<button class="${this._fQuem === p ? "on" : ""}" aria-pressed="${this._fQuem === p}" data-a="f-quem" data-k="${this._e(p)}">${p === "Todos" ? "" : `<i style="background:${this._cor(p)}"></i>`}${this._e(p)}</button>`).join("")}</div>`;
+    const quem = `<div class="v3-seg" role="group" aria-label="De quem">${pessoas.map((p) => `<button class="${this._fQuem === p ? "on" : ""}" aria-pressed="${this._fQuem === p}" data-a="f-quem" data-k="${this._e(p)}"${p === "Todos" ? "" : ` aria-label="${this._e(p)}" style="--qc:${this._cor(p)}"`}>${p === "Todos" ? "Todos" : `<i></i><span class="v3-qn">${this._e(p)}</span><b class="v3-qi" aria-hidden="true">${this._e(String(p).trim().charAt(0).toUpperCase())}</b>`}</button>`).join("")}</div>`;
     const [ano, n] = this._mes.split("-"), mesTxt = `${V3_MESES[Number(n) - 1][0].toUpperCase()}${V3_MESES[Number(n) - 1].slice(1, 3)} ${ano}`;
     const hojeM = this._mesDe(new Date()), anoHoje = hojeM.slice(0, 4), anoMin = this._finAnos().slice(-1)[0] || anoHoje;
     // em Ano, tocar em Mês fica no mesmo ano (o mesmo mês; dezembro, ou o mês atual, se ainda não chegou)
     const mesNoAno = modo === "ano" ? (`${this._fAno}-${n}` <= hojeM ? `${this._fAno}-${n}` : this._fAno === anoHoje ? hojeM : `${this._fAno}-12`) : this._mes;
     const aberto = (v) => !!this._v2Per && (this._v2PerVista || modo) === v;
-    const per = `<div class="v3-seg v-perw" role="group" aria-label="Período">
-        ${modo === "mes" ? `<button class="v3-seta" data-a="f-mes" data-k="-1" aria-label="Mês anterior">${V3_SVG("esq")}</button>
-          <button class="on" data-a="v3-per" data-k="mes" aria-expanded="${aberto("mes")}" title="Escolher o mês">${mesTxt}</button>
-          <button class="v3-seta" data-a="f-mes" data-k="1" aria-label="Próximo mês" ${this._mes >= hojeM ? "disabled" : ""}>${V3_SVG("dir")}</button>`
-        : `<button data-a="v2-per-mes" data-k="${mesNoAno}">Mês</button>`}
-        ${modo === "ano" ? `<button class="v3-seta" data-a="v2-ano-passo" data-k="-1" aria-label="Ano anterior" ${this._fAno <= anoMin ? "disabled" : ""}>${V3_SVG("esq")}</button>
-          <button class="on" data-a="v3-per" data-k="ano" aria-expanded="${aberto("ano")}" title="Escolher o ano">${this._fAno}</button>
-          <button class="v3-seta" data-a="v2-ano-passo" data-k="1" aria-label="Próximo ano" ${this._fAno >= anoHoje ? "disabled" : ""}>${V3_SVG("dir")}</button>`
-        : `<button data-a="v2-per-anoint" data-k="${this._mes.slice(0, 4)}">Ano</button>`}
-        <button class="${modo === "tudo" ? "on" : ""}" data-a="v2-per-tudo">Tudo</button>
-        ${this._v2Per ? this._v2Seletor() : ""}</div>`;
+    // o período num botão só: ‹ Novembro 2026 ›. As setas andam um mês (em Ano, um ano); tocar no nome abre a escolha, onde
+    // tocar no ano troca para a lista de anos (escolher um = o ano inteiro) e o rodapé leva ao ano inteiro ou a todo o período.
+    // "Hoje" só aparece quando se está longe do mês (ou do ano) de hoje.
+    const nomeM = V3_MESES[Number(n) - 1], mesLbl = `${nomeM[0].toUpperCase()}${largo ? nomeM.slice(1) : nomeM.slice(1, 3)} ${ano}`;
+    const pop = this._v2Per ? this._v3Seletor() : "";
+    const seta = (acao, d, rot, off) => `<button class="v3-seta" data-a="${acao}" data-k="${d}" aria-label="${rot}" ${off ? "disabled" : ""}>${V3_SVG(d < 0 ? "esq" : "dir")}</button>`;
+    const nome = (k, txt, tit) => `<button class="on" data-a="v3-per" data-k="${k}" aria-expanded="${!!this._v2Per}" aria-haspopup="dialog" title="${tit}">${txt}</button>`;
+    const anda = `<div class="v3-seg v3-anda v-perw" role="group" aria-label="Período">${
+      modo === "mes" ? seta("f-mes", -1, "Mês anterior", false) + nome("mes", mesLbl, "Escolher o mês, o ano ou todo o período") + seta("f-mes", 1, "Próximo mês", this._mes >= hojeM)
+      : modo === "ano" ? seta("v2-ano-passo", -1, "Ano anterior", this._fAno <= anoMin) + nome("ano", `Ano ${this._fAno}`, "Escolher o ano, um mês ou todo o período") + seta("v2-ano-passo", 1, "Próximo ano", this._fAno >= anoHoje)
+      : nome("ano", "Todo o período", "Escolher um mês ou um ano")}${pop}</div>`;
+    const hojeB = modo === "mes" && this._mes !== hojeM ? `<button class="v3-hoje" data-a="v2-per-mes" data-k="${hojeM}" title="Voltar para o mês de hoje" aria-label="Hoje">${V3_SVG("hoje")}<span>Hoje</span></button>`
+      : modo === "ano" && String(this._fAno) !== anoHoje ? `<button class="v3-hoje" data-a="v2-per-anoint" data-k="${anoHoje}" title="Voltar para o ano de hoje" aria-label="Hoje">${V3_SVG("hoje")}<span>Hoje</span></button>` : "";
+    void mesNoAno;
+    const per = `<div class="v3-perg">${anda}${hojeB}</div>`;
     const esc = this._v3Escuro();
     const acoes = `<div class="v3-acoes">
         <button class="v3-ib" data-a="v3-escuro" aria-label="${esc ? "Tema claro" : "Tema escuro"}" title="${esc ? "Tema claro" : "Tema escuro"}">${V3_SVG(esc ? "sol" : "lua")}</button>
@@ -9173,6 +9178,33 @@ class ComprasV3Card extends BaseV2 {
     const nav = largo ? "" : `<nav class="v3-abas" aria-label="Seções">${V3_MENU.map(([k, t, ic]) => `<button class="${aba === k ? "on" : ""}" aria-current="${aba === k ? "page" : "false"}" data-a="v3-menu" data-k="${k}">${V3_SVG(ic)}<span>${t}</span></button>`).join("")}</nav>`;
     const filtros = aba === "config" ? "" : `<div class="v3-filtros">${quem}${per}</div>`;
     return `<header class="v3-topo"><div class="v3-tit"><h1>${titulo}</h1>${acoes}</div>${nav}${filtros}</header>`;
+  }
+
+  // a janela do período: os meses de um ano (tocar no ano mostra a lista de anos) e, no rodapé, o ano inteiro e todo o período
+  _v3Seletor() {
+    const hoje = this._mesDe(new Date()), anoHoje = hoje.slice(0, 4), modo = this._fModo;
+    const anoSel = this._v2PerAno || (modo === "ano" ? this._fAno : this._mes.slice(0, 4));
+    const anos = this._finAnos(), menor = anos[anos.length - 1] || anoSel;
+    const vista = this._v2PerVista === "anos" ? "anos" : "mes";
+    const tudo = `<button class="${modo === "tudo" ? "on" : ""}" data-a="v2-per-tudo">Todo o período</button>`;
+    if (vista === "anos") {
+      const tot = this._finSomaPor(this._finLinhas().filter((l) => this._finDaPessoa(l)), (l) => String(l.c.emissao).slice(0, 4));
+      return `<div class="v-pop v3-pop-per" role="dialog" aria-label="Escolher o ano">
+        <div class="v3-pop-cab"><button class="v3-pop-anob aberto" data-a="v2-per-vista" data-k="mes" aria-label="Voltar aos meses de ${anoSel}">${anoSel}${V3_SVG("dir")}</button><small>Toque num ano para ver ele inteiro</small></div>
+        <div class="v-pop-anos">${[...anos].map((a) => `<button class="${modo === "ano" && this._fAno === a ? "on" : ""}" data-a="v2-per-anoint" data-k="${a}"><b>${a}</b><small>${this._finCurto(tot[a] || 0)}</small></button>`).join("")}</div>
+        <div class="v3-pop-pe">${tudo}</div></div>`;
+    }
+    const comGasto = new Set(this._finLinhas().map((l) => (l.c.emissao || "").slice(0, 7)));
+    const meses = V3_MESES.map((nm, i) => {
+      const mm = `${anoSel}-${String(i + 1).padStart(2, "0")}`, on = modo === "mes" && this._mes === mm;
+      return `<button class="${on ? "on" : ""} ${comGasto.has(mm) ? "tem" : ""}" data-a="v2-per-mes" data-k="${mm}" ${mm > hoje ? "disabled" : ""} aria-pressed="${on}">${nm.slice(0, 3)}</button>`;
+    }).join("");
+    return `<div class="v-pop v3-pop-per" role="dialog" aria-label="Escolher o mês">
+      <div class="v-pop-ano"><button data-a="v2-per-ano" data-k="-1" aria-label="Ano anterior" ${anoSel <= menor ? "disabled" : ""}>${V3_SVG("esq")}</button>
+        <button class="v3-pop-anob" data-a="v2-per-vista" data-k="anos" aria-label="Escolher o ano (ver o ano inteiro)">${anoSel}${V3_SVG("dir")}</button>
+        <button data-a="v2-per-ano" data-k="1" aria-label="Próximo ano" ${anoSel >= anoHoje ? "disabled" : ""}>${V3_SVG("dir")}</button></div>
+      <div class="v-pop-meses">${meses}</div>
+      <div class="v3-pop-pe"><button class="${modo === "ano" && this._fAno === anoSel ? "on" : ""}" data-a="v2-per-anoint" data-k="${anoSel}">Ano ${anoSel} inteiro</button>${tudo}</div></div>`;
   }
 
   _v3Corpo(d) {
@@ -9330,7 +9362,7 @@ class ComprasV3Card extends BaseV2 {
     const heroi = `<div class="v3-rks">${kpiC}${kpiP}</div>`;  // devemos / a receber: só no sino
     const alerta = this._v3Alerta();
     const vazio = modo === "mes" && !itens.length;
-    const cal = vazio ? `<section class="v3-card v3-cal"><div class="v3-hd"><h2>Compras de ${V3_MESES[Number(this._mes.slice(5, 7)) - 1]} por dia</h2></div>
+    const cal = vazio ? `<section class="v3-card v3-cal"><div class="v3-hd"><h2>Compras em ${this._v3MesT(this._mes)}</h2></div>
         <div class="v3-vaziol"><span>Nenhuma compra lançada em ${V3_MESES[Number(this._mes.slice(5, 7)) - 1]}${pessoa ? ` de ${this._e(pessoa)}` : ""} ainda. Lance pela nota, pelo Apple Pay ou à mão.</span>
         ${this._mes === this._mesDe(new Date()) ? `<button class="v3-bt prim" data-a="v2-mais">${V3_SVG("mais")}Lançar</button>` : ""}</div></section>`
       : modo === "mes" ? this._v3Calendario(lst, idx) : this._v3MesAMes(true);
@@ -9342,13 +9374,13 @@ class ComprasV3Card extends BaseV2 {
     const listaPop = this._v3ListaK ? this._v3ListaPop(itensC, idx) : "";
     if (!this._v2Largo) return `<div class="v3-resumo">${alerta}${heroi}${futuro}${cal}${cartoes}${onde}${modo === "mes" ? "" : ultimasV}${mes}${modo === "mes" ? "" : pagos}${listaPop}</div>`;
     if (modo !== "mes") return `<div class="v3-resumo larga">${alerta}<div class="v3-grade v3-alinha"><div class="v3-col">${heroi}${cal}</div><div class="v3-col">${cartoes}</div>
-      <div class="v3-col">${onde}${pagos}</div><div class="v3-col">${ultimas}</div></div></div>`;
+      <div class="v3-col">${onde}${pagos}</div><div class="v3-col">${ultimas}</div></div>${listaPop}</div>`;  // a janela da lista (No cartão, Faturas…) vale também em Ano e Tudo
     // mês de hoje: à direita do topo, os Próximos pagamentos; outro mês: as últimas compras dele
     const ult6 = vazio ? "" : `<section class="v3-card v3-ult"><div class="v3-hd"><h2>Últimas compras</h2><button class="v3-link" data-a="v3-menu" data-k="compras">Todas ${V3_SVG("dir")}</button></div>
       ${this._v3Lista(itens.slice(0, 6), idx)}</section>`;
     const sk = (h, alt) => `<section class="v3-card v3-sk${alt}"><div class="v3-hd"><h2>${h}</h2></div><i class="v3-skb" style="width:45%;height:28px"></i><i class="v3-skb" style="width:100%;height:60px;margin-top:14px"></i><i class="v3-skb" style="width:100%;flex:1;min-height:60px;margin-top:14px"></i></section>`;
     const direita = futuro || (F ? ult6 || `<section class="v3-card"></section>` : sk("Próximos pagamentos", " v3-prx"));
-    const cartoesV = F ? cartoes : sk("Cartões – Faturas", " v3-carts");
+    const cartoesV = F ? cartoes : sk("Cartões – Fatura", " v3-carts");
     if (this._v3Layout() === "B") return `<div class="v3-resumo larga lay-b">${alerta}${heroi}${direita}<div class="v3-rf2 v3-rf2b">${cal}${cartoesV}</div><div class="v3-par">${onde}${mes}</div>${listaPop}</div>`;
     return `<div class="v3-resumo larga">${alerta}<div class="v3-rf1${futuro || !F ? "" : " solto"}">${heroi}${direita}</div><div class="v3-rf2">${cartoesV}${cal}</div>
       <div class="v3-par">${onde}${mes}</div>${listaPop}</div>`;
@@ -9581,7 +9613,7 @@ class ComprasV3Card extends BaseV2 {
     const ps = [...new Set(lst.map((l) => l.c.quem))].filter(Boolean);
     const doDia = sel ? this._v3Itens(lst.filter((l) => String(l.c.emissao).slice(0, 10) === sel)) : [];
     const dt = sel ? new Date(sel + "T12:00") : null;
-    return `<section class="v3-card v3-cal"><div class="v3-hd"><h2>Compras de ${V3_MESES[m - 1]} por dia</h2>
+    return `<section class="v3-card v3-cal"><div class="v3-hd"><h2>Compras em ${this._v3MesT(this._mes)}</h2>
         <span class="v3-leg">${ps.map((p) => `<span><i style="background:${this._cor(p)}"></i>${this._e(p)}</span>`).join("")}</span></div>
       <div class="v3-sem">${V3_SEMANA.map((s) => `<span>${s}</span>`).join("")}</div><div class="v3-dias">${cel.join("")}</div>
       ${sel && this._v3DiaPop ? `<div class="v3-pop" role="dialog" aria-modal="true" aria-label="Compras de ${dt.getDate()} de ${V3_MESES[dt.getMonth()]}"><div class="v3-pop-f" data-a="v3-dia-fechar"></div>
@@ -9641,7 +9673,7 @@ class ComprasV3Card extends BaseV2 {
     const mesN = (s) => V3_MESES[Number(s.slice(5, 7)) - 1], dm = (s) => `${s.slice(8, 10)}/${s.slice(5, 7)}`;
     const x = sel?.x, k = sel?.k;
     if (this._fModo !== "mes" || !x || k?.credito === false || String(x.id).startsWith("v2cart:")) return { titulo: "Cartões", linhas: [] };
-    const titulo = `Cartões – Faturas de ${mesN(this._mes)}`;
+    const titulo = `Cartões – Fatura de ${this._v3MesT(this._mes)}`;
     const doCartao = faturas.filter((f) => f.cartao === k.id).sort((a, b) => a.vence.localeCompare(b.vence));
     const linhas = [];
     if (sel.antes) linhas.push(["info", `A fatura de ${dm(sel.antes.vence)} (<b>${this._brl(sel.antes.total)}</b>) já foi paga em ${dm(String(sel.antes.pago?.em || sel.antes.vence).slice(0, 10))}. Esta é a próxima.`]);
@@ -9993,7 +10025,7 @@ class ComprasV3Card extends BaseV2 {
     else if (fundoN) corpo = `<img class="v3f-arte" src="${V3_LOGO(fundoN)}" alt="" onerror="this.remove()">${corpo.replace(/^\s*<svg class="v3f-arte"[\s\S]*?<\/svg>/, "")}`;
     let cls = `fcface v3f ${foto ? "foto" : b}${CARTOES.porPecas?.has(b) ? " pecas" : ""}${!foto && CARTOES.verticais.has(b) ? " vert" : foto && CARTOES.fotosEmPe.has(k.modelo) ? " vert fotov" : ""}${c.preto ? " preto" : ""}${ouro ? " ouro" : ""}`, est = this._finCartaoEstilo(c), nm = this._finNomeCartao(k);
     if (/ vert\b/.test(cls) && this._v3Deitar()) {
-      // "Mostrar todos os cartões deitados" (⚙ › Cartões): o desenho em pé é o mesmo, só girado; logo e bandeira ficam de lado, como na mão
+      // "Mostrar todos os cartões na horizontal" (⚙ › Cartões): o desenho em pé é o mesmo, só girado; logo e bandeira ficam de lado, como na mão
       const dentro = `<span class="v3f-gira" aria-hidden="true"><span class="${cls}" style="${est}">${corpo.split(info).join("")}</span></span>`;
       cls = cls.replace(/ vert\b| fotov\b/g, "") + " deitado";
       corpo = dentro + info;
@@ -10011,7 +10043,10 @@ class ComprasV3Card extends BaseV2 {
     return this._fLayout;
   }
 
-  // ⚙ › Cartões › "Mostrar todos os cartões deitados": vale neste aparelho (guardado no navegador)
+  // nome do mês com inicial maiúscula, para os títulos dos quadros ("Compras em Março")
+  _v3MesT(mes) { const n = V3_MESES[Number(String(mes).slice(5, 7)) - 1] || ""; return n.charAt(0).toUpperCase() + n.slice(1); }
+
+  // ⚙ › Cartões › "Mostrar todos os cartões na horizontal": vale neste aparelho (guardado no navegador)
   _v3Deitar() {
     if (this._fDeitar === undefined) { try { this._fDeitar = localStorage.getItem("co-finance-deitados") === "1"; } catch (_) { this._fDeitar = false; } }
     return this._fDeitar;
@@ -10318,7 +10353,7 @@ class ComprasV3Card extends BaseV2 {
 
   async _clique(ev, el) {
     const acao = el.getAttribute("data-a");
-    if ((acao === "f-mes" || acao === "f-quem") && !this._v2Largo) this._v3Parado = true;  // celular: setas do mês e trocar a pessoa não mexem na tela (fica onde estava)
+    if (acao === "f-quem" || (acao === "f-mes" && !this._v2Largo)) this._v3Parado = true;  // trocar a pessoa (celular e computador) e as setas do mês no celular: a tela fica onde estava
     else if (["f-quem", "f-modo", "f-mes", "f-vai-mes", "f-vai-ano"].includes(acao)) this._v3IrTopo = true;  // pessoa/período: começa do alto
     this._v3Antes = new Set(this._v3Abriveis().map((x) => this._v3Assin(x))); this._v3AntesEm = Date.now(); this._v3AntesAba = this._abaAtual?.();
     const a = el.getAttribute("data-a"), k = el.getAttribute("data-k");
@@ -10342,8 +10377,7 @@ class ComprasV3Card extends BaseV2 {
       this._v3Anos = l; this._render(); return;
     }
     if (a === "v3-per") {  // tocar no mês ou no ano escolhido abre a escolha; tocar de novo fecha
-      const ab = this._v2Per && (this._v2PerVista || this._fModo) === k;
-      this._v2Per = !ab; this._v2PerVista = k; this._v2PerAno = null; this._v2Mais = false; this._render(); return;
+      this._v2Per = !this._v2Per; this._v2PerVista = this._fModo === "mes" ? "mes" : "anos"; this._v2PerAno = null; this._v2Mais = false; this._render(); return;
     }
     if (a === "v3-area") { this._v3Area = k; this._v3Sub = null; this._v3Rolar = ".v3-achip.on"; this._render(); return; }
     if (a === "v3-sub") { this._v3Sub = k || null; this._render(); return; }
@@ -10432,7 +10466,7 @@ class ComprasV3Card extends BaseV2 {
     .v3-main{min-width:0}
     /* a barra do Home Assistant fica por cima: o que gruda no topo para logo abaixo dela */
     :host{--v3-ha:calc(var(--header-height,56px) + env(safe-area-inset-top,0px))}
-    .v3-topo{position:sticky;top:var(--v3-ha);z-index:5;background:color-mix(in srgb,var(--v3-bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--v3-borda);padding:10px 22px 10px;display:grid;gap:8px}
+    .v3-topo{position:sticky;top:var(--v3-ha);z-index:5;background:var(--v3-bg);border-bottom:1px solid var(--v3-borda);padding:10px 22px 10px;display:grid;gap:8px}
     .v3-tit{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
     .v3-tit h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.01em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}  /* sem espaço, o título encurta e os botões ficam inteiros */
     .v3-tit>:not(h1){flex:none}
@@ -10445,15 +10479,29 @@ class ComprasV3Card extends BaseV2 {
     .v3-filtros{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
     .v3-seg{position:relative;display:inline-flex;align-items:center;gap:2px;background:var(--v3-mut);border-radius:999px;padding:3px}
     .v3-seg>button{border:0;background:none;border-radius:999px;padding:6px 12px;font-size:13px;color:var(--v3-mut-fg);cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:32px;white-space:nowrap}
-    .v3-seg>button i{width:8px;height:8px;border-radius:50%}
+    .v3-seg>button i{width:8px;height:8px;border-radius:50%;background:var(--qc)}.v3-qi{display:none}.v3-hoje>.v3-ic{display:none}
     .v3-seg>button.on{background:var(--v3-card);color:var(--v3-fg);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+    .v3-anda>button.on{min-width:5.2em;justify-content:center}.v3-app:not(.cel) .v3-anda>button.on{min-width:8.6em}
+    .v3-perg{display:flex;align-items:center;gap:8px}.v3-app.cel .v3-perg{gap:6px}
+    .v3 .v3-pop-anob,.v3 .v-pop-ano .v3-pop-anob{width:auto;height:auto;display:inline-flex;align-items:center;gap:4px;padding:6px 8px 6px 12px;font-size:16px;font-weight:700;border-radius:999px;background:var(--v3-mut)}.v3 .v3-pop-anob:hover{background:color-mix(in srgb,var(--v3-mut-fg) 18%,transparent)}
+    .v3-pop-anob .v3-ic{width:16px;height:16px;transform:rotate(90deg);transition:transform .15s}.v3-pop-anob.aberto .v3-ic{transform:rotate(-90deg)}
+    .v3-pop-cab{display:flex;align-items:center;justify-content:space-between;gap:8px}.v3-pop-cab small{font-size:12px;color:var(--v3-mut-fg);text-align:right}
+    .v3-pop-pe{display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid var(--v3-borda);padding-top:10px}
+    .v3 .v3-pop-pe button{flex:1;min-height:38px;padding:0 10px;font-size:13px;background:var(--v3-mut);white-space:nowrap}.v3 .v3-pop-pe button.on{background:var(--v3-fg);color:var(--v3-card)}
+    .v3-hoje{border:1px solid var(--v3-borda);background:var(--v3-card);color:var(--v3-fg);border-radius:999px;padding:0 12px;min-height:32px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none}.v3-hoje:hover{background:var(--v3-mut)}
     .v3-seg>button.v3-seta{padding:6px 4px}.v3-seg>button.v3-seta .v3-ic{width:16px;height:16px}.v3-seg>button:disabled{opacity:.35;cursor:default}
     .v3 .v-pop{top:calc(100% + 6px);left:0;background:var(--v3-card);border:1px solid var(--v3-borda);box-shadow:var(--v3-sombra)}
     .v3-pag{padding:16px 22px 32px}
     .v3-app.cel .v3-topo{padding:12px 16px 10px;background:var(--v3-bg);-webkit-backdrop-filter:none;backdrop-filter:none}
-    .v3-app.cel .v3-topo::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:calc(var(--v3-ha) + 60px);background:var(--v3-bg);pointer-events:none}  /* celular: nada aparece acima do cabeçalho preso (faixa da barra do HA / do iPhone) */.v3-app.cel .v3-pag{padding:14px 16px 32px}
+    .v3-topo::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:calc(var(--v3-ha) + 60px);background:var(--v3-bg);pointer-events:none}  /* celular: nada aparece acima do cabeçalho preso (faixa da barra do HA / do iPhone) */.v3-app.cel .v3-pag{padding:14px 16px 32px}
     .v3-app.cel .v3-tit h1{font-size:20px}
-    .v3-app.cel .v3-filtros{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}.v3-app.cel .v3-filtros::-webkit-scrollbar{display:none}
+    .v3-app.cel .v3-filtros{flex-wrap:wrap;row-gap:8px;gap:6px}  /* celular: tudo numa linha (pessoas pela inicial); se ainda não couber, o período desce inteiro */
+    .v3-app.cel .v3-seg>button[style*="--qc"]{padding:2px;min-width:0}.v3-app.cel .v3-seg>button[style*="--qc"]>i,.v3-app.cel .v3-qn{display:none}
+    .v3-app.cel .v3-qi{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--qc);color:#fff;font-size:12.5px;font-weight:700;opacity:.55}
+    .v3-app.cel .v3-seg>button.on .v3-qi{opacity:1;box-shadow:0 0 0 2px var(--v3-card),0 0 0 3.5px var(--qc)}.v3-app.cel .v3-seg>button.on[style*="--qc"]{background:none;box-shadow:none}
+    .v3-app.cel .v3-anda>button.on{min-width:0;padding:6px 7px}.v3-app.cel .v3-seg{gap:1px}.v3-app.cel .v3-seg>button:not(.on):not([style*="--qc"]):not(.v3-seta){padding:6px 9px}.v3-app.cel .v3-filtros>.v3-seg:first-child>button:first-child{padding:6px 10px}
+    .v3-app.cel .v3-hoje{width:34px;min-height:34px;padding:0;display:grid;place-items:center}.v3-app.cel .v3-hoje>span{display:none}.v3-app.cel .v3-hoje>.v3-ic{display:block;width:18px;height:18px}
+    .v3-app.cel .v3-filtros>.v3-seg:first-child{max-width:100%;overflow-x:auto;scrollbar-width:none}.v3-app.cel .v3-filtros>.v3-seg:first-child::-webkit-scrollbar{display:none}
     .v3-app.cel .v-perw{position:static}.v3-app.cel .v-pop{left:16px;right:16px}
     .v3-abas{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
     .v3-abas button{border:0;background:none;border-radius:12px;padding:6px 2px;display:grid;justify-items:center;gap:2px;font-size:11.5px;font-weight:500;color:var(--v3-mut-fg);cursor:pointer;min-height:48px}
