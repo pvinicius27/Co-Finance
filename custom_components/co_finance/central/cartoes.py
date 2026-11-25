@@ -272,12 +272,30 @@ def cartao(p: dict[str, Any]) -> dict[str, Any]:
         if cid and not k:
             raise Falha("Cartão não encontrado.")
         if p.get("apagar"):
-            if any(pg.get("cartao") == cid or (_tipo_pag(pg) == "Benefício" and (cartao_na_hora(c, pg) or {}).get("id") == cid)
-                   for c in db["compras"] for pg in (c.get("pagamentos") or []) + _pgs_fin(c)):
-                raise Falha(f"O {rotulo_cartao(k, db.get('cartoes') or [])} já tem compras. Desmarque \"Em uso\" em vez de apagar.")
+            rot = rotulo_cartao(k, db.get("cartoes") or [])
+            usa = lambda c, pg: pg.get("cartao") == cid or (_tipo_pag(pg) == "Benefício" and (cartao_na_hora(c, pg) or {}).get("id") == cid)  # noqa: E731
+            ligadas = [c for c in db["compras"] if any(usa(c, pg) for pg in (c.get("pagamentos") or []) + _pgs_fin(c))]
+            fats = [fid for fid, f in (db.get("faturas_banco") or {}).items() if f.get("cartao") == cid]
+            if ligadas and not p.get("tudo"):
+                raise Falha(f"O {rot} tem {len(ligadas)} {'compra' if len(ligadas) == 1 else 'compras'}"
+                            f"{f' e {len(fats)} fatura lida' if len(fats) == 1 else f' e {len(fats)} faturas lidas' if fats else ''}. "
+                            "Para guardar o histórico, desmarque \"Em uso\"; ou apague o cartão com tudo.")
+            if p.get("tudo"):
+                # junto com o cartão: as compras dele (só as pagas inteiras com ele), as faturas lidas e as marcas de pago
+                mistas = [c for c in ligadas if any(not usa(c, pg) for pg in _pgs_fin(c))]
+                if mistas:
+                    raise Falha(f"{len(mistas)} {'compra foi paga' if len(mistas) == 1 else 'compras foram pagas'} em parte com outra forma "
+                                f"(ex.: {nome_loja(mistas[0]['loja'])}). Ajuste o pagamento delas antes de apagar o {rot} com tudo.")
+                ids = {c["id"] for c in ligadas}
+                db["compras"] = [c for c in db["compras"] if c["id"] not in ids]
+                for fid in fats:
+                    db["faturas_banco"].pop(fid, None)
+                for chave in [x for x in (db.get("pagos") or {}) if x.split(":")[0] == cid]:
+                    db["pagos"].pop(chave)
             lst.remove(k)
-            save_db(db)
-            return {"ok": True, "status": "cartao", "id": cid, "mensagem": f"Cartão {rotulo_cartao(k, db.get('cartoes') or [])} apagado."}
+            save_db(db)  # o backup do dia (dados/backups) guarda o arquivo de antes
+            extra = f", com {len(ligadas)} {'compra' if len(ligadas) == 1 else 'compras'} e {len(fats)} {'fatura' if len(fats) == 1 else 'faturas'}" if p.get("tudo") else ""
+            return {"ok": True, "status": "cartao", "id": cid, "mensagem": f"Cartão {rot} apagado{extra}."}
         nome = norm_txt(str(p.get("nome") or ""))[:8]
         if not nome and k:
             nome = k["nome"]  # editar sem sigla: fica a que já tinha

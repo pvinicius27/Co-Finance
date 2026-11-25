@@ -1905,7 +1905,9 @@ function instalarFinancas(Classe) {
       <label>Nome para mostrar <small>(vazio: banco e nome no cartão)</small><input id="kc-apelido" type="text" maxlength="24" value="${this._e(k.apelido || "")}" placeholder="${this._e(this._finNomeCartao({ ...k, apelido: "" }) || "ex.: Bradesco Prime")}" autocomplete="off"></label>
       <label class="chk"><input type="checkbox" id="kc-ativo" ${k.ativo !== false ? "checked" : ""}> Em uso (aparece para escolher nas compras)</label>
       <div class="fpe"><button class="btn prim" data-a="f-cart-salvar">Salvar</button><button class="btn" data-a="f-cart-ed" data-k="${this._e(id)}">Cancelar</button>
-        ${id === "novo" ? "" : this._fCartApagar ? `<span class="fs">Apagar o ${this._e(this._finNomeCartao(k))}?</span><button class="btn perigo" data-a="f-cart-apagar">Apagar</button>` : `<button class="lnk perigo" data-a="f-cart-apagar">Apagar</button>`}</div>
+        ${id === "novo" ? "" : this._fCartTudo === 2 ? `<span class="fs">Apagar o ${this._e(this._finNomeCartao(k))} <b>e todas as compras e faturas dele</b>? Não dá para desfazer pela tela.</span><button class="btn perigo" data-a="f-cart-tudo">Apagar com tudo</button>`
+          : this._fCartApagar ? `<span class="fs">Apagar o ${this._e(this._finNomeCartao(k))}?</span><button class="btn perigo" data-a="f-cart-apagar">Apagar</button>` : `<button class="lnk perigo" data-a="f-cart-apagar">Apagar</button>`}</div>
+      ${this._fCartErro ? `<div class="aviso" role="status">⚠ ${this._e(this._fCartErro)}${this._fCartTudo === 1 ? ` <button class="lnk perigo" data-a="f-cart-tudo">Apagar com tudo</button>` : ""}</div>` : ""}
       <div class="fs">Débito, pré-pago e benefício (Alelo, VR…): não têm fatura (os dias ficam em branco); os gastos aparecem na pilha, mês a mês. Compra paga com benefício fica no cartão de benefício de quem comprou (o da empresa que a nota disser, ou o único da casa). Crédito sem os dias: fica só como registro, sem fatura. Mudar os dias recalcula as faturas dele.</div></div>`;
   };
 
@@ -1921,10 +1923,10 @@ function instalarFinancas(Classe) {
       <label class="fkf-par">Parou em <input data-kf="parado" type="date" value="${this._e(x.parado || "")}" max="${this._fFin?.hoje || ""}"></label></div>`;
   };
 
-  P._finSalvarCartao = async function (apagar) {
+  P._finSalvarCartao = async function (apagar, tudo) {
     const g = (id) => this.shadowRoot.getElementById(id);
     const id = this._fCartEd === "novo" ? null : this._fCartEd;
-    const p = apagar ? { acao: "cartao", id, apagar: true } : {
+    const p = apagar ? { acao: "cartao", id, apagar: true, ...(tudo ? { tudo: true } : {}) } : {
       acao: "cartao", id, nome: g("kc-nome")?.value || "", apelido: g("kc-apelido")?.value || "", categoria: g("kc-cat")?.value || "", bandeira: g("kc-band")?.value, dono: g("kc-dono")?.value,
       usam: [...this.shadowRoot.querySelectorAll("[data-kc-usa]")].filter((x) => x.checked).map((x) => x.getAttribute("data-kc-usa")),
       fecha: g("kc-fecha")?.value || "", vence: g("kc-vence")?.value || "", no_fechamento: g("kc-nf")?.value,
@@ -1936,11 +1938,16 @@ function instalarFinancas(Classe) {
     try {
       const r = await this._api(p);
       this._aviso = r.mensagem;
-      this._fCartEd = null; this._fCartApagar = false;
+      this._fCartEd = null; this._fCartApagar = false; this._fCartErro = null; this._fCartTudo = 0;
       this._fFin = await this._api({ acao: "financeiro" });
       this._fLinhasDe = null;
       this._carregar(true);
-    } catch (e) { this._aviso = "⚠ " + (e.message || e); }
+    } catch (e) {
+      const msg = String(e.message || e);
+      if (apagar) {  // o aviso aparece junto do botão (no alto da página ninguém via); com compras: a opção de apagar com tudo
+        this._fCartErro = msg; this._fCartApagar = false; this._fCartTudo = /apague o cartão com tudo/.test(msg) ? 1 : 0;
+      } else this._aviso = "⚠ " + msg;
+    }
     this._render();
   };
 
@@ -2284,7 +2291,7 @@ function instalarFinancas(Classe) {
       if (pv) pv.innerHTML = this._finKcPrevia();
       return;
     }
-    if (a === "f-cart-ed") { this._fCartEd = this._fCartEd === k ? null : k; this._fCartApagar = false; this._aviso = null; return this._render(); }
+    if (a === "f-cart-ed") { this._fCartEd = this._fCartEd === k ? null : k; this._fCartApagar = false; this._fCartErro = null; this._fCartTudo = 0; this._aviso = null; return this._render(); }
     if (a === "f-cart-salvar") return this._finSalvarCartao(false);
     if (a === "f-pes-ed") { this._fPesEd = this._fPesEd === k ? null : k; this._fPesApagar = false; this._aviso = null; return this._render(); }
     if (a === "f-pes-salvar") return this._finSalvarPessoa(false);
@@ -2380,7 +2387,8 @@ function instalarFinancas(Classe) {
       return;
     }
     if (a === "f-kf-tirar") { el.closest(".fkf")?.remove(); return; }
-    if (a === "f-cart-apagar") { if (!this._fCartApagar) { this._fCartApagar = true; return this._render(); } return this._finSalvarCartao(true); }
+    if (a === "f-cart-apagar") { if (!this._fCartApagar) { this._fCartApagar = true; this._fCartErro = null; return this._render(); } return this._finSalvarCartao(true); }
+    if (a === "f-cart-tudo") { if (this._fCartTudo !== 2) { this._fCartTudo = 2; this._fCartErro = null; return this._render(); } return this._finSalvarCartao(true, true); }
     if (a === "f-pg-dividir" || a === "f-pg-remover") {
       const id = this._aberta?.id, i = Number(el.getAttribute("data-i"));
       if (!id) return;
@@ -8867,7 +8875,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.16";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.17";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
