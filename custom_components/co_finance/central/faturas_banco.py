@@ -190,6 +190,13 @@ def fatura_ler(p: dict[str, Any]) -> dict[str, Any]:
         paradas = revisar_parceladas(db)  # parcelada estornada que parou de vir: valor real (vai para o sino)
         debitos = conferir_supostas(db, k["id"])  # Apple Pay no crédito suposto que não veio na fatura: débito (sino)
         inicio = detalhar(db, guardadas[fid]) if p.get("detalhar") else ""
+        # início do ciclo: o dia seguinte ao fechamento da fatura que o próprio banco diz ser a anterior (lidas fora de
+        # ordem, ou com um mês que o banco pulou, o início calculado na hora pode ter ficado errado)
+        fs = sorted((x for x in guardadas.values() if x["cartao"] == k["id"]), key=lambda x: x["vence"])
+        for a, b in zip(fs, fs[1:]):
+            if a.get("fecha") and b.get("anterior") is not None and abs(float(b["anterior"]) - float(a["total"])) <= 0.011:
+                from datetime import date as _d, timedelta as _td
+                b["inicio"] = (_d.fromisoformat(a["fecha"]) + _td(days=1)).isoformat()
         ant_ok, ant_falta = conferir_antecipacoes(db, k["id"])  # antecipação informada na hora: o pagamento do banco confirma
         save_db(db)
         r = _resumo(guardadas[fid], k)

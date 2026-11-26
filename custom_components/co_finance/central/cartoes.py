@@ -131,8 +131,26 @@ def faturas(db: dict[str, Any]) -> list[dict[str, Any]]:
         if fb["total"] < -0.004:  # saldo a favor (pagou a mais, estorno): não há o que pagar; o crédito abate a próxima
             f["saldo_credor"] = round(-fb["total"], 2)
         f["banco"] = {"linhas": len(fb["linhas"]), "lida_em": fb.get("lida_em")}
+        f["fecha"] = fb.get("fecha") or f["fecha"]  # o fechamento que o banco diz, não o do cadastro
         from .faturas_banco import gasto_do_mes  # gasto do mês (custo real): com antecipação o boleto fica menor
         f.update(gasto_do_mes(fb))
+    # mês que o banco pulou (mudou o fechamento, ciclo de dois meses): a fatura lida diz que a anterior foi a de dois meses
+    # antes ("Total da fatura anterior" = o boleto dela). A fatura calculada no meio não existe: as compras dela estão
+    # na fatura lida seguinte, que já traz o total do banco.
+    lidas: dict[str, list[dict[str, Any]]] = {}
+    for fb in (db.get("faturas_banco") or {}).values():
+        lidas.setdefault(fb["cartao"], []).append(fb)
+    for cid, fs in lidas.items():
+        fs.sort(key=lambda f: f["vence"])
+        for a, b in zip(fs, fs[1:]):
+            if b.get("anterior") is None or abs(float(b["anterior"]) - float(a["total"])) > 0.011 or b["id"] not in grupos:
+                continue
+            for fid in [fid for fid, g in grupos.items() if g["cartao"] == cid and "banco" not in g and a["vence"] < g["vence"] < b["vence"]]:
+                g = grupos.pop(fid)
+                destino = grupos[b["id"]]
+                destino["itens"] += [{**it, "fatura": b["id"], "vence": b["vence"]} for it in g["itens"]]
+                destino["estimado"] = round(destino.get("estimado", 0.0) + g["total"], 2)
+                destino["sem_fatura_no_meio"] = g["vence"]  # o banco não emitiu a fatura que venceria neste dia
     # antecipação informada na hora: vai para a 1ª fatura do cartão que vence no dia ou depois e ainda não foi lida do
     # banco (lida, o boleto já vem com ela descontada). Não muda o gasto; desconta do que falta pagar.
     for a in db.get("antecipacoes") or []:
@@ -475,8 +493,9 @@ def lembretes(p: dict[str, Any]) -> dict[str, Any]:
         db = load_db()
     avisos = []
     for x in faturas(db) + contas(db):
-        if x["pago"]:
+        if x["pago"] or (x.get("a_pagar") is not None and x["a_pagar"] <= 0.004):  # quitada antes (antecipação): nada a avisar
             continue
+        x = {**x, "total": x.get("a_pagar", x["total"])}  # com antecipação, o aviso diz o que falta pagar
         v = x["vence"]
         if v == hoje.isoformat():
             n = {"10": 1, "13": 2, "19": 3}.get(hora, 1)

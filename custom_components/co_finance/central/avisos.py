@@ -203,8 +203,9 @@ def lembretes(db: dict[str, Any], itens: list[dict[str, Any]], hora: int, hoje: 
     gente = para_contas(db)
     out = []
     for x in itens:
-        if x["pago"]:
+        if x["pago"] or (x.get("a_pagar") is not None and x["a_pagar"] <= 0.004):  # quitada antes (antecipação): nada a avisar
             continue
+        x = {**x, "total": x.get("a_pagar", x["total"])}  # com antecipação, o aviso diz o que falta pagar
         v = date.fromisoformat(x["vence"])
         if v == hoje and hora in horas:
             titulo, msg = f"{x['icone']} {x['nome']} vence hoje", f"{fmt_brl(x['total'])} · aviso {horas.index(hora) + 1} de {len(horas)}. Já pagou? Toque em ✓ Paguei."

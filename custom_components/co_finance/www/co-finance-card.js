@@ -8964,7 +8964,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.27";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.28";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
@@ -9945,7 +9945,7 @@ class ComprasV3Card extends BaseV2 {
     const F = this._fFin, hoje = F.hoje, mesHoje = hoje.slice(0, 7);
     if (this._fModo !== "mes" || this._mes !== mesHoje) return "";
     const pessoa = this._fQuem !== "Todos" ? this._fQuem : null;
-    const valor = (x) => x.tipo === "fatura" && pessoa ? (x.itens || []).filter((i) => i.quem === pessoa).reduce((s, i) => s + (i.valor || 0), 0) : x.total;
+    const valor = (x) => x.tipo === "fatura" && pessoa ? (x.itens || []).filter((i) => i.quem === pessoa).reduce((s, i) => s + (i.valor || 0), 0) : (x.a_pagar ?? x.total);  // antecipação: só o que falta
     const nome = (x) => { if (x.tipo !== "fatura") return x.nome; const k = (F.cartoes || []).find((y) => y.id === x.cartao); return `Fatura ${k ? this._finBancoNome(k) || this._finNomeCartao(k) : "do cartão"}`; };
     const abertas = this._finObrigacoes().filter((x) => !x.pago && (x.tipo === "fatura" || this._finDoFiltro(x)) && valor(x) > 0.004).sort((a, b) => a.vence.localeCompare(b.vence));
     const total = abertas.reduce((s, x) => s + valor(x), 0);
@@ -9973,7 +9973,7 @@ class ComprasV3Card extends BaseV2 {
   _v3Alerta() {
     const F = this._fFin;
     if (!F) return "";
-    const hoje = F.hoje, l = this._finObrigacoes().filter((x) => !x.pago && x.vence <= hoje && (x.tipo === "fatura" || this._finDoFiltro(x))).sort((a, b) => a.vence.localeCompare(b.vence));
+    const hoje = F.hoje, l = this._finObrigacoes().filter((x) => !x.pago && x.vence <= hoje && !(x.a_pagar != null && x.a_pagar <= 0.004) && (x.tipo === "fatura" || this._finDoFiltro(x))).sort((a, b) => a.vence.localeCompare(b.vence));
     if (!l.length) return "";
     const x = l[0], d = new Date(x.vence + "T12:00"), dm = `${d.getDate()} ${V3_MESES[d.getMonth()].slice(0, 3)}`;
     const nm = this._v3NomeObr(x);
@@ -10013,7 +10013,9 @@ class ComprasV3Card extends BaseV2 {
   // Tocar numa faixa traz à frente; tocar na frente abre a fatura (no mês) ou as faturas do período
   _v3Cartoes() {
     const F = this._fFin, pessoa = this._fQuem !== "Todos" ? this._fQuem : null, modo = this._fModo, hoje = F.hoje;
-    const parte = (x) => !pessoa || x.tipo !== "fatura" ? x : { ...x, total: Math.round((x.itens || []).filter((i) => i.quem === pessoa).reduce((s, i) => s + (i.valor || 0), 0) * 100) / 100 };
+    // no Resumo o cartão mostra o gasto: fatura lida com antecipação vale o gasto do mês, não o boleto
+    const parte = (x) => x.tipo !== "fatura" ? x : pessoa ? { ...x, total: Math.round((x.itens || []).filter((i) => i.quem === pessoa).reduce((s, i) => s + (i.valor || 0), 0) * 100) / 100 }
+      : x.gasto_mes != null ? { ...x, total: x.gasto_mes, boleto: x.total } : x;
     const faturas = (F.faturas || []).map(parte);
     const doPer = (x) => modo === "mes" ? x.vence.slice(0, 7) === this._mes : modo === "ano" ? x.vence.slice(0, 4) === this._fAno : true;
     const ordem = (c) => `${c.x && !c.x.pago ? 0 : 1}${c.x ? c.x.vence : "9999"}`;
@@ -10069,6 +10071,7 @@ class ComprasV3Card extends BaseV2 {
       const ini = ant?.fecha ? (() => { const d = new Date(ant.fecha + "T12:00"); d.setDate(d.getDate() + 1); return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`; })() : null;
       const antigas = (x.itens || []).some((i) => (i.parcela || 1) > 1);
       if (x.fecha) linhas.push(["info", `Esta fatura cobrou as <b>compras ${ini ? `de ${ini} a ${dm(x.fecha)}` : `até ${dm(x.fecha)}`}</b>${antigas ? " + parcelas de compras antigas" : ""}.`]);
+      if (x.sem_fatura_no_meio) linhas.push(["info", `O banco não emitiu a fatura de ${mesN(x.sem_fatura_no_meio)}: esta cobre dois meses de compras.`]);
     }
     // as compras feitas no mês escolhido, neste cartão: em que fatura caem (a 1ª parcela)
     const pessoa = this._fQuem !== "Todos" ? this._fQuem : null, por = new Map();
@@ -10267,7 +10270,7 @@ class ComprasV3Card extends BaseV2 {
     const hoje = F.hoje, d30 = new Date(hoje + "T12:00"); d30.setDate(d30.getDate() + 30);
     const lim = `${this._mesDe(d30)}-${String(d30.getDate()).padStart(2, "0")}`;
     const todos = this._finObrigacoes().filter((x) => x.tipo === "fatura" || this._finDoFiltro(x));
-    const abertos = todos.filter((x) => !x.pago).sort((a, b) => a.vence.localeCompare(b.vence)), prox = abertos.filter((x) => x.vence <= lim);
+    const abertos = todos.filter((x) => !x.pago && !(x.a_pagar != null && x.a_pagar <= 0.004)).sort((a, b) => a.vence.localeCompare(b.vence)), prox = abertos.filter((x) => x.vence <= lim);
     const soma = (l) => l.reduce((s, x) => s + (x.a_pagar ?? x.total), 0);  // com antecipação: só o que falta pagar
     const resumo = `<div class="v3-pgtopo"><span>Em aberto <b>${this._brl(soma(abertos))}</b></span><span>Próximos 30 dias <b>${this._brl(soma(prox))}</b></span></div>`;
     const lista = `<section class="v3-card"><div class="v3-hd"><h2>Atrasadas e próximos 30 dias</h2></div>${prox.map((x) => this._v3LinhaPg(x, hoje)).join("") || `<div class="v3-vazio">Nada vencendo nos próximos 30 dias.</div>`}</section>`;
@@ -10415,8 +10418,10 @@ class ComprasV3Card extends BaseV2 {
       : ["elo", "discover"].includes(bn) ? `<i class="v3f-logo v3f-bdm ${bn}" style="--logo:url('${V3_LOGO(`band-${bn}`)}')" role="img" aria-label="${this._e(k.bandeira)}"></i>` : "";
     const maestro = colorido ? mcCor.replace('fill="#eb001b"', 'fill="#0099df"').replace('fill="#f79e1b"', 'fill="#ed0006"').replace('fill="#ff5f00"', 'fill="#6c6bbd"') : mc.replace(">mastercard<", ">maestro<");
     const bandeira = k.bandeira === "Mastercard" ? (colorido ? mcCor : mc) : k.bandeira === "Maestro" ? maestro : k.bandeira === "Visa" ? (tem.has("visa") ? `${logo("visa", "visa")}<b class="v3f-sr">VISA</b>` : `<b class="v3f-visa">VISA</b>`) : bandLogo ? bandLogo : V3_BANDEIRA[k.bandeira] ? V3_BANDEIRA[k.bandeira](colorido) : k.bandeira && k.bandeira !== "Outra" && k.bandeira !== "Sem bandeira" ? `<b class="v3f-mcn">${this._e(k.bandeira)}</b>` : "";
-    const sit = !x || x.gasto ? "" : x.pago ? "✓ paga" : x.vence < hoje ? "atrasada" : x.vence === hoje ? "vence hoje" : "";
-    const info = `<span class="v3f-info"><small>${x?.gasto ? this._e(x.rotulo) : x ? `Fatura · vence ${this._dataCurta(x.vence + "T12:00")}` : k.credito === false ? "Nenhum gasto este mês" : "Nenhuma fatura em aberto"}</small><b>${x ? this._brl(x.total) : "—"}</b>${sit ? `<em class="${sit === "✓ paga" ? "" : "atr"}">${sit}</em>` : x?.gasto ? `<em>${x.n} ${x.n === 1 ? "compra" : "compras"}</em>` : ""}</span>`;
+    const falta = x && !x.gasto && !x.pago && x.a_pagar != null ? x.a_pagar : null;  // antecipação informada: o que ainda falta pagar
+    const sit = !x || x.gasto ? "" : x.pago ? "✓ paga" : falta !== null && falta <= 0.004 ? "✓ quitada antes"
+      : `${x.vence < hoje ? "atrasada" : x.vence === hoje ? "vence hoje" : ""}${falta !== null ? `${x.vence <= hoje ? " · " : ""}falta pagar ${this._brl(falta)}` : ""}`;
+    const info = `<span class="v3f-info"><small>${x?.gasto ? this._e(x.rotulo) : x ? `Fatura · vence ${this._dataCurta(x.vence + "T12:00")}` : k.credito === false ? "Nenhum gasto este mês" : "Nenhuma fatura em aberto"}</small><b>${x ? this._brl(x.total) : "—"}</b>${sit ? `<em class="${sit.startsWith("✓") || (falta !== null && x.vence > hoje) ? "" : "atr"}">${sit}</em>` : x?.gasto ? `<em>${x.n} ${x.n === 1 ? "compra" : "compras"}</em>` : ""}</span>`;
     const band = (cls = "") => bandeira ? `<span class="v3f-band ${cls}">${bandeira}${tier ? `<small>${this._e(k.bandeira === "Mastercard" ? tier.toLowerCase() : tier)}</small>` : ""}</span>` : "";
     const p = { k, x, c, mi, prod, tier, semTier, bid, arte, tem, logo, chipSvg, nfc, mc, mcCor, bandeira, info, band, e: (s) => this._e(s), LOGO: V3_LOGO,
       nomeBanco: () => this._finBancoNome(k), fundo: CARTOES.fundo, mcV: CARTOES.mastercard, visaV: CARTOES.visa };
