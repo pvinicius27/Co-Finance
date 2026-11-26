@@ -8964,7 +8964,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.28";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.29";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
@@ -10018,6 +10018,8 @@ class ComprasV3Card extends BaseV2 {
       : x.gasto_mes != null ? { ...x, total: x.gasto_mes, boleto: x.total } : x;
     const faturas = (F.faturas || []).map(parte);
     const doPer = (x) => modo === "mes" ? x.vence.slice(0, 7) === this._mes : modo === "ano" ? x.vence.slice(0, 4) === this._fAno : true;
+    const doDia = (d) => modo === "mes" ? d.slice(0, 7) === this._mes : modo === "ano" ? d.slice(0, 4) === this._fAno : true;
+    const quandoG = modo === "mes" ? `em ${V3_MESES[Number(this._mes.slice(5, 7)) - 1]}` : modo === "ano" ? `em ${this._fAno}` : "no total";
     const ordem = (c) => `${c.x && !c.x.pago ? 0 : 1}${c.x ? c.x.vence : "9999"}`;
     const credito = (F.cartoes || []).filter((k) => k.credito !== false && (!pessoa || (k.usam_hoje || k.usam || []).includes(pessoa)
         || ((k.usam || []).includes(pessoa) && faturas.some((x) => x.cartao === k.id && doPer(x) && x.total > 0))) && (k.ativo !== false || faturas.some((x) => x.cartao === k.id && doPer(x))))
@@ -10031,12 +10033,17 @@ class ComprasV3Card extends BaseV2 {
           }
           return { k, x, n: lst.length };
         }
+        // ano / tudo: o gasto do período no cartão (compras pela data da compra, valor cheio: antecipação também é gasto),
+        // sem as parcelas que ainda vão vencer e sem misturar boletos
+        // as mesmas compras do topo (Compras): pela data da compra, a parte paga com este cartão
+        const comp = this._compras().filter((c) => doDia(String(c.emissao || "").slice(0, 10)) && (!pessoa || c.quem === pessoa))
+          .map((c) => (c.pago_com || []).filter((pg) => pg.cartao_id === k.id).reduce((s, pg) => s + (pg.valor || 0), 0)).filter((v) => v > 0.004);
+        const gasto = Math.round(comp.reduce((s, v) => s + v, 0) * 100) / 100;
         return { k, n: lst.length, abertas: lst.filter((x) => !x.pago).length,
-          x: lst.length ? { id: `v2cart:${k.id}`, tipo: "fatura", cartao: k.id, vence: lst[lst.length - 1].vence, total: lst.reduce((s, x) => s + x.total, 0) } : undefined };
+          x: lst.length || comp.length ? { id: `v2cart:${k.id}`, tipo: "fatura", cartao: k.id, vence: (lst[lst.length - 1] || {}).vence || hoje, total: gasto,
+            gasto: true, rotulo: `Gasto ${quandoG}`, n: comp.length, acao: "v2-cart" } : undefined };
       })
       .sort((a, b) => modo === "mes" ? ordem(a).localeCompare(ordem(b)) : (b.x?.total || 0) - (a.x?.total || 0));
-    const doDia = (d) => modo === "mes" ? d.slice(0, 7) === this._mes : modo === "ano" ? d.slice(0, 4) === this._fAno : true;
-    const quandoG = modo === "mes" ? `em ${V3_MESES[Number(this._mes.slice(5, 7)) - 1]}` : modo === "ano" ? `em ${this._fAno}` : "no total";
     const cards = [...credito, ...(F.cartoes || []).filter((k) => k.credito === false).map((k) => ({ k, x: this._finGastoX(k, doDia, quandoG, "v2-cart") })).filter((c) => c.x)];
     if (!cards.length) return `<section class="v3-card"><div class="v3-hd"><h2>Cartões</h2></div><div class="v3-vazio">Nenhum cartão${pessoa ? ` de ${this._e(pessoa)}` : ""} cadastrado.</div></section>`;
     this._fCartLista = cards.map((c) => c.k.id);
