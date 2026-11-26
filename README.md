@@ -122,13 +122,15 @@ Tudo o que o CoFinance guarda está em `/config/co_dados/co_finance/`, e o backu
 
 Para guardar à parte ou levar os dados para outro Home Assistant, use o card em **⚙ › Backup e mudança de HA**:
 
-- **⬇ Exportar (.zip):** baixa as compras, os cadastros e as cópias das notas num arquivo só.
+- **⬇ Exportar tudo (.zip):** baixa as compras, os cadastros e as cópias das notas num arquivo só.
+- **⬇ Exportar setup:** baixa só a configuração (pessoas, cartões, contas da casa, financiamento, áreas e regras, avisos, atalho e a caixa dos pedidos), sem nenhuma compra. Serve para reinstalar ou montar outro HA sem cadastrar tudo de novo. A senha do e-mail fica na integração IMAP do Home Assistant e não vai no arquivo.
 - **⬆ Importar um .zip:** no HA novo, com o CoFinance instalado, escolha esse arquivo.
-  - As compras e os cadastros passam a ser os do arquivo, e as notas são somadas às que já existiam.
+  - Backup completo: as compras e os cadastros passam a ser os do arquivo, e as notas são somadas às que já existiam.
+  - Setup: só a configuração é trocada; as compras ficam como estão. Se o celular de aviso de alguém não existir no HA novo, a tela avisa para escolher de novo.
   - O que havia antes fica guardado em `dados/backups/`.
   - O código do celular da instalação de origem continua valendo, então o Atalho não precisa mudar.
 
-Os dois botões aparecem só para administradores. O arquivo pode ter até 16 MB, o que dá milhares de compras.
+Os botões aparecem só para administradores. O arquivo pode ter até 16 MB, o que dá milhares de compras.
 
 ## Remover
 

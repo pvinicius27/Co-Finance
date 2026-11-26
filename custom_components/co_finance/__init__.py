@@ -54,7 +54,8 @@ class VistaExportar(_Vista):
         if isinstance(r, web.Response):
             return r
         _hass, ativa = r
-        nome, dados = await ativa["ponte"].exclusivo(ativa["backup"].exportar)
+        setup = request.query.get("tipo") == "setup"  # só a configuração (pessoas, cartões, contas, regras…)
+        nome, dados = await ativa["ponte"].exclusivo(ativa["backup"].exportar_setup if setup else ativa["backup"].exportar)
         return web.Response(body=dados, content_type="application/zip", headers={"Content-Disposition": f'attachment; filename="{nome}"'})
 
 
@@ -74,6 +75,10 @@ class VistaImportar(_Vista):
             return self.json({"ok": False, "mensagem": str(e)}, status_code=400)
         entry: ConfigEntry = ativa["entry"]
         cod = res.pop("codigo", "")
+        # celular de aviso que não existe neste HA (setup trazido de outro): a pessoa precisa escolher o dela de novo
+        sumidos = [c for c in res.pop("celulares", []) if not hass.services.has_service("notify", c.split(".", 1)[-1])]
+        if sumidos:
+            res["mensagem"] += f" ⚠ {len(sumidos)} {'celular de aviso não existe' if len(sumidos) == 1 else 'celulares de aviso não existem'} neste HA: escolha de novo em ⚙ › Pessoas."
         if _COD.fullmatch(cod) and cod != entry.data[CONF_WEBHOOK]:
             # o Atalho do celular da instalação de origem continua valendo: adota o código que veio no backup
             hass.config_entries.async_update_entry(entry, data={**entry.data, CONF_WEBHOOK: cod})

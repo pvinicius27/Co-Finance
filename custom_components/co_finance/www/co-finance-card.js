@@ -1338,8 +1338,9 @@ function instalarFinancas(Classe) {
       ...(ex.html ? [["excluidas", "Excluídas recentemente", `${(d.excluidas || []).length} de 10`, ex.html]] : []),
       // instalada pela integração (HACS): backup em .zip para guardar ou levar a outro Home Assistant
       ...(this._hass?.services?.co_finance ? [["backup", "Backup e mudança de HA", "exportar · importar", `<div class="fcfg-corpo"><div class="fimp">
-        <button class="btn" data-a="f-exp">⬇ Exportar (.zip)</button><button class="btn" data-a="f-imp">⬆ Importar um .zip</button></div>
-        <div class="fs" style="margin-top:8px">Exportar baixa um .zip com as compras, os cadastros e as cópias das notas. Importar troca as compras e os cadastros pelos do arquivo e junta as notas; o que havia antes fica guardado em dados/backups.</div></div>`]] : []),
+        <button class="btn" data-a="f-exp" title="Backup completo: compras, faturas lidas, notas e toda a configuração. Use para guardar tudo ou levar tudo para outro HA.">⬇ Exportar tudo (.zip)</button><button class="btn" data-a="f-exp" data-k="setup" title="Só a configuração: pessoas, cartões, contas da casa, financiamento, áreas e regras, avisos, atalho e caixa dos pedidos. Sem compras. Use para reinstalar ou montar outro HA sem cadastrar tudo de novo.">⬇ Exportar setup</button><button class="btn" data-a="f-imp" title="Escolha um arquivo exportado daqui. Backup completo: troca compras e configuração. Setup: troca só a configuração e as compras ficam. O que havia antes fica guardado em dados/backups.">⬆ Importar um .zip</button></div>
+        <div class="fs" style="margin-top:8px"><b>Exportar tudo</b> baixa as compras, os cadastros e as cópias das notas. <b>Exportar setup</b> baixa só a configuração (pessoas, cartões, contas da casa, financiamento, áreas e regras, avisos, atalho e a caixa dos pedidos), sem nenhuma compra.</div>
+        <div class="fs" style="margin-top:6px">Importar reconhece o arquivo: o completo troca as compras e os cadastros pelos do arquivo e junta as notas; o de setup troca só a configuração e não mexe nas compras. Nos dois, o que havia antes fica guardado em dados/backups. A senha do e-mail fica na integração IMAP do Home Assistant e não vai no arquivo.</div></div>`]] : []),
     ];
     const editando = this._fPesEd ? "pessoas" : this._fCartEd ? "cartoes" : this._fCcEd ? "contas" : this._fBemEd ? "veiculos" : this._fExclApagar ? "excluidas"
       : this._fPdLog || this._fPdLendo || this._fPdCaminho || this._fPdImp ? "pedidos" : null;
@@ -2254,13 +2255,13 @@ function instalarFinancas(Classe) {
     if (a === "f-exp") {  // ⚙ › Backup: baixa o .zip (endereço da integração, só administrador)
       (async () => {
         try {
-          const r = await this._hass.fetchWithAuth("/api/co_finance/exportar");
+          const r = await this._hass.fetchWithAuth(k === "setup" ? "/api/co_finance/exportar?tipo=setup" : "/api/co_finance/exportar");
           if (!r.ok) throw new Error(r.status === 403 ? "Só o administrador pode exportar." : `Não deu para exportar (${r.status}).`);
           const nome = (r.headers.get("Content-Disposition") || "").match(/filename="([^"]+)"/)?.[1] || "cofinance.zip";
           const url = URL.createObjectURL(await r.blob()), l = document.createElement("a");
           l.href = url; l.download = nome; document.body.appendChild(l); l.click(); l.remove();
           setTimeout(() => URL.revokeObjectURL(url), 10000);
-          this._aviso = `Backup baixado: ${nome}.`;
+          this._aviso = k === "setup" ? `Setup baixado: ${nome}.` : `Backup baixado: ${nome}.`;
         } catch (e) { this._aviso = "⚠ " + (e.message || e); }
         this._render();
       })();
@@ -2271,7 +2272,10 @@ function instalarFinancas(Classe) {
       inp.type = "file"; inp.accept = ".zip,application/zip";
       inp.onchange = async () => {
         const f = inp.files?.[0];
-        if (!f || !confirm(`Importar ${f.name}?\n\nAs compras e os cadastros de agora são trocados pelos do arquivo. O que há hoje fica guardado em dados/backups.`)) return;
+        const soSetup = /setup/i.test(f?.name || "");
+        if (!f || !confirm(soSetup
+          ? `Importar o setup ${f.name}?\n\nA configuração de agora (pessoas, cartões, contas, regras, avisos…) é trocada pela do arquivo. As compras não mudam. O que há hoje fica guardado em dados/backups.`
+          : `Importar ${f.name}?\n\nSe for um backup completo, as compras e os cadastros de agora são trocados pelos do arquivo; se for um setup, só a configuração. O que há hoje fica guardado em dados/backups.`)) return;
         this._aviso = "Importando…"; this._render();
         try {
           const r = await this._hass.fetchWithAuth("/api/co_finance/importar", { method: "POST", body: f, headers: { "Content-Type": "application/zip" } });
@@ -8958,7 +8962,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.25";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.26";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
