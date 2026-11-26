@@ -825,10 +825,12 @@ function instalarFinancas(Classe) {
     return `<dialog class="folha" aria-label="${this._e(x.nome)}">
       <div class="fh"><div style="min-width:0"><div class="ft">${k.banco ? this._finMini(k) + " " : ""}${this._e(x.nome)}</div><div class="fs">${this._e(F_BANCOS[k.banco] || "")}${F_BANCOS[k.banco] ? " · " : ""}fecha ${this._dataCurta(x.fecha + "T12:00")} · vence ${this._dataCurta(x.vence + "T12:00")}</div></div><button class="ico" data-a="fechar" aria-label="Fechar">✕</button></div>
       <div class="fcontagrade">
-        <div class="fbox"><span class="frot">Valor</span><span class="fv">${this._brl(x.total)}</span></div>
+        ${x.gasto_mes != null && Math.abs(x.gasto_mes - x.total) > 0.004 ? `<div class="fbox"><span class="frot">Gasto do mês</span><span class="fv">${this._brl(x.gasto_mes)}</span></div>` : ""}
+        <div class="fbox"><span class="frot">${x.gasto_mes != null && Math.abs(x.gasto_mes - x.total) > 0.004 ? "Boleto (a pagar)" : "Valor"}</span><span class="fv">${this._brl(x.total)}</span></div>
         <div class="fbox"><span class="frot">Vencimento</span><span class="fv">${this._dataCurta(x.vence + "T12:00")}</span></div>
         <div class="fbox ${!pg && x.vence < hoje ? "falerta" : ""}"><span class="frot">Situação</span><span class="fs">${situ}</span></div>
       </div>
+      ${x.gasto_mes != null && Math.abs(x.gasto_mes - x.total) > 0.004 ? `<div class="fs" style="margin:-4px 0 10px">${x.antecipado ? `Foram pagos <b>${this._brl(x.antecipado)}</b> antes do vencimento (antecipação). ` : ""}${x.credito_anterior ? `O crédito de <b>${this._brl(x.credito_anterior)}</b> que sobrou do mês anterior abateu esta fatura. ` : ""}${!x.antecipado && !x.credito_anterior ? "A fatura anterior não foi paga inteira: o boleto inclui essa diferença. " : ""}O boleto é o que falta pagar; o <b>gasto do mês</b> é o que foi gasto neste ciclo (boleto − saldo anterior + pagamentos do período).</div>` : ""}
       ${this._aviso ? `<div class="aviso" role="status">${this._e(this._aviso)}</div>` : ""}
       ${pg ? "" : `<button class="btn prim fpg-grande" data-a="f-pagar" data-k="${id}">✓ Paguei esta fatura</button>`}
       ${this._fCorrigir && pg ? `<div class="fcard">${this._finItem(x, true, true)}</div>` : ""}
@@ -2469,7 +2471,7 @@ function instalarFinancas(Classe) {
     /* celular: nada pode alargar a coluna (a tela não arrasta para o lado) */
     .fin,.fcol{grid-template-columns:minmax(0,1fr)}.fin>*,.fcol>*,.fdois>*,.fheroi>*{min-width:0}
     .fanos{overflow-x:auto;overflow-y:hidden}.fab{min-width:46px}
-    .fcontagrade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:4px 0 10px}
+    .fcontagrade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:4px 0 10px}.fcontagrade:has(>.fbox:nth-child(4)){grid-template-columns:repeat(4,minmax(0,1fr))}
     .fcasa{display:grid;gap:6px}.ffat-seg{margin:0 0 10px;width:max-content}div.fag-l{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.8fr) minmax(0,.9fr) 4px;gap:10px;align-items:center;border-bottom:1px solid var(--c-linha);padding:9px 2px}div.fag-l:last-child{border-bottom:0}div.fev{cursor:default}.ffat .ft3,.folha .fev .ft3{overflow-wrap:anywhere}
     @media (max-width:520px){button.fag-l.ffl{grid-template-columns:minmax(0,1fr) auto}button.fag-l.ffl>span:nth-child(2){grid-column:1/-1;grid-row:2}button.fag-l.ffl .fag-s{display:none}div.fag-l{grid-template-columns:minmax(0,1fr) auto}div.fag-l>span:nth-child(2){grid-column:1/-1;grid-row:2}div.fag-l .fag-s{display:none}}
     .fpgd{display:block;font-size:11.5px;font-weight:400;color:var(--c-sub)}.flin b .fpgd{text-align:right}
@@ -2493,7 +2495,7 @@ function instalarFinancas(Classe) {
     .fag-s{font-size:12px;text-align:right}
     @media (max-width:520px){button.fag-l.frec{grid-template-columns:minmax(0,1fr) auto auto;row-gap:0}}.fag-aviso{padding:8px 10px;border-radius:10px;background:color-mix(in srgb,#f59e0b 10%,transparent)}
     @media (max-width:520px){button.fag-l{grid-template-columns:minmax(0,1fr) auto;row-gap:6px}.fag-b{grid-column:1/-1;grid-row:2}.fag-s{grid-column:2;grid-row:1;display:none}}
-    @media (max-width:520px){.fcontagrade{grid-template-columns:1fr 1fr}.fcontagrade .fbox:last-child{grid-column:1/-1}}
+    @media (max-width:520px){.fcontagrade,.fcontagrade:has(>.fbox:nth-child(4)){grid-template-columns:1fr 1fr}.fcontagrade .fbox:last-child:nth-child(odd){grid-column:1/-1}}
     button.fnota,button.fev{font:inherit;color:inherit;text-align:left;cursor:pointer}
     .fpg-b{display:flex;gap:12px;align-items:center}
     @media (max-width:520px){.fpg-b{grid-column:1/-1;justify-content:flex-end}.fpg-ed{padding-left:0}}
@@ -7487,13 +7489,15 @@ class ComprasV2Card extends Base {
       : x.vence < hoje ? `Atrasada · venceu ${dc(x.vence)}` : x.vence === hoje ? "Vence hoje" : dias === 1 ? "Vence amanhã" : `Vence em ${dias} dias`;
     const tom = pg ? "ok" : x.vence <= hoje ? "urg" : "";
     const multa = !!(pg && x.fonte === "recorrente" && x.faixas && x.total > x.faixas.valor + 0.009);
+    // fatura com antecipação (ou crédito do mês anterior): em destaque o gasto do mês; o boleto é o que falta pagar
+    const gm = fat && x.gasto_mes != null && Math.abs(x.gasto_mes - x.total) > 0.004;
     let logo;
     if (k) { const c = this._finCartaoCor(k); logo = `<span class="v-logo g" style="background:${c.fundo};color:${c.tinta};box-shadow:inset 0 0 0 1px rgba(127,127,127,.35)" aria-hidden="true"></span>`; }
     else logo = this._v2Logo({ conta: x }, x.categoria, true);
     const nome = k?.visual?.produto ? `${x.nome} · ${k.visual.produto}` : x.nome;
     const sub = fat ? `fecha ${dc(x.fecha)} · vence ${dc(x.vence)}` : `ref. ${this._e(x.referencia || "")} · ${this._e(x.fonte_txt || "")}`;
     const cab = `<div class="v-fh">${logo}<span class="v-ft"><b>${this._e(nome)}</b><small>${sub}</small></span>${fechar}</div>
-      <div class="v-grande">${this._brl(x.total)}</div>${pg ? "" : `<div class="v-situ ${tom}">${situ}</div>`}`;  // paga: a data já está em Pagamento
+      <div class="v-grande">${this._brl(gm ? x.gasto_mes : x.total)}</div>${gm ? `<div class="v-gm">gasto do mês · boleto ${this._brl(x.total)}</div>` : ""}${pg ? "" : `<div class="v-situ ${tom}">${situ}</div>`}`;  // paga: a data já está em Pagamento
     const abas = `<div class="v-seg v-segf" role="tablist">${[["resumo", "Resumo"], ["nota", fat ? "Compras" : "Conta"], ["editar", "Editar"]].map(([v, t]) => `<button role="tab" class="${vista === v ? "on" : ""}" aria-selected="${vista === v}" data-a="v2-vista" data-k="${v}">${t}</button>`).join("")}</div>`;
     const aviso = this._aviso ? `<div class="aviso" role="status">${this._e(this._aviso)}</div>` : "";
     const paguei = pg ? "" : `<button class="btn prim v-paguei" data-a="f-pagar" data-k="${this._e(x.id)}">✓ Paguei ${fat ? "esta fatura" : "esta conta"}</button>`;
@@ -7505,6 +7509,9 @@ class ComprasV2Card extends Base {
         fat ? ["Cartão", this._e(`${k?.nome || x.cartao}${k?.bandeira ? ` · ${k.bandeira}` : ""}`)]
           : ["Área", `<i style="background:${this._finInfo(x.categoria).cor}"></i>${this._e(x.categoria)}${x.subcategoria ? ` › ${this._e(x.subcategoria)}` : ""}`],
         ["Vencimento", dc(x.vence)],
+        gm ? ["Boleto", `${this._brl(x.total)} <small class="v-gms">a pagar no vencimento</small>`] : null,
+        gm && x.antecipado ? ["Pago antes", `${this._brl(x.antecipado)} <small class="v-gms">antecipação</small>`] : null,
+        gm && x.credito_anterior ? ["Crédito", `${this._brl(x.credito_anterior)} <small class="v-gms">que sobrou do mês anterior</small>`] : null,
         // paga depois do vencimento: a linha fica em vermelho, "Pagamento com atraso"
         pg && !largada && String(pg.em || "").slice(0, 10) > x.vence
           ? ['<span class="v-atr">Pagamento com atraso</span>', `<span class="v-atr">${this._finQuando(pg.em)}${pg.valor != null && Math.abs(pg.valor - x.total) > 0.009 ? ` · ${this._brl(pg.valor)}` : ""}</span>`]
@@ -7895,7 +7902,7 @@ class ComprasV2Card extends Base {
     .v-ft{flex:1;min-width:0;display:grid}
     .v-ft b{font-size:16px;line-height:1.25}
     .v-ft small{font-size:13px;color:var(--c-sub)}
-    .v-grande{font-size:36px;font-weight:800;letter-spacing:-1px;line-height:1.1;margin-top:4px}
+    .v-grande{font-size:36px;font-weight:800;letter-spacing:-1px;line-height:1.1;margin-top:4px}.v-gm{font-size:13px;color:var(--secondary-text-color);margin-top:2px}.v-gms{font-size:12px;color:var(--secondary-text-color);font-weight:400}
     .v-nota-v{font-size:13px;color:var(--c-sub);margin-top:-8px}
     .v-segf{margin:0}
     .folha.v2larga{width:min(720px,calc(100vw - 24px))}
@@ -8898,7 +8905,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.22";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.23";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
@@ -10236,7 +10243,7 @@ class ComprasV3Card extends BaseV2 {
     const fin = Object.entries(k.finais || {}).find(([, v]) => !v.parado && (!pessoa || v.quem === pessoa));
     const atras = ord.filter((_, j) => j !== i).slice(0, 2).map((o, j) => `<span class="v3-peek p${j + 1}" style="${this._v3CorFaixa(o.k)}"></span>`).join("");
     const ftpl = document.createElement("template");
-    ftpl.innerHTML = this._finCartaoFace(k, x ? { ...x, total: parte(x) } : x);
+    ftpl.innerHTML = this._finCartaoFace(k, x ? { ...x, total: !pessoa && x.gasto_mes != null ? x.gasto_mes : parte(x) } : x);  // o gasto do mês (com antecipação, o boleto fica menor)
     const fc = ftpl.content.querySelector(".fcface");
     if (fc && x) { fc.setAttribute("data-a", "v3-fat"); fc.removeAttribute("data-k"); fc.setAttribute("aria-label", `${nome(k)}: ${this._v3FatAberta ? "fechar" : "ver"} a fatura`); }
     const frente = `<div class="v3-pgpilha v-pilha">${atras}<div class="fpilha">${ftpl.innerHTML}</div></div>
@@ -10250,7 +10257,12 @@ class ComprasV3Card extends BaseV2 {
       const aberta = !!this._v3FatAberta, itens = (x.itens || []).filter((it) => !pessoa || it.quem === pessoa).slice().sort((a, b) => b.data.localeCompare(a.data));
       fat = `<div class="v3-fatbox"><div class="v3-fat-l1"><small>Fatura de ${m} · ${x.pago ? `paga em ${this._dataCurta(String(x.pago.em).slice(0, 10) + "T12:00")}` : `vence ${dv.getDate()} ${m.slice(0, 3)}`}</small>
           ${x.banco ? `<em class="v3-st ok">${V3_SVG("check")}Conferida com o banco</em>` : `<em class="v3-st">${V3_SVG("relogio")}soma das compras</em>`}</div>
-        <div class="v3-fat-v">${this._brl(parte(x))}</div>
+        ${(() => {  // com antecipação o boleto fica menor: em destaque o gasto do mês (custo real), embaixo o boleto e o que foi pago antes
+          const g = !pessoa && x.gasto_mes != null && Math.abs(x.gasto_mes - x.total) > 0.004 ? x.gasto_mes : null;
+          if (g === null) return `<div class="v3-fat-v">${this._brl(parte(x))}</div>`;
+          const det = [`boleto ${this._brl(x.total)}`, x.antecipado ? `pago antes ${this._brl(x.antecipado)}` : "", x.credito_anterior ? `crédito do mês anterior ${this._brl(x.credito_anterior)}` : ""].filter(Boolean).join(" · ");
+          return `<div class="v3-fat-v">${this._brl(g)}</div><div class="v3-fat-g"><b>gasto do mês</b> · ${det}</div>`;
+        })()}
         <div class="v3-fat-bts"><button class="v3-bt" data-a="v3-fat" aria-expanded="${aberta}">${aberta ? "Fechar fatura" : "Ver fatura"}</button>${x.pago ? "" : `<button class="v3-bt prim" data-a="f-pagar" data-k="${this._e(x.id)}">Paguei</button>`}
           <button class="v3-link" data-a="f-conta" data-k="${this._e(x.id)}">Detalhes ${V3_SVG("dir")}</button></div>
         ${aberta ? `<div class="v3-fat-it">${itens.map((it) => `<button class="v3-it" data-a="abrir" data-id="${this._e(it.compra)}"><span class="v3-it-ic">${V3_SVG("recibo")}</span>
@@ -10298,7 +10310,7 @@ class ComprasV3Card extends BaseV2 {
     if (!cards.length) return `<div class="v3-vazio">Nenhum cartão cadastrado.</div>`;
     const atras = cards.filter((_, j) => j !== i).map(({ k, x }) => {
       const c = this._finCartaoCor(k);
-      return `<button class="fpk${c.preto ? " preto" : ""}" data-a="f-cart-sel" data-k="${this._e(k.id)}" style="${this._finCartaoEstilo(c)}"><b>${this._e(this._finNomeCartao(k))}</b><span></span><span class="fpk-v">${x ? this._brl(x.total) : "—"}</span></button>`;
+      return `<button class="fpk${c.preto ? " preto" : ""}" data-a="f-cart-sel" data-k="${this._e(k.id)}" style="${this._finCartaoEstilo(c)}"><b>${this._e(this._finNomeCartao(k))}</b><span></span><span class="fpk-v">${x ? this._brl(x.gasto_mes != null ? x.gasto_mes : x.total) : "—"}</span></button>`;
     }).join("");
     const pontos = cards.length > 1 ? `<div class="fdots" role="tablist" aria-label="Cartões">${cards.map(({ k }, j) => `<button class="fdot${j === i ? " on" : ""}" data-a="f-cart-sel" data-k="${this._e(k.id)}" role="tab" aria-selected="${j === i}" aria-label="Cartão ${this._e(this._finNomeCartao(k))}"></button>`).join("")}</div>` : "";
     return `<div class="fpilha">${atras ? `<div class="fpeek">${atras}</div>` : ""}${this._finCartaoFace(cards[i].k, cards[i].x)}${pontos}</div>`;
@@ -10824,6 +10836,7 @@ class ComprasV3Card extends BaseV2 {
     .v3-tit h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.01em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}  /* sem espaço, o título encurta e os botões ficam inteiros */
     .v3-tit>:not(h1){flex:none}
     .v3-acoes{display:flex;align-items:center;gap:8px}
+    .v3-fat-g{font-size:12px;color:var(--v3-mut-fg);margin:-2px 0 8px}.v3-fat-g b{color:var(--v3-fg);font-weight:600}
     .v3-ib{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:40px;height:40px;border-radius:999px;border:1px solid var(--v3-borda);background:var(--v3-card);cursor:pointer;padding:0 10px}
     .v3-ib:hover{background:var(--v3-mut)}.v3-ib.on{background:var(--v3-acc);color:var(--v3-acc-fg)}
     .v3-ib b{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:9px;background:var(--v3-des);color:#fff;font-size:11px;display:grid;place-items:center;padding:0 4px;box-sizing:border-box}

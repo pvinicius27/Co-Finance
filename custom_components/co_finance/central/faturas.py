@@ -39,6 +39,11 @@ def _tipo(desc: str, valor: float, secao: str = "") -> str:
     d = _sem_acento(desc).upper()
     if re.search(r"PAGAMENTO|PAGTO|PGTO", d.replace(" ", "")) and valor < 0:  # Itaú: "PAG AM ENT O PIX"
         return "pagamento"
+    # o banco devolvendo à conta o que foi pago a mais ("DEVOLUCAO SALDO CREDOR") ou desfazendo um pagamento: é o
+    # pagamento voltando (soma do lado dos pagamentos, com sinal +), não uma compra
+    if valor > 0 and (re.search(r"SALDO\s*CREDOR|CREDITO\s*EXCEDENTE", d)
+                      or (re.search(r"PAGAMENTO|PAGTO|PGTO", d.replace(" ", "")) and re.search(r"ESTORN|DEVOL|CANCEL", d))):
+        return "pagamento"
     if d.startswith("IOF") or "IOF " in d:
         return "iof"
     if re.search(r"\bJUROS\b|ENCARGO|MULTA", d):
@@ -745,6 +750,8 @@ def _ler_inter(L) -> dict[str, Any]:
         # pagamento antecipado (e créditos) só aparecem no resumo: a conferência vira compras = despesas do mês.
         # "anterior" fica o saldo que a fatura carrega (negativo = crédito do que foi pago antes)
         creditos = sum(l["valor"] for l in out if l["valor"] < 0 and l["tipo"] != "pagamento")
+        # a "DEVOLUCAO SALDO CREDOR" (pagamento voltando, +) o banco soma nas "Despesas do mês": sai de lá
+        despesas -= sum(l["valor"] for l in out if l["valor"] > 0 and l["tipo"] == "pagamento")
         pago = round(total - (despesas + creditos - pago), 2)
     return {"vence": vence, "inicio": None, "fecha": None, "total": total,
             "anterior": pago, "linhas": out, "subtotais": subtot,
