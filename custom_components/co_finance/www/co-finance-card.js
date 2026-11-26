@@ -2123,7 +2123,9 @@ function instalarFinancas(Classe) {
           <span class="fag-v"><b>${this._brl(f.total)}</b><small>${f.linhas} linhas</small></span>
           <span class="fag-s fok">›</span></button>`).join("")}
         <div class="ffat-tudo">${this._fFatApagarK === kid
-          ? `<span class="fs">Apagar as <b>${l.length}</b> ${l.length === 1 ? "fatura lida" : "faturas lidas"} do ${this._e(nomeK(kid))}? As compras ficam; lendo os PDFs de novo, elas voltam.</span>
+          ? `<span class="fs">Apagar as <b>${l.length}</b> ${l.length === 1 ? "fatura lida" : "faturas lidas"} do ${this._e(nomeK(kid))}?</span>
+             ${this._fFatApagarN ? `<label class="fs ffat-cmp"><input type="checkbox" data-a="f-fat-apagar-c" ${this._fFatApagarC !== false ? "checked" : ""}> Levar junto as <b>${this._fFatApagarN}</b> ${this._fFatApagarN === 1 ? "compra trazida" : "compras trazidas"} delas, para ler do zero. As de nota, de pedido e as lançadas à mão ficam.</label>` : ""}
+             ${!this._fFatApagarN || this._fFatApagarC === false ? `<span class="fs">As compras ficam; lendo os PDFs de novo, elas voltam a se ligar.</span>` : ""}
              <button class="btn perigo" data-a="f-fat-apagar-k" data-k="${this._e(kid)}">Apagar ${l.length === 1 ? "a fatura" : `as ${l.length}`}</button><button class="btn" data-a="f-fat-apagar-k" data-k="">Cancelar</button>`
           : `<button class="lnk perigo" data-a="f-fat-apagar-k" data-k="${this._e(kid)}">Apagar todas as faturas deste cartão</button>`}</div></div>`;
     }).join("");
@@ -2306,11 +2308,17 @@ function instalarFinancas(Classe) {
     if (a === "f-fat-vista") { this._fFatVista = k === "mes" ? "mes" : "cartao"; return this._render(); }
     if (a === "f-fat-ano") { this._fFatAno = k; this._fFatMes = null; return this._render(); }
     if (a === "f-fat-mes") { this._fFatMes = this._fFatMes === k ? null : k; return this._render(); }
-    if (a === "f-fat-apagar-k") {  // tira todas as faturas lidas de um cartão (confirma antes); as compras ficam
+    if (a === "f-fat-apagar-c") { this._fFatApagarC = this._fFatApagarC === false; return this._render(); }
+    if (a === "f-fat-apagar-k") {  // tira todas as faturas lidas de um cartão (confirma antes); com a caixa marcada, leva as compras trazidas delas
       if (!k) { this._fFatApagarK = null; return this._render(); }
-      if (this._fFatApagarK !== k) { this._fFatApagarK = k; return this._render(); }
+      if (this._fFatApagarK !== k) {
+        this._fFatApagarK = k; this._fFatApagarN = 0; this._fFatApagarC = true; this._render();
+        return this._api({ acao: "faturas_apagar_cartao", cartao: k, contar: true })
+          .then((r) => { if (this._fFatApagarK === k) { this._fFatApagarN = r.compras || 0; this._render(); } }, () => {});
+      }
       this._fFatApagarK = null;
-      return this._api({ acao: "faturas_apagar_cartao", cartao: k }).then((r) => { this._fFat = { ...this._fFat, det: null, log: [{ txt: r.mensagem + " Pode ler os PDFs de novo." }] }; },
+      const levar = !!this._fFatApagarN && this._fFatApagarC !== false;
+      return this._api({ acao: "faturas_apagar_cartao", cartao: k, compras: levar }).then((r) => { this._fFat = { ...this._fFat, det: null, log: [{ txt: r.mensagem + " Pode ler os PDFs de novo." }] }; },
         (e) => { this._fFat = { ...this._fFat, log: [{ txt: e.message || String(e), erro: true }] }; })
         .then(async () => { try { this._fFin = await this._api({ acao: "financeiro" }); this._fLinhasDe = null; } catch (_) { /* segue */ } return this._finFatCarregar(); });
     }
@@ -8950,7 +8958,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.24";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.25";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";

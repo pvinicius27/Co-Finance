@@ -143,8 +143,12 @@ def _data_da_parcela(data: str, vence: str, p: int) -> str:
 def _mesma_loja(a: str, b: str) -> bool:
     """O banco corta o nome em tamanhos diferentes em cada fatura ("JIM.COM # PAULO HE" / "JIM.COM # PAU"): a mesma chave,
     ou uma o começo da outra (com pelo menos 6 letras)."""
-    a, b = chave_loja(a), chave_loja(b)
-    return a == b or (min(len(a), len(b)) >= 6 and (a.startswith(b) or b.startswith(a)))
+    ka, kb = chave_loja(a), chave_loja(b)
+    if ka == kb or (min(len(ka), len(kb)) >= 6 and (ka.startswith(kb) or kb.startswith(ka))):
+        return True
+    # o Itaú novo quebra o texto ("MERCA DO LIVRE*M" / "MERCADOLIVRE*MERCA"): o nome inteiro, só letras, um o começo do outro
+    la, lb = _letras(a.replace("#", "")), _letras(b.replace("#", ""))
+    return min(len(la), len(lb)) >= 8 and (la.startswith(lb) or lb.startswith(la))
 
 
 def _grupos(db: dict[str, Any]) -> list[dict[str, Any]]:
@@ -156,6 +160,10 @@ def _grupos(db: dict[str, Any]) -> list[dict[str, Any]]:
     que foi cobrado (menos o estorno)."""
     baldes: dict[tuple, list[dict[str, Any]]] = {}
     soltas, estornos = [], []
+    # fatura que não separa os lançamentos por final (o Itaú Latam de ago/2026 em diante põe tudo no final do titular):
+    # ali o final da linha não diz de qual cartão é, então a parcela pode continuar a compra de outro final
+    sem_final = {f["id"] for f in (db.get("faturas_banco") or {}).values()
+                 if len({l.get("final") for l in f["linhas"] if l["tipo"] == "compra" and l.get("final")}) <= 1}
     for f in sorted((db.get("faturas_banco") or {}).values(), key=lambda f: (f["cartao"], f["vence"])):
         for i, l in enumerate(f["linhas"]):
             if l["tipo"] == "estorno":
@@ -171,15 +179,18 @@ def _grupos(db: dict[str, Any]) -> list[dict[str, Any]]:
             if n == 1:
                 soltas.append(g)
             else:
-                baldes.setdefault((f["cartao"], l.get("final"), n), []).append(g)
+                baldes.setdefault((f["cartao"], n), []).append(g)
     out = soltas
     for lst in baldes.values():
         compras: list[dict[str, Any]] = []
         for g in sorted(lst, key=lambda g: (g["linhas"][0]["vence"], g["linhas"][0]["parcela"])):
             x = g["linhas"][0]
-            alvo = next((c for c in compras if x["parcela"] not in {y["parcela"] for y in c["linhas"]}
-                         and abs(x["valor"] - c["linhas"][0]["valor"]) <= 0.01 * g["n"] + 0.011 and _mesma_loja(g["descricao"], c["descricao"])
-                         and (abs((_mes_n(x["vence"]) - x["parcela"]) - c["inicio"]) <= 1 or x["fatura"] in {y["fatura"] for y in c["linhas"]})), None)
+            serve = [c for c in compras if x["parcela"] not in {y["parcela"] for y in c["linhas"]}
+                     and (c["final"] == g["final"] or x["fatura"] in sem_final or c["linhas"][-1]["fatura"] in sem_final)
+                     and abs(x["valor"] - c["linhas"][0]["valor"]) <= 0.01 * g["n"] + 0.011 and _mesma_loja(g["descricao"], c["descricao"])
+                     and (abs((_mes_n(x["vence"]) - x["parcela"]) - c["inicio"]) <= 1 or x["fatura"] in {y["fatura"] for y in c["linhas"]})]
+            # mais de uma serve (duas compras iguais em finais diferentes): a do mesmo final; senão, a que parou mais perto
+            alvo = min(serve, key=lambda c: (c["final"] != g["final"], x["parcela"] - max(y["parcela"] for y in c["linhas"]) != 1), default=None)
             if alvo:
                 alvo["linhas"].append(x)
             else:

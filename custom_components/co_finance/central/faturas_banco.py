@@ -240,16 +240,30 @@ def fatura_apagar(p: dict[str, Any]) -> dict[str, Any]:
 
 
 def faturas_apagar_cartao(p: dict[str, Any]) -> dict[str, Any]:
-    """Tira todas as faturas lidas de um cartão (para ler os PDFs de novo). Não mexe nas compras nem no cartão."""
+    """Tira todas as faturas lidas de um cartão (para ler os PDFs de novo). Não mexe no cartão.
+    {"compras": true}: leva junto as compras que vieram do "Trazer" dessas faturas (via fatura, pagas inteiras com este
+    cartão, inclusive as excluídas, que senão impediriam a volta) e os avisos do sino delas. As compras de nota, de pedido
+    e as lançadas à mão ficam. {"contar": true}: só diz quantas sairiam. O backup do dia guarda o arquivo de antes."""
     cid = str(p.get("cartao") or "")
     with file_lock():
         db = load_db()
         fbs = db.get("faturas_banco") or {}
         ids = [k for k, f in fbs.items() if f.get("cartao") == cid]
-        if not ids:
+        trazidas = [c for c in db["compras"] if c.get("via") == "fatura" and (c.get("pagamentos") or [])
+                    and all(pg.get("cartao") == cid for pg in c.get("pagamentos") or [])] if p.get("compras") or p.get("contar") else []
+        if p.get("contar"):
+            return {"ok": True, "status": "contagem", "faturas": len(ids), "compras": len(trazidas)}
+        if not ids and not trazidas:
             raise Falha("Esse cartão não tem fatura lida.")
         for k in ids:
             fbs.pop(k)
+        if trazidas:
+            fora = {c["id"] for c in trazidas}
+            db["compras"] = [c for c in db["compras"] if c["id"] not in fora]
+            db["excluidas"] = [c for c in db.get("excluidas") or [] if c.get("id") not in fora]
+            db["mudancas"] = [x for x in db.get("mudancas") or [] if x.get("compra") not in fora]
         save_db(db)
-    n = len(ids)
-    return {"ok": True, "status": "faturas_apagadas", "n": n, "mensagem": f"{n} {'fatura tirada' if n == 1 else 'faturas tiradas'} deste cartão."}
+    n, m = len(ids), len(trazidas)
+    extra = f" e {m} {'compra trazida' if m == 1 else 'compras trazidas'} delas" if m else ""
+    return {"ok": True, "status": "faturas_apagadas", "n": n, "compras": m,
+            "mensagem": f"{n} {'fatura tirada' if n == 1 else 'faturas tiradas'}{extra} deste cartão."}
