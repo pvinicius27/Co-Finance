@@ -59,7 +59,22 @@ def _resumo(f: dict[str, Any], k: dict[str, Any]) -> dict[str, Any]:
             "inicio": f.get("inicio"), "total": f["total"], "linhas": len(f["linhas"]), "compras": len(cp),
             "ligadas": sum(1 for l in cp if l.get("compra")), "estornos": sum(1 for l in f["linhas"] if l["tipo"] == "estorno"),
             "parcelas": sum(1 for l in cp if l.get("parcela")), "lida_em": f.get("lida_em"), "arquivo": f.get("arquivo"),
-            "finais_novos": sorted({l["final"] for l in f["linhas"] if l["final"] and l["final"] not in finais})}
+            "finais_novos": sorted({l["final"] for l in f["linhas"] if l["final"] and l["final"] not in finais}), **gasto_do_mes(f)}
+
+
+def gasto_do_mes(f: dict[str, Any]) -> dict[str, Any]:
+    """O gasto do mês (custo real) de uma fatura lida: boleto - saldo que veio da anterior + pagamentos do período. Com
+    antecipação o boleto fica menor, mas o gasto do mês é o mesmo. {} quando a fatura não traz o saldo anterior."""
+    if f.get("anterior") is None:
+        return {}
+    ant = float(f["anterior"] or 0)
+    pagos = -sum(l["valor"] for l in f["linhas"] if l.get("tipo") == "pagamento")
+    out = {"gasto_mes": round(f["total"] - ant + pagos, 2)}
+    if (adiantado := round(pagos - max(ant, 0.0), 2)) > 0.004:
+        out["antecipado"] = adiantado
+    if ant < -0.004:
+        out["credito_anterior"] = round(-ant, 2)
+    return out
 
 
 def conferir_supostas(db: dict[str, Any], cid: str) -> list[str]:
@@ -222,3 +237,19 @@ def fatura_apagar(p: dict[str, Any]) -> dict[str, Any]:
             raise Falha("Fatura não encontrada.")
         save_db(db)
     return {"ok": True, "status": "fatura_apagada", "mensagem": f"Fatura de {f['vence'][8:10]}/{f['vence'][5:7]} tirada."}
+
+
+def faturas_apagar_cartao(p: dict[str, Any]) -> dict[str, Any]:
+    """Tira todas as faturas lidas de um cartão (para ler os PDFs de novo). Não mexe nas compras nem no cartão."""
+    cid = str(p.get("cartao") or "")
+    with file_lock():
+        db = load_db()
+        fbs = db.get("faturas_banco") or {}
+        ids = [k for k, f in fbs.items() if f.get("cartao") == cid]
+        if not ids:
+            raise Falha("Esse cartão não tem fatura lida.")
+        for k in ids:
+            fbs.pop(k)
+        save_db(db)
+    n = len(ids)
+    return {"ok": True, "status": "faturas_apagadas", "n": n, "mensagem": f"{n} {'fatura tirada' if n == 1 else 'faturas tiradas'} deste cartão."}

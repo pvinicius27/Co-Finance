@@ -131,16 +131,8 @@ def faturas(db: dict[str, Any]) -> list[dict[str, Any]]:
         if fb["total"] < -0.004:  # saldo a favor (pagou a mais, estorno): não há o que pagar; o crédito abate a próxima
             f["saldo_credor"] = round(-fb["total"], 2)
         f["banco"] = {"linhas": len(fb["linhas"]), "lida_em": fb.get("lida_em")}
-        # gasto do mês (custo real): o boleto - o saldo que veio da fatura anterior + os pagamentos do período. Com
-        # antecipação (pagou antes do vencimento para liberar limite) o boleto fica menor, mas o gasto do mês é o mesmo.
-        if fb.get("anterior") is not None:
-            ant = float(fb["anterior"] or 0)
-            pagos = -sum(l["valor"] for l in fb["linhas"] if l.get("tipo") == "pagamento")
-            f["gasto_mes"] = round(fb["total"] - ant + pagos, 2)
-            if (adiantado := round(pagos - max(ant, 0.0), 2)) > 0.004:  # pago além do saldo anterior, antes de fechar
-                f["antecipado"] = adiantado
-            if ant < -0.004:  # crédito que sobrou da antecipação do mês anterior e abateu esta
-                f["credito_anterior"] = round(-ant, 2)
+        from .faturas_banco import gasto_do_mes  # gasto do mês (custo real): com antecipação o boleto fica menor
+        f.update(gasto_do_mes(fb))
     out = []
     for f in sorted(grupos.values(), key=lambda f: f["vence"]):
         k = _cartao(db, f["cartao"])

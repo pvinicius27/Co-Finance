@@ -2121,10 +2121,44 @@ function instalarFinancas(Classe) {
           <span class="fag-m"><b>${this._e(this._mesNome(f.vence.slice(0, 7)))}</b><small>vence ${this._dataCurta(f.vence + "T12:00")}</small></span>
           <span class="fag-m"><b>${f.compras} ${f.compras === 1 ? "compra" : "compras"}</b><small>${f.ligadas ? `${f.ligadas} ✓ no sistema · ` : ""}${f.parcelas ? `${f.parcelas} parcelas` : ""}${f.estornos ? ` · ${f.estornos} ↩` : ""}${f.finais_novos.length ? ` · ⚠ final ${f.finais_novos.join(", ")}` : ""}</small></span>
           <span class="fag-v"><b>${this._brl(f.total)}</b><small>${f.linhas} linhas</small></span>
-          <span class="fag-s fok">›</span></button>`).join("")}</div>`;
+          <span class="fag-s fok">›</span></button>`).join("")}
+        <div class="ffat-tudo">${this._fFatApagarK === kid
+          ? `<span class="fs">Apagar as <b>${l.length}</b> ${l.length === 1 ? "fatura lida" : "faturas lidas"} do ${this._e(nomeK(kid))}? As compras ficam; lendo os PDFs de novo, elas voltam.</span>
+             <button class="btn perigo" data-a="f-fat-apagar-k" data-k="${this._e(kid)}">Apagar ${l.length === 1 ? "a fatura" : `as ${l.length}`}</button><button class="btn" data-a="f-fat-apagar-k" data-k="">Cancelar</button>`
+          : `<button class="lnk perigo" data-a="f-fat-apagar-k" data-k="${this._e(kid)}">Apagar todas as faturas deste cartão</button>`}</div></div>`;
     }).join("");
-    return `<dialog class="folha larga" aria-label="Faturas">${topo}${seg}${ler}${log}
-      ${grupos || `<div class="vazio peq">Nenhuma fatura lida ainda. Toque em Ler a pasta das faturas.</div>`}
+    // por mês: todas as faturas que vencem no mês, somadas (gasto do mês = custo real; boleto = o que se paga)
+    const vista = L.length && this._fFatVista === "mes" ? "mes" : "cartao";
+    const vseg = L.length ? `<div class="fseg ffat-seg">${[["cartao", "Por cartão"], ["mes", "Por mês"]].map(([k, n]) => `<button class="${vista === k ? "on" : ""}" data-a="f-fat-vista" data-k="${k}">${n}</button>`).join("")}</div>` : "";
+    let porMes = "";
+    if (vista === "mes") {
+      const anos = [...new Set(L.map((f) => f.vence.slice(0, 4)))].sort().reverse();
+      const ano = anos.includes(this._fFatAno) ? this._fFatAno : anos[0];
+      const g = (f) => (f.gasto_mes != null ? f.gasto_mes : f.total);
+      const meses = {};
+      L.filter((f) => f.vence.startsWith(ano)).forEach((f) => (meses[f.vence.slice(0, 7)] ||= []).push(f));
+      const ord = Object.keys(meses).sort();
+      const somaG = (l) => l.reduce((s, f) => s + g(f), 0), somaB = (l) => l.reduce((s, f) => s + f.total, 0), somaA = (l) => l.reduce((s, f) => s + (f.antecipado || 0), 0);
+      const todas = ord.flatMap((m) => meses[m]);
+      const linha = (m) => {
+        const l = meses[m].slice().sort((a, b) => g(b) - g(a)), aberto = this._fFatMes === m, ant = somaA(l);
+        return `<button class="fag-l fmes${aberto ? " on" : ""}" data-a="f-fat-mes" data-k="${m}" aria-expanded="${aberto}">
+          <span class="fag-m"><b>${this._e(this._mesNome(m))}</b><small>${l.length} ${l.length === 1 ? "fatura" : "faturas"}</small></span>
+          <span class="fag-m"><small>${Math.abs(somaG(l) - somaB(l)) > 0.004 ? `boleto ${this._brl(somaB(l))}${ant > 0.004 ? ` · pago antes ${this._brl(ant)}` : ""}` : ""}</small></span>
+          <span class="fag-v"><b>${this._brl(somaG(l))}</b><small>gasto do mês</small></span><span class="fag-s fok">${aberto ? "⌄" : "›"}</span></button>
+          ${aberto ? `<div class="fmes-l">${l.map((f) => `<button class="fag-l ffl" data-a="f-fat-det" data-k="${this._e(f.id)}">
+            <span class="fag-m"><b>${this._e(nomeK(f.cartao))}</b><small>vence ${this._dataCurta(f.vence + "T12:00")}</small></span>
+            <span class="fag-m"><small>${Math.abs(g(f) - f.total) > 0.004 ? `boleto ${this._brl(f.total)}${f.antecipado ? ` · pago antes ${this._brl(f.antecipado)}` : f.credito_anterior ? ` · crédito ${this._brl(f.credito_anterior)}` : ""}` : ""}</small></span>
+            <span class="fag-v"><b>${this._brl(g(f))}</b><small>${f.linhas} linhas</small></span><span class="fag-s fok">›</span></button>`).join("")}</div>` : ""}`;
+      };
+      porMes = `${anos.length > 1 ? `<div class="fseg ffat-seg">${anos.map((a) => `<button class="${a === ano ? "on" : ""}" data-a="f-fat-ano" data-k="${a}">${a}</button>`).join("")}</div>` : ""}
+        <div class="fcard"><div class="fhd"><h3>📅 Todas as faturas por mês · ${ano}</h3><small>${todas.length} faturas · toque no mês para ver os cartões</small></div>
+        ${ord.map(linha).join("")}
+        <div class="fmes-tot"><span><b>Total ${ano}</b><small>${Math.abs(somaG(todas) - somaB(todas)) > 0.004 ? `boleto ${this._brl(somaB(todas))} · pago antes ${this._brl(somaA(todas))}` : ""}</small></span><b>${this._brl(somaG(todas))}</b></div></div>
+        <div class="fs">O mês é o do vencimento da fatura. Gasto do mês = boleto − saldo que veio da fatura anterior + pagamentos do período: com antecipação (pagar antes para liberar limite), o boleto fica menor, mas o gasto do mês é o mesmo.</div>`;
+    }
+    return `<dialog class="folha larga" aria-label="Faturas">${topo}${seg}${ler}${log}${vseg}
+      ${vista === "mes" ? porMes : grupos || `<div class="vazio peq">Nenhuma fatura lida ainda. Toque em Ler a pasta das faturas.</div>`}
       <div class="fs">Cada fatura é conferida antes de gravar: a soma das linhas tem que bater com o total do banco (e com o total de cada final). ✓ no sistema = compra que já estava lançada aqui. Lançada em outro cartão? O cartão é acertado e aparece no sino para conferir.</div>
     </dialog>`;
   };
@@ -2269,6 +2303,17 @@ function instalarFinancas(Classe) {
         (e) => { if (this._fFat) this._fFat = { ...this._fFat, abrindo: null, erro: e.message || String(e) }; }).then(() => { if (!this._fFat?.dados) this._finFatCarregar(); this._render(); });
     }
     if (a === "f-fat-volta") { this._fFat = { ...this._fFat, det: null }; this._fFatApagar = null; return this._render(); }
+    if (a === "f-fat-vista") { this._fFatVista = k === "mes" ? "mes" : "cartao"; return this._render(); }
+    if (a === "f-fat-ano") { this._fFatAno = k; this._fFatMes = null; return this._render(); }
+    if (a === "f-fat-mes") { this._fFatMes = this._fFatMes === k ? null : k; return this._render(); }
+    if (a === "f-fat-apagar-k") {  // tira todas as faturas lidas de um cartão (confirma antes); as compras ficam
+      if (!k) { this._fFatApagarK = null; return this._render(); }
+      if (this._fFatApagarK !== k) { this._fFatApagarK = k; return this._render(); }
+      this._fFatApagarK = null;
+      return this._api({ acao: "faturas_apagar_cartao", cartao: k }).then((r) => { this._fFat = { ...this._fFat, det: null, log: [{ txt: r.mensagem + " Pode ler os PDFs de novo." }] }; },
+        (e) => { this._fFat = { ...this._fFat, log: [{ txt: e.message || String(e), erro: true }] }; })
+        .then(async () => { try { this._fFin = await this._api({ acao: "financeiro" }); this._fLinhasDe = null; } catch (_) { /* segue */ } return this._finFatCarregar(); });
+    }
     if (a === "f-fat-apagar") {  // tira a fatura lida (para ler o PDF de novo); as compras dela ficam
       if (this._fFatApagar !== k) { this._fFatApagar = k; return this._render(); }
       this._fFatApagar = null;
@@ -2471,7 +2516,7 @@ function instalarFinancas(Classe) {
     /* celular: nada pode alargar a coluna (a tela não arrasta para o lado) */
     .fin,.fcol{grid-template-columns:minmax(0,1fr)}.fin>*,.fcol>*,.fdois>*,.fheroi>*{min-width:0}
     .fanos{overflow-x:auto;overflow-y:hidden}.fab{min-width:46px}
-    .fcontagrade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:4px 0 10px}.fcontagrade:has(>.fbox:nth-child(4)){grid-template-columns:repeat(4,minmax(0,1fr))}
+    .fmes.on{background:var(--c-fundo)}.fmes-l{padding:0 0 6px 14px;border-left:3px solid var(--c-linha);margin:0 0 6px 6px}.fmes-tot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 4px 2px;margin-top:6px;border-top:2px solid var(--c-linha);font-size:15px}.fmes-tot span{display:grid}.fmes-tot small{color:var(--c-sub);font-size:11.5px}.ffat-tudo{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--divider-color,rgba(127,127,127,.2))}.fcontagrade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:4px 0 10px}.fcontagrade:has(>.fbox:nth-child(4)){grid-template-columns:repeat(4,minmax(0,1fr))}
     .fcasa{display:grid;gap:6px}.ffat-seg{margin:0 0 10px;width:max-content}div.fag-l{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.8fr) minmax(0,.9fr) 4px;gap:10px;align-items:center;border-bottom:1px solid var(--c-linha);padding:9px 2px}div.fag-l:last-child{border-bottom:0}div.fev{cursor:default}.ffat .ft3,.folha .fev .ft3{overflow-wrap:anywhere}
     @media (max-width:520px){button.fag-l.ffl{grid-template-columns:minmax(0,1fr) auto}button.fag-l.ffl>span:nth-child(2){grid-column:1/-1;grid-row:2}button.fag-l.ffl .fag-s{display:none}div.fag-l{grid-template-columns:minmax(0,1fr) auto}div.fag-l>span:nth-child(2){grid-column:1/-1;grid-row:2}div.fag-l .fag-s{display:none}}
     .fpgd{display:block;font-size:11.5px;font-weight:400;color:var(--c-sub)}.flin b .fpgd{text-align:right}
@@ -8905,7 +8950,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.23";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.24";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
