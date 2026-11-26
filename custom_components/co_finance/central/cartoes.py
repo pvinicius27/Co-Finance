@@ -133,6 +133,20 @@ def faturas(db: dict[str, Any]) -> list[dict[str, Any]]:
         f["banco"] = {"linhas": len(fb["linhas"]), "lida_em": fb.get("lida_em")}
         from .faturas_banco import gasto_do_mes  # gasto do mês (custo real): com antecipação o boleto fica menor
         f.update(gasto_do_mes(fb))
+    # antecipação informada na hora: vai para a 1ª fatura do cartão que vence no dia ou depois e ainda não foi lida do
+    # banco (lida, o boleto já vem com ela descontada). Não muda o gasto; desconta do que falta pagar.
+    for a in db.get("antecipacoes") or []:
+        if a.get("status") != "provisoria":
+            continue
+        alvo = next((f for f in sorted(grupos.values(), key=lambda f: f["vence"])
+                     if f["cartao"] == a["cartao"] and f["vence"] >= a["data"]), None)
+        if alvo and "banco" not in alvo:
+            alvo.setdefault("antecipacoes", []).append({k: a[k] for k in ("id", "valor", "data")})
+            alvo["antecipado"] = round(alvo.get("antecipado", 0.0) + a["valor"], 2)
+    for f in grupos.values():
+        if "banco" not in f and f.get("antecipado"):
+            f["gasto_mes"] = f["total"]  # soma das compras = o gasto; o que falta pagar é o resto
+            f["a_pagar"] = round(max(f["total"] - f["antecipado"], 0.0), 2)
     out = []
     for f in sorted(grupos.values(), key=lambda f: f["vence"]):
         k = _cartao(db, f["cartao"])
@@ -214,7 +228,8 @@ def financeiro(_: dict[str, Any]) -> dict[str, Any]:
                 deb_sem.append({**x, "opcoes": [k["id"] for k in op]})
     return {"ok": True, "status": "financeiro", "marco": db.get("marco"), "pago_ate": db.get("pago_ate"), "hoje": date.today().isoformat(),
             "cartoes": [{**k, "usam_hoje": usam_hoje(k)} for k in db.get("cartoes") or []], "faturas": faturas(db), "contas": contas(db), "sem_cartao": sem,
-            "faturas_lidas": len(db.get("faturas_banco") or {}), "pagos_na_hora": list(PAGOS_NA_HORA), "contas_casa": db.get("contas_casa") or {}, "painel_energia": painel_energia(), "na_hora": na_hora, "debito_sem_cartao": deb_sem}
+            "faturas_lidas": len(db.get("faturas_banco") or {}), "pagos_na_hora": list(PAGOS_NA_HORA), "contas_casa": db.get("contas_casa") or {}, "painel_energia": painel_energia(), "na_hora": na_hora, "debito_sem_cartao": deb_sem,
+            "antecipacoes_nao_vieram": [a for a in db.get("antecipacoes") or [] if a.get("status") == "nao_veio"]}
 
 
 def _saldo_vale(c: dict[str, Any], pg: dict[str, Any]) -> str:

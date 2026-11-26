@@ -190,6 +190,7 @@ def fatura_ler(p: dict[str, Any]) -> dict[str, Any]:
         paradas = revisar_parceladas(db)  # parcelada estornada que parou de vir: valor real (vai para o sino)
         debitos = conferir_supostas(db, k["id"])  # Apple Pay no crédito suposto que não veio na fatura: débito (sino)
         inicio = detalhar(db, guardadas[fid]) if p.get("detalhar") else ""
+        ant_ok, ant_falta = conferir_antecipacoes(db, k["id"])  # antecipação informada na hora: o pagamento do banco confirma
         save_db(db)
         r = _resumo(guardadas[fid], k)
     msg = (f"{rotulo_cartao(k, db.get('cartoes') or [])} {f['vence'][8:10]}/{f['vence'][5:7]}/{f['vence'][:4]}: {fmt_brl(f['total'])} · {r['linhas']} linhas"
@@ -198,6 +199,8 @@ def fatura_ler(p: dict[str, Any]) -> dict[str, Any]:
            f"{' · final novo: ' + ', '.join(r['finais_novos']) if r['finais_novos'] else ''}"
            f"{' · parcelada cancelada: ' + '; '.join(paradas) + ' (veja no sino)' if paradas else ''}"
            f"{' · pago pelo telefone, mas foi no débito: ' + '; '.join(debitos) + ' (veja no sino)' if debitos else ''}"
+           f"{f' · antecipação conferida: {ant_ok}' if ant_ok else ''}"
+           f"{' · antecipação que não aparece na fatura: ' + '; '.join(ant_falta) + ' (confira em A pagar)' if ant_falta else ''}"
            f"{inicio}{'' if nova else ' (lida de novo)'}.")
     return {"ok": True, "status": "nova" if nova else "atualizada", "id": fid, "mensagem": msg}
 
@@ -239,6 +242,70 @@ def fatura_apagar(p: dict[str, Any]) -> dict[str, Any]:
     return {"ok": True, "status": "fatura_apagada", "mensagem": f"Fatura de {f['vence'][8:10]}/{f['vence'][5:7]} tirada."}
 
 
+# ---------------------------------------------------------------- antecipação informada na hora (provisória)
+# db["antecipacoes"]: [{id, cartao, valor, data, em, status: "provisoria" | "conferida" | "nao_veio", fatura?}]
+# Provisória: desconta do que falta pagar da fatura aberta. Lida a fatura do banco, o pagamento dela manda: o mesmo valor
+# com data até 3 dias de diferença vira "conferida" (não conta duas vezes); a fatura daquele período lida sem esse
+# pagamento vira "nao_veio" (aviso para conferir). O gasto do mês não muda com antecipação, só o que falta pagar.
+
+def antecipacao(p: dict[str, Any]) -> dict[str, Any]:
+    """{cartao, valor, data}: registra; {id, apagar: true}: tira."""
+    from datetime import date
+    with file_lock():
+        db = load_db()
+        lst = db.setdefault("antecipacoes", [])
+        if p.get("apagar"):
+            a = next((x for x in lst if x.get("id") == p.get("id")), None)
+            if not a:
+                raise Falha("Antecipação não encontrada.")
+            lst.remove(a)
+            save_db(db)
+            return {"ok": True, "status": "antecipacao", "mensagem": f"Antecipação de {fmt_brl(a['valor'])} tirada."}
+        cid = str(p.get("cartao") or "")
+        k = next((x for x in db.get("cartoes") or [] if x.get("id") == cid), None)
+        if not k:
+            raise Falha("Cartão não encontrado.")
+        try:
+            v = str(p.get("valor")).strip()
+            valor = round(float(v.replace(".", "").replace(",", ".") if "," in v else v), 2)  # "12.423,72" ou 12423.72
+            dia = date.fromisoformat(str(p.get("data") or date.today().isoformat())[:10])
+        except (TypeError, ValueError):
+            raise Falha("Informe o valor e a data da antecipação.") from None
+        if valor <= 0:
+            raise Falha("O valor da antecipação precisa ser maior que zero.")
+        a = {"id": f"ant{now_iso().replace(':', '').replace('-', '')[:15]}{len(lst)}", "cartao": cid, "valor": valor,
+             "data": dia.isoformat(), "em": now_iso(), "status": "provisoria"}
+        lst.append(a)
+        conferir_antecipacoes(db, cid)
+        save_db(db)
+    return {"ok": True, "status": "antecipacao", "id": a["id"],
+            "mensagem": f"Antecipação de {fmt_brl(valor)} em {dia:%d/%m} registrada no {rotulo_cartao(k, db.get('cartoes') or [])}. "
+                        "Quando a fatura for lida, o pagamento do banco confirma."}
+
+
+def conferir_antecipacoes(db: dict[str, Any], cid: str) -> tuple[int, list[str]]:
+    """Antecipações provisórias do cartão contra os pagamentos das faturas lidas. Devolve (conferidas, não vieram)."""
+    from datetime import date
+    fs = [f for f in (db.get("faturas_banco") or {}).values() if f["cartao"] == cid]
+    usados: set[tuple[str, int]] = {(a.get("fatura"), a.get("linha")) for a in db.get("antecipacoes") or [] if a.get("status") == "conferida"}
+    ok, faltou = 0, []
+    for a in db.get("antecipacoes") or []:
+        if a.get("cartao") != cid or a.get("status") not in ("provisoria", "nao_veio"):
+            continue
+        d = date.fromisoformat(a["data"])
+        achou = next(((f["id"], i) for f in fs for i, l in enumerate(f["linhas"]) if l.get("tipo") == "pagamento"
+                      and (f["id"], i) not in usados and abs(-l["valor"] - a["valor"]) <= 0.011
+                      and abs((date.fromisoformat(l["data"]) - d).days) <= 3), None)
+        if achou:
+            a["status"], a["fatura"], a["linha"] = "conferida", achou[0], achou[1]
+            usados.add(achou)
+            ok += 1
+        elif any(f.get("inicio") and f.get("fecha") and f["inicio"] <= a["data"] <= f["fecha"] for f in fs):
+            a["status"] = "nao_veio"  # a fatura do período já foi lida e não traz esse pagamento
+            faltou.append(f"{fmt_brl(a['valor'])} em {d:%d/%m}")
+    return ok, faltou
+
+
 def faturas_apagar_cartao(p: dict[str, Any]) -> dict[str, Any]:
     """Tira todas as faturas lidas de um cartão (para ler os PDFs de novo). Não mexe no cartão.
     {"compras": true}: leva junto as compras que vieram do "Trazer" dessas faturas (via fatura, pagas inteiras com este
@@ -262,6 +329,13 @@ def faturas_apagar_cartao(p: dict[str, Any]) -> dict[str, Any]:
             db["compras"] = [c for c in db["compras"] if c["id"] not in fora]
             db["excluidas"] = [c for c in db.get("excluidas") or [] if c.get("id") not in fora]
             db["mudancas"] = [x for x in db.get("mudancas") or [] if x.get("compra") not in fora]
+            # o lote do "Trazer" deste cartão ainda no sino ficaria vazio: sai junto
+            db["lotes_fatura"] = [x for x in db.get("lotes_fatura") or [] if not (x.get("cartao") == cid and x.get("status") == "pendente")]
+        # antecipação já conferida com uma fatura que saiu volta a ser provisória (a leitura nova confere de novo)
+        for a in db.get("antecipacoes") or []:
+            if a.get("cartao") == cid and a.get("fatura") in ids:
+                a["status"] = "provisoria"
+                a.pop("fatura", None), a.pop("linha", None)
         save_db(db)
     n, m = len(ids), len(trazidas)
     extra = f" e {m} {'compra trazida' if m == 1 else 'compras trazidas'} delas" if m else ""

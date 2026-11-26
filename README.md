@@ -5,7 +5,7 @@ Compras, cartões, faturas e contas da casa dentro do Home Assistant. O CoFinanc
 ## O que ele faz
 
 - **Cupom fiscal pelo QR Code (NFC-e):** os itens entram sozinhos, com loja, data e forma de pagamento.
-- **Faturas de cartão em PDF:** são lidas no navegador, conferidas com as compras, e o que faltar vira compra. Cada fatura mostra o **gasto do mês** (custo real) e o boleto: quando parte da fatura é paga antes do vencimento (antecipação para liberar limite), o boleto fica menor, mas o gasto do mês continua o mesmo. Bancos: Santander, Bradesco, Banco do Brasil, Itaú, BRB, BTG, Caixa, Inter e Nubank.
+- **Faturas de cartão em PDF:** são lidas no navegador, conferidas com as compras, e o que faltar vira compra. Cada fatura mostra o **gasto do mês** (custo real) e o boleto: quando parte da fatura é paga antes do vencimento (antecipação para liberar limite), o boleto fica menor, mas o gasto do mês continua o mesmo. Antecipou antes de a fatura fechar? Toque em **Antecipei** no cartão, em A pagar: o valor sai do que falta pagar na hora, e quando a fatura do banco for lida o pagamento dela confirma (sem contar duas vezes). Bancos: Santander, Bradesco, Banco do Brasil, Itaú, BRB, BTG, Caixa, Inter e Nubank.
 - **Lançamento à mão** do que não tem nota.
 - **Resumo do mês**, áreas de gasto (mercado, casa, carro…), contas a pagar e comparação de preço do mesmo produto entre mercados.
 - **Avisos no telefone** do que vence, com o botão "✓ Paguei".
