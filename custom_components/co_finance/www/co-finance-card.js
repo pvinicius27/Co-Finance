@@ -8991,7 +8991,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.42";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.43";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
@@ -9901,6 +9901,26 @@ class ComprasV3Card extends BaseV2 {
   }
 
   // o que foi pago no período: a mesma conta do "Já paguei" (A pagar), com o que entrou nela
+  // o que foi pago de contas no período, item por item: cada fatura (no mês em que vence), as antecipações de cada cartão
+  // e as contas da casa pagas (luz, água, financiamento…). Segue a pessoa escolhida (nas faturas, só a parte dela).
+  _v3PagoItens([ini, fim]) {
+    const F = this._fFin, pessoa = this._fQuem !== "Todos" ? this._fQuem : null, out = [], dm = (s) => `${String(s).slice(8, 10)}/${String(s).slice(5, 7)}`;
+    for (const x of this._finObrigacoes()) {
+      const d = x.tipo === "fatura" ? x.vence : String(x.pago?.em || "").slice(0, 10);
+      if (!x.pago || d < ini || d >= fim) continue;
+      if (x.tipo === "fatura") {
+        const v = pessoa ? (x.itens || []).filter((i) => i.quem === pessoa).reduce((s, i) => s + (i.valor || 0), 0) : x.boleto ?? x.total;
+        if (v > 0.004) out.push({ t: "f", nome: this._v3NomeObr(x), sub: `vence ${dm(x.vence)}`, valor: v });
+      } else if (this._finDoFiltro(x) && x.total > 0.004) out.push({ t: "c", nome: this._v3NomeObr(x), sub: `paga ${dm(x.pago.em)}`, valor: x.total });
+    }
+    const ants = {};
+    for (const a of this._v3Antecip(ini, fim)) {
+      const k = (F.cartoes || []).find((y) => y.id === a.x.cartao);
+      (ants[a.x.cartao] ||= { t: "a", nome: `Antecipações ${k ? this._finBancoNome?.(k) || this._finNomeCartao(k) : ""}`.trim(), valor: 0 }).valor += a.valor;
+    }
+    return [...out, ...Object.values(ants)].sort((a, b) => b.valor - a.valor);
+  }
+
   // antecipações das faturas que vencem no período (pelo ciclo: contam no mês da fatura que pagaram, não no dia em que
   // saíram da conta; assim boleto + antecipado = o gasto do mês da fatura). As do banco (pagamentos lidos na fatura, além
   // do boleto anterior) e as informadas na hora (Antecipei) que a fatura ainda não confirmou. Só com "Todos".
@@ -10008,7 +10028,10 @@ class ComprasV3Card extends BaseV2 {
     // pago mês a mês (a mesma conta do Pagamentos realizados), os 6 meses até este
     const nM = this._v2Largo && this._v3Layout() === "B" ? 12 : 6;  // layout B no computador: o quadro é largo, cabem 12 meses
     const meses = Array.from({ length: nM }, (_, i) => this._finSomaMes(this._mes, i - nM + 1));
-    const por = meses.map((m) => { const p = this._v3Pago([`${m}-01`, `${this._finSomaMes(m, 1)}-01`]); return [V3_MESES[Number(m.slice(5, 7)) - 1].slice(0, 3), (p.fat || 0) + (p.ant || 0), p.ant || 0, m, p]; });  // só o cartão de crédito: faturas + antecipações
+    // tudo o que é conta a pagar (faturas de todos os cartões + antecipações + contas da casa), item por item; Pix e débito
+    // ficam nas Compras (foram pagos na hora)
+    const por = meses.map((m) => { const it = this._v3PagoItens([`${m}-01`, `${this._finSomaMes(m, 1)}-01`]);
+      return [V3_MESES[Number(m.slice(5, 7)) - 1].slice(0, 3), it.reduce((s, x) => s + x.valor, 0), it.filter((x) => x.t === "a").reduce((s, x) => s + x.valor, 0), m, it]; });
     const mx = Math.max(1, ...por.map((x) => x[1]));
     return `<section class="v3-card v3-prx">${hd}
       <div class="v3-prx-t">${this._brl(total)} <span>venceu em ${nomeM}${abertas ? ` · ${abertas} não ${abertas === 1 ? "paga" : "pagas"}` : " · tudo pago"}${atrasadas ? ` · <span class="v3-atrtxt">${atrasadas} com atraso</span>` : ""}${pessoa ? ` · ${this._e(pessoa)}` : ""}</span></div>
@@ -10024,7 +10047,7 @@ class ComprasV3Card extends BaseV2 {
       ${(() => { const pm = this._v3Pago([`${this._mes}-01`, `${this._finSomaMes(this._mes, 1)}-01`]), resto = pm.pago - total - (pm.ant || 0); return pm.pago > 0.004 && Math.abs(resto) > 0.009 ? `<div class="v3-prx-x">Pago no mês: <b>${this._brl(pm.pago)}</b>${pm.naHora > 0.004 ? ` · inclui ${this._brl(pm.naHora)} pagos à vista` : ""}${Math.abs(resto - pm.naHora) > 0.009 ? " e contas fixas" : ""}</div>` : ""; })()}
       <div class="v3-rl" style="--n:${vis.length + (resto.length ? 1 : 0)}">${pts}</div>
       <div class="v3-prx-s">Pago mês a mês</div>
-      <div class="v3-rb${nM > 6 ? " v3-rb12" : ""}" style="--n:${por.length}">${por.map(([n, v, a, m, pp], i) => `<span class="${i === por.length - 1 ? "ag" : ""}${this._v3RbTip === m ? " tip" : ""}" ${v > 0.004 ? `data-a="v3-rbtip" data-k="${m}" role="button" tabindex="0"` : ""} aria-label="${n}: ${this._brl(v)}${a > 0.004 ? `, dos quais ${this._brl(a)} antecipados` : ""}">${this._v3RbTip === m && v > 0.004 ? `<span class="v3-rbtip" role="status"><b>${this._v3MesT(m).replace(/^./, (c) => c.toUpperCase())}: ${this._brl(v)}</b>${[["b", "faturas", pp.fat], ["a", "antecipações", a]].filter((z) => z[2] > 0.004).map(([c, nm, vv]) => `<span><i class="${c}"></i>${nm} ${this._brl(vv)} (${Math.round(vv / v * 100)}%)</span>`).join("")}</span>` : ""}<b>${v > 0.004 ? `<span class="l">${this._brl(v)}</span><span class="c">${this._v3Curto(v)}</span>` : ""}</b><i style="height:${v > 0.004 ? Math.max(4, v / mx * 60).toFixed(0) : 2}px">${a > 0.004 && v > 0.004 ? `<em class="v3-rb-ant" style="height:${Math.min(100, a / v * 100).toFixed(1)}%"></em>` : ""}</i><small>${n}</small></span>`).join("")}</div></section>`;
+      <div class="v3-rb${nM > 6 ? " v3-rb12" : ""}" style="--n:${por.length}">${por.map(([n, v, a, m, pp], i) => `<span class="${i === por.length - 1 ? "ag" : ""}${this._v3RbTip === m ? " tip" : ""}" ${v > 0.004 ? `data-a="v3-rbtip" data-k="${m}" role="button" tabindex="0"` : ""} aria-label="${n}: ${this._brl(v)}${a > 0.004 ? `, dos quais ${this._brl(a)} antecipados` : ""}">${this._v3RbTip === m && v > 0.004 ? `<span class="v3-rbtip" role="status"><b>${this._v3MesT(m).replace(/^./, (c) => c.toUpperCase())}: ${this._brl(v)}</b>${pp.map((x) => `<span><i class="${x.t === "a" ? "a" : "b"}"></i>${this._e(x.nome)} <b>${this._brl(x.valor)}</b><small>${Math.round(x.valor / v * 100)}%</small></span>`).join("")}</span>` : ""}<b>${v > 0.004 ? `<span class="l">${this._brl(v)}</span><span class="c">${this._v3Curto(v)}</span>` : ""}</b><i style="height:${v > 0.004 ? Math.max(4, v / mx * 60).toFixed(0) : 2}px">${a > 0.004 && v > 0.004 ? `<em class="v3-rb-ant" style="height:${Math.min(100, a / v * 100).toFixed(1)}%"></em>` : ""}</i><small>${n}</small></span>`).join("")}</div></section>`;
   }
 
   _v3Futuro() {
@@ -11247,7 +11270,7 @@ class ComprasV3Card extends BaseV2 {
 .v3-rb.v3-rb12 b .l{display:none}.v3-rb.v3-rb12 b .c{display:inline}.v3-rb12{gap:6px}.v3-rb>span{position:relative}.v3-rb>span[data-a]{cursor:pointer}.v3-rb>span.tip>i{outline:2px solid var(--v3-fg);outline-offset:1px}
 .v3-rbtip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);z-index:5;display:grid;gap:3px;min-width:190px;padding:8px 10px;border-radius:10px;background:var(--v3-card,#fff);color:var(--v3-fg);box-shadow:0 6px 20px rgba(0,0,0,.22);font-size:12px;font-weight:400;text-align:left;white-space:nowrap}
 .v3-rb>span:first-child .v3-rbtip{left:0;transform:none}.v3-rb>span:last-child .v3-rbtip{left:auto;right:0;transform:none}
-.v3-rbtip i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}.v3-rbtip i.b{background:color-mix(in srgb,#3b82f6 70%,var(--v3-mut))}.v3-rbtip i.a{background:#a78bfa}
+.v3-rbtip small{color:var(--v3-mut-fg);font-size:11px;margin-left:8px;min-width:30px;text-align:right}.v3-rbtip span b{margin-left:auto;padding-left:10px}.v3-rbtip>span{display:flex;align-items:center;gap:0}.v3-rbtip i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}.v3-rbtip i.b{background:color-mix(in srgb,#3b82f6 70%,var(--v3-mut))}.v3-rbtip i.a{background:#a78bfa}
 .v3-cres{font:inherit;color:inherit;display:flex;align-items:center;gap:8px;width:100%;margin-top:10px;padding:9px 10px;border:1px solid var(--v3-borda,rgba(127,127,127,.25));border-radius:12px;background:transparent;cursor:pointer;text-align:left;font-size:12.5px;line-height:1.35}
 .v3-cres>svg{flex:none;width:16px;height:16px;opacity:.7}.v3-cres>span{flex:1;min-width:0}.v3-cres>b{flex:none;display:inline-flex;align-items:center;gap:2px;font-weight:600;color:var(--v3-pri);white-space:nowrap}.v3-cres>b svg{width:14px;height:14px}
 .v3-cs{display:inline-flex;align-items:center;gap:3px;font-style:normal;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;background:color-mix(in srgb,#f59e0b 18%,transparent);color:color-mix(in srgb,#b45309 85%,var(--v3-fg));margin-left:4px;white-space:nowrap}.v3-cs svg{width:12px;height:12px}.v3-cs.atr{background:color-mix(in srgb,#ef4444 18%,transparent);color:#dc2626}
