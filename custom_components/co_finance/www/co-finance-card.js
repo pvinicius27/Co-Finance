@@ -8991,7 +8991,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.36";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.37";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
@@ -9795,9 +9795,9 @@ class ComprasV3Card extends BaseV2 {
     const sk = (h, alt) => `<section class="v3-card v3-sk${alt}"><div class="v3-hd"><h2>${h}</h2></div><i class="v3-skb" style="width:45%;height:28px"></i><i class="v3-skb" style="width:100%;height:60px;margin-top:14px"></i><i class="v3-skb" style="width:100%;flex:1;min-height:60px;margin-top:14px"></i></section>`;
     const direita = futuro || (F ? ult6 || `<section class="v3-card"></section>` : sk("Próximos pagamentos", " v3-prx"));
     const cartoesV = F ? cartoes : sk("Cartões – Fatura", " v3-carts");
-    if (this._v3Layout() === "B") return `<div class="v3-resumo larga lay-b">${alerta}${heroi}${direita}<div class="v3-rf2 v3-rf2b">${cal}${cartoesV}</div><div class="v3-par">${onde}${mes}</div>${listaPop}</div>`;
+    if (this._v3Layout() === "B") return `<div class="v3-resumo larga lay-b">${alerta}${heroi}${direita}<div class="v3-rf2 v3-rf2b">${cal}${cartoesV}</div><div class="v3-par${onde ? "" : " um"}">${onde}${mes}</div>${listaPop}</div>`;
     return `<div class="v3-resumo larga">${alerta}<div class="v3-rf1${futuro || !F ? "" : " solto"}">${heroi}${direita}</div><div class="v3-rf2">${cartoesV}${cal}</div>
-      <div class="v3-par">${onde}${mes}</div>${listaPop}</div>`;
+      <div class="v3-par${onde ? "" : " um"}">${onde}${mes}</div>${listaPop}</div>`;
   }
 
   // a lista por trás de cada item de Compras do mês / Pagamentos realizados (tocar no item abre; tocar na compra ou na
@@ -11114,7 +11114,9 @@ class ComprasV3Card extends BaseV2 {
     .v3-hd h2{margin:0;font-size:14.5px;font-weight:600}
     .v3-link{border:0;background:none;color:var(--v3-pri);font-size:13px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:2px;padding:6px 0;min-height:32px}.v3-link .v3-ic{width:15px;height:15px}
     .v3-grade{display:grid;grid-template-columns:minmax(0,1.85fr) minmax(300px,1fr);gap:12px;align-items:start}
-    .v3-par{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}.v3-par>.v3-card{margin:0 0 12px}
+    .v3-par{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}.v3-par.um{grid-template-columns:minmax(0,1fr)}
+.v3-par>.v3-mmc{display:flex;flex-direction:column}.v3-par>.v3-mmc .v3-mm{flex:1;height:auto;min-height:190px}
+.v3-mmc>.v3-hd{height:auto!important;min-height:30px!important;align-items:flex-start!important}.v3-mmc>.v3-hd>h2{padding-top:6px}.v3-mm-hd{align-self:flex-start}.v3-par>.v3-card{margin:0 0 12px}
     .v3-alerta{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--v3-av-soft);color:var(--v3-av-forte);border-radius:14px;padding:8px 10px 8px 16px;margin:0 0 12px;font-size:14px}
     .v3-alerta small{opacity:.8}
     .v3-bt{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--v3-borda);background:var(--v3-card);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;min-height:36px}
