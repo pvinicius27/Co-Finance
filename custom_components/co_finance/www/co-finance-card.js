@@ -8991,7 +8991,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.33";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.34";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
@@ -9983,10 +9983,10 @@ class ComprasV3Card extends BaseV2 {
       + (lst.length > 3 ? `<button class="v3-rp fim cel" data-a="v3-lista" data-k="m-resto3"><i></i><em>e mais</em><b>+ ${lst.length - 3}</b><small>ver todos</small></button>` : "")
       + (resto.length ? `<button class="v3-rp fim" data-a="v3-lista" data-k="m-resto"><i></i><em>e mais</em><b>+ ${resto.length}</b><small>até ${dm(resto[resto.length - 1].vence)}</small></button>` : "");
     // pago mês a mês (a mesma conta do Pagamentos realizados), os 6 meses até este
-    const meses = Array.from({ length: 6 }, (_, i) => this._finSomaMes(this._mes, i - 5));
+    const nM = this._v2Largo && this._v3Layout() === "B" ? 12 : 6;  // layout B no computador: o quadro é largo, cabem 12 meses
+    const meses = Array.from({ length: nM }, (_, i) => this._finSomaMes(this._mes, i - nM + 1));
     const por = meses.map((m) => { const p = this._v3Pago([`${m}-01`, `${this._finSomaMes(m, 1)}-01`]); return [V3_MESES[Number(m.slice(5, 7)) - 1].slice(0, 3), p.pago, p.ant, m]; });
     const mx = Math.max(1, ...por.map((x) => x[1]));
-    const temAnt = por.some((x) => x[2] > 0.004);
     return `<section class="v3-card v3-prx">${hd}
       <div class="v3-prx-t">${this._brl(total)} <span>venceu em ${nomeM}${abertas ? ` · ${abertas} não ${abertas === 1 ? "paga" : "pagas"}` : " · tudo pago"}${atrasadas ? ` · <span class="v3-atrtxt">${atrasadas} com atraso</span>` : ""}${pessoa ? ` · ${this._e(pessoa)}` : ""}</span></div>
       ${(() => {  // o que foi antecipado para as faturas que venceram no mês: soma com o boleto
@@ -10000,8 +10000,8 @@ class ComprasV3Card extends BaseV2 {
       })()}
       ${(() => { const pm = this._v3Pago([`${this._mes}-01`, `${this._finSomaMes(this._mes, 1)}-01`]), resto = pm.pago - total - (pm.ant || 0); return pm.pago > 0.004 && Math.abs(resto) > 0.009 ? `<div class="v3-prx-x">Pago no mês: <b>${this._brl(pm.pago)}</b>${pm.naHora > 0.004 ? ` · inclui ${this._brl(pm.naHora)} pagos à vista` : ""}${Math.abs(resto - pm.naHora) > 0.009 ? " e contas fixas" : ""}</div>` : ""; })()}
       <div class="v3-rl" style="--n:${vis.length + (resto.length ? 1 : 0)}">${pts}</div>
-      <div class="v3-prx-s">Pago mês a mês${temAnt ? ` <span class="v3-leg"><i class="b"></i>faturas e contas <i class="a"></i>antecipações (no mês da fatura)</span>` : ""}</div>
-      <div class="v3-rb" style="--n:${por.length}">${por.map(([n, v, a, m], i) => `<span class="${i === por.length - 1 ? "ag" : ""}${this._v3RbTip === m ? " tip" : ""}" ${v > 0.004 ? `data-a="v3-rbtip" data-k="${m}" role="button" tabindex="0"` : ""} aria-label="${n}: ${this._brl(v)}${a > 0.004 ? `, dos quais ${this._brl(a)} antecipados` : ""}">${this._v3RbTip === m && v > 0.004 ? `<span class="v3-rbtip" role="status"><b>${this._v3MesT(m).replace(/^./, (c) => c.toUpperCase())}: ${this._brl(v)}</b><span><i class="b"></i>faturas e contas ${this._brl(v - a)} (${Math.round((v - a) / v * 100)}%)</span>${a > 0.004 ? `<span><i class="a"></i>antecipações ${this._brl(a)} (${Math.round(a / v * 100)}%)</span>` : ""}</span>` : ""}<b>${v > 0.004 ? `<span class="l">${this._brl(v)}</span><span class="c">${this._v3Curto(v)}</span>` : ""}</b><i style="height:${v > 0.004 ? Math.max(4, v / mx * 60).toFixed(0) : 2}px">${a > 0.004 && v > 0.004 ? `<em class="v3-rb-ant" style="height:${Math.min(100, a / v * 100).toFixed(1)}%"></em>` : ""}</i><small>${n}</small></span>`).join("")}</div></section>`;
+      <div class="v3-prx-s">Pago mês a mês</div>
+      <div class="v3-rb${nM > 6 ? " v3-rb12" : ""}" style="--n:${por.length}">${por.map(([n, v, a, m], i) => `<span class="${i === por.length - 1 ? "ag" : ""}${this._v3RbTip === m ? " tip" : ""}" ${v > 0.004 ? `data-a="v3-rbtip" data-k="${m}" role="button" tabindex="0"` : ""} aria-label="${n}: ${this._brl(v)}${a > 0.004 ? `, dos quais ${this._brl(a)} antecipados` : ""}">${this._v3RbTip === m && v > 0.004 ? `<span class="v3-rbtip" role="status"><b>${this._v3MesT(m).replace(/^./, (c) => c.toUpperCase())}: ${this._brl(v)}</b><span><i class="b"></i>faturas e contas ${this._brl(v - a)} (${Math.round((v - a) / v * 100)}%)</span>${a > 0.004 ? `<span><i class="a"></i>antecipações ${this._brl(a)} (${Math.round(a / v * 100)}%)</span>` : ""}</span>` : ""}<b>${v > 0.004 ? `<span class="l">${this._brl(v)}</span><span class="c">${this._v3Curto(v)}</span>` : ""}</b><i style="height:${v > 0.004 ? Math.max(4, v / mx * 60).toFixed(0) : 2}px">${a > 0.004 && v > 0.004 ? `<em class="v3-rb-ant" style="height:${Math.min(100, a / v * 100).toFixed(1)}%"></em>` : ""}</i><small>${n}</small></span>`).join("")}</div></section>`;
   }
 
   _v3Futuro() {
@@ -11135,7 +11135,7 @@ class ComprasV3Card extends BaseV2 {
     .v3-rb{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:8px;align-items:end;height:96px}
     .v3-rb>span{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px;min-width:0}
     .v3-rb i{display:block;width:100%;border-radius:5px 5px 2px 2px;background:color-mix(in srgb,#3b82f6 70%,var(--v3-mut))}.v3-rb .ag i{background:#f6b94a}.v3-rb i{display:flex;flex-direction:column;justify-content:flex-start;overflow:hidden}.v3-rb-ant{display:block;width:100%;background:repeating-linear-gradient(135deg,color-mix(in srgb,#a78bfa 85%,transparent) 0 4px,color-mix(in srgb,#a78bfa 55%,transparent) 4px 8px)}
-.v3-rb>span{position:relative}.v3-rb>span[data-a]{cursor:pointer}.v3-rb>span.tip>i{outline:2px solid var(--v3-fg);outline-offset:1px}
+.v3-rb.v3-rb12 b .l{display:none}.v3-rb.v3-rb12 b .c{display:inline}.v3-rb12{gap:6px}.v3-rb>span{position:relative}.v3-rb>span[data-a]{cursor:pointer}.v3-rb>span.tip>i{outline:2px solid var(--v3-fg);outline-offset:1px}
 .v3-rbtip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);z-index:5;display:grid;gap:3px;min-width:190px;padding:8px 10px;border-radius:10px;background:var(--v3-card,#fff);color:var(--v3-fg);box-shadow:0 6px 20px rgba(0,0,0,.22);font-size:12px;font-weight:400;text-align:left;white-space:nowrap}
 .v3-rb>span:first-child .v3-rbtip{left:0;transform:none}.v3-rb>span:last-child .v3-rbtip{left:auto;right:0;transform:none}
 .v3-rbtip i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}.v3-rbtip i.b{background:color-mix(in srgb,#3b82f6 70%,var(--v3-mut))}.v3-rbtip i.a{background:#a78bfa}
