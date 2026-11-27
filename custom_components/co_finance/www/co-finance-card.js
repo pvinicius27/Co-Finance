@@ -8991,7 +8991,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.41";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.42";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
@@ -9786,12 +9786,12 @@ class ComprasV3Card extends BaseV2 {
       <div class="v3-hd"><h2>${pessoa ? `${this._e(pessoa)} comprou` : modo === "mes" ? "Compras do mês" : `Compras ${quando}`}</h2>${tchip}</div>
       <span class="v3-total">${this._brl(totalC)}</span>
       <span class="v3-num-d">${!itensC.length ? "nenhuma compra lançada ainda" : `${itensC.length} ${itensC.length === 1 ? "compra" : "compras"}${mesNome ? ` em ${mesNome}` : ""}`}</span>
-      ${quebra([["No cartão", div.c, "c-cartao"], ["À vista", div.h, "c-vista"], ["Sem forma", div.s, "c-sem"]])}</div></section>`;
+      ${quebra([["Crédito", div.c, "c-cartao"], ["Pix / débito", div.h, "c-vista"], ["Sem forma", div.s, "c-sem"]])}</div></section>`;
     const atual = modo === "mes" && this._mes === this._mesDe(new Date());
     const kpiP = P ? `<section class="v3-card v3-rk"><div class="v3-rk-t">
       <div class="v3-hd"><h2>Pagamentos realizados</h2>${this._v3PagoNormal(P.pago)}</div><span class="v3-total">${this._brl(P.pago)}</span>
       <span class="v3-num-d">${P.pago > 0.004 ? `${P.n} ${P.n === 1 ? "pagamento" : "pagamentos"} ${quando}${atual ? " · até hoje" : ""}` : "nada pago neste período"}</span>
-      ${quebra([["Faturas", P.fat, "p-fat"], ["Antecipações", P.ant, "p-ant"], ["À vista", P.naHora, "p-vista"], ["Contas fixas", P.con, "p-contas"]])}</div></section>` : `<section class="v3-card v3-rk v3-sk"><div class="v3-rk-t"><div class="v3-hd"><h2>Pagamentos realizados</h2></div><i class="v3-skb" style="width:55%;height:30px"></i><i class="v3-skb" style="width:35%"></i><i class="v3-skb" style="width:90%;margin-top:auto"></i></div></section>`;
+      ${quebra([["Faturas", P.fat, "p-fat"], ["Antecipações", P.ant, "p-ant"], ["Pix / débito", P.naHora, "p-vista"], ["Contas fixas", P.con, "p-contas"]])}</div></section>` : `<section class="v3-card v3-rk v3-sk"><div class="v3-rk-t"><div class="v3-hd"><h2>Pagamentos realizados</h2></div><i class="v3-skb" style="width:55%;height:30px"></i><i class="v3-skb" style="width:35%"></i><i class="v3-skb" style="width:90%;margin-top:auto"></i></div></section>`;
     const heroi = `<div class="v3-rks">${kpiC}${kpiP}</div>`;  // devemos / a receber: só no sino
     const alerta = this._v3Alerta();
     const vazio = modo === "mes" && !itens.length;
@@ -9860,7 +9860,7 @@ class ComprasV3Card extends BaseV2 {
       }
       const sel = base.map((x) => ({ ...x, v: de(x) })).filter((x) => x.v > 0.004);
       total = sel.reduce((s, x) => s + x.v, 0);
-      tit = { "c-cartao": "Compras no cartão", "c-vista": "Compras à vista", "c-sem": "Compras sem forma de pagamento", "p-vista": "Pago à vista" }[k];
+      tit = { "c-cartao": "Compras no crédito", "c-vista": "Compras no Pix / débito", "c-sem": "Compras sem forma de pagamento", "p-vista": "Pago no Pix / débito" }[k];
       dica = { "c-cartao": "Entram nas próximas faturas.", "c-vista": "Pix, débito e afins: saíram da conta no mesmo dia.", "c-sem": "Toque numa compra para escolher como foi paga.", "p-vista": "Pix, débito e afins: saíram da conta no mesmo dia." }[k];
       linhas = sel.map((x) => this._v3Linha(x, idx));
     } else if (k === "p-ant") {  // antecipações feitas no período, com a fatura que elas abateram
@@ -10008,7 +10008,7 @@ class ComprasV3Card extends BaseV2 {
     // pago mês a mês (a mesma conta do Pagamentos realizados), os 6 meses até este
     const nM = this._v2Largo && this._v3Layout() === "B" ? 12 : 6;  // layout B no computador: o quadro é largo, cabem 12 meses
     const meses = Array.from({ length: nM }, (_, i) => this._finSomaMes(this._mes, i - nM + 1));
-    const por = meses.map((m) => { const p = this._v3Pago([`${m}-01`, `${this._finSomaMes(m, 1)}-01`]); return [V3_MESES[Number(m.slice(5, 7)) - 1].slice(0, 3), p.pago, p.ant, m]; });
+    const por = meses.map((m) => { const p = this._v3Pago([`${m}-01`, `${this._finSomaMes(m, 1)}-01`]); return [V3_MESES[Number(m.slice(5, 7)) - 1].slice(0, 3), (p.fat || 0) + (p.ant || 0), p.ant || 0, m, p]; });  // só o cartão de crédito: faturas + antecipações
     const mx = Math.max(1, ...por.map((x) => x[1]));
     return `<section class="v3-card v3-prx">${hd}
       <div class="v3-prx-t">${this._brl(total)} <span>venceu em ${nomeM}${abertas ? ` · ${abertas} não ${abertas === 1 ? "paga" : "pagas"}` : " · tudo pago"}${atrasadas ? ` · <span class="v3-atrtxt">${atrasadas} com atraso</span>` : ""}${pessoa ? ` · ${this._e(pessoa)}` : ""}</span></div>
@@ -10024,7 +10024,7 @@ class ComprasV3Card extends BaseV2 {
       ${(() => { const pm = this._v3Pago([`${this._mes}-01`, `${this._finSomaMes(this._mes, 1)}-01`]), resto = pm.pago - total - (pm.ant || 0); return pm.pago > 0.004 && Math.abs(resto) > 0.009 ? `<div class="v3-prx-x">Pago no mês: <b>${this._brl(pm.pago)}</b>${pm.naHora > 0.004 ? ` · inclui ${this._brl(pm.naHora)} pagos à vista` : ""}${Math.abs(resto - pm.naHora) > 0.009 ? " e contas fixas" : ""}</div>` : ""; })()}
       <div class="v3-rl" style="--n:${vis.length + (resto.length ? 1 : 0)}">${pts}</div>
       <div class="v3-prx-s">Pago mês a mês</div>
-      <div class="v3-rb${nM > 6 ? " v3-rb12" : ""}" style="--n:${por.length}">${por.map(([n, v, a, m], i) => `<span class="${i === por.length - 1 ? "ag" : ""}${this._v3RbTip === m ? " tip" : ""}" ${v > 0.004 ? `data-a="v3-rbtip" data-k="${m}" role="button" tabindex="0"` : ""} aria-label="${n}: ${this._brl(v)}${a > 0.004 ? `, dos quais ${this._brl(a)} antecipados` : ""}">${this._v3RbTip === m && v > 0.004 ? `<span class="v3-rbtip" role="status"><b>${this._v3MesT(m).replace(/^./, (c) => c.toUpperCase())}: ${this._brl(v)}</b><span><i class="b"></i>faturas e contas ${this._brl(v - a)} (${Math.round((v - a) / v * 100)}%)</span>${a > 0.004 ? `<span><i class="a"></i>antecipações ${this._brl(a)} (${Math.round(a / v * 100)}%)</span>` : ""}</span>` : ""}<b>${v > 0.004 ? `<span class="l">${this._brl(v)}</span><span class="c">${this._v3Curto(v)}</span>` : ""}</b><i style="height:${v > 0.004 ? Math.max(4, v / mx * 60).toFixed(0) : 2}px">${a > 0.004 && v > 0.004 ? `<em class="v3-rb-ant" style="height:${Math.min(100, a / v * 100).toFixed(1)}%"></em>` : ""}</i><small>${n}</small></span>`).join("")}</div></section>`;
+      <div class="v3-rb${nM > 6 ? " v3-rb12" : ""}" style="--n:${por.length}">${por.map(([n, v, a, m, pp], i) => `<span class="${i === por.length - 1 ? "ag" : ""}${this._v3RbTip === m ? " tip" : ""}" ${v > 0.004 ? `data-a="v3-rbtip" data-k="${m}" role="button" tabindex="0"` : ""} aria-label="${n}: ${this._brl(v)}${a > 0.004 ? `, dos quais ${this._brl(a)} antecipados` : ""}">${this._v3RbTip === m && v > 0.004 ? `<span class="v3-rbtip" role="status"><b>${this._v3MesT(m).replace(/^./, (c) => c.toUpperCase())}: ${this._brl(v)}</b>${[["b", "faturas", pp.fat], ["a", "antecipações", a]].filter((z) => z[2] > 0.004).map(([c, nm, vv]) => `<span><i class="${c}"></i>${nm} ${this._brl(vv)} (${Math.round(vv / v * 100)}%)</span>`).join("")}</span>` : ""}<b>${v > 0.004 ? `<span class="l">${this._brl(v)}</span><span class="c">${this._v3Curto(v)}</span>` : ""}</b><i style="height:${v > 0.004 ? Math.max(4, v / mx * 60).toFixed(0) : 2}px">${a > 0.004 && v > 0.004 ? `<em class="v3-rb-ant" style="height:${Math.min(100, a / v * 100).toFixed(1)}%"></em>` : ""}</i><small>${n}</small></span>`).join("")}</div></section>`;
   }
 
   _v3Futuro() {
