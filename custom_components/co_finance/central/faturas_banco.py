@@ -59,7 +59,8 @@ def _resumo(f: dict[str, Any], k: dict[str, Any]) -> dict[str, Any]:
             "inicio": f.get("inicio"), "total": f["total"], "linhas": len(f["linhas"]), "compras": len(cp),
             "ligadas": sum(1 for l in cp if l.get("compra")), "estornos": sum(1 for l in f["linhas"] if l["tipo"] == "estorno"),
             "parcelas": sum(1 for l in cp if l.get("parcela")), "lida_em": f.get("lida_em"), "arquivo": f.get("arquivo"),
-            "finais_novos": sorted({l["final"] for l in f["linhas"] if l["final"] and l["final"] not in finais}), **gasto_do_mes(f)}
+            "finais_novos": sorted({l["final"] for l in f["linhas"] if l["final"] and l["final"] not in finais}),
+            "anterior": f.get("anterior"), **gasto_do_mes(f)}
 
 
 def gasto_do_mes(f: dict[str, Any]) -> dict[str, Any]:

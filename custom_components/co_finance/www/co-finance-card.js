@@ -663,6 +663,17 @@ function instalarFinancas(Classe) {
   };
 
   // débito e vale saem na hora (sem fatura): o que saiu de cada cartão e quando
+  // lista de faturas: entre uma fatura e a anterior, o mês que o banco pulou ("Total da fatura anterior" = a de 2 meses antes)
+  P._finFatPulados = function (f, a) {
+    if (!a || f.anterior == null || Math.abs(f.anterior - a.total) > 0.011) return "";
+    const mn = (s) => Number(s.slice(0, 4)) * 12 + Number(s.slice(5, 7)) - 1, out = [];
+    for (let m = mn(f.vence) - 1; m > mn(a.vence); m--) {
+      const ym = `${Math.floor(m / 12)}-${String(m % 12 + 1).padStart(2, "0")}`;
+      out.push(`<div class="fag-l ffl fnemi"><span class="fag-m"><b>${this._e(this._mesNome(ym))}</b><small>fatura não emitida</small></span>
+        <span class="fag-m"><small>O banco não emitiu fatura neste mês: as compras do período estão na fatura de ${this._dataCurta(f.vence + "T12:00")}.</small></span><span class="fag-v"><b>—</b></span><span></span></div>`);
+    }
+    return out.join("");
+  };
   P._finGastos = function (k, filtro) {
     return (this._fFin?.na_hora || []).filter((x) => x.cartao === k.id && (this._fQuem === "Todos" || x.quem === this._fQuem) && (!filtro || filtro(x.data)))
       .sort((a, b) => b.data.localeCompare(a.data));
@@ -2118,13 +2129,13 @@ function instalarFinancas(Classe) {
     const grupos = Object.entries(porK).map(([kid, l]) => {
       const ano = l.filter((f) => f.vence.startsWith(hoje.slice(0, 4)));
       return `<div class="fcard"><div class="fhd"><h3>💳 ${this._e(nomeK(kid))} · ${this._e(D.bancos?.[l[0].banco] || l[0].banco)}</h3><small>${ano.length} em ${hoje.slice(0, 4)} · gasto ${this._brl(ano.reduce((s, f) => s + (f.gasto_mes ?? f.total), 0))}${ano.some((f) => f.antecipado) ? ` · boletos ${this._brl(ano.reduce((s, f) => s + f.total, 0))}` : ""}</small></div>
-        ${l.map((f) => `<button class="fag-l ffl" data-a="f-fat-det" data-k="${this._e(f.id)}">
+        ${l.map((f, i) => `<button class="fag-l ffl" data-a="f-fat-det" data-k="${this._e(f.id)}">
           <span class="fag-m"><b>${this._e(this._mesNome(f.vence.slice(0, 7)))}</b><small>vence ${this._dataCurta(f.vence + "T12:00")}</small></span>
           <span class="fag-m"><b>${f.compras} ${f.compras === 1 ? "compra" : "compras"}</b><small>${f.ligadas ? `${f.ligadas} ✓ no sistema · ` : ""}${f.parcelas ? `${f.parcelas} parcelas` : ""}${f.estornos ? ` · ${f.estornos} ↩` : ""}${f.finais_novos.length ? ` · ⚠ final ${f.finais_novos.join(", ")}` : ""}</small></span>
           <span class="fag-v">${f.gasto_mes != null && Math.abs(f.gasto_mes - f.total) > 0.004  // com antecipação: o gasto do mês em destaque, o boleto embaixo
             ? `<b>${this._brl(f.gasto_mes)}</b><small>gasto do mês</small><small class="fnw">boleto ${this._brl(f.total)}</small>${f.antecipado ? `<small class="fnw">antecipado ${this._brl(f.antecipado)}</small>` : ""}`
             : `<b>${this._brl(f.total)}</b><small>${f.linhas} linhas</small>`}</span>
-          <span class="fag-s fok">›</span></button>`).join("")}
+          <span class="fag-s fok">›</span></button>${this._finFatPulados(f, l[i + 1])}`).join("")}
         <div class="ffat-tudo">${this._fFatApagarK === kid
           ? `<span class="fs">Apagar as <b>${l.length}</b> ${l.length === 1 ? "fatura lida" : "faturas lidas"} do ${this._e(nomeK(kid))}?</span>
              ${this._fFatApagarN ? `<label class="fs ffat-cmp"><input type="checkbox" data-a="f-fat-apagar-c" ${this._fFatApagarC !== false ? "checked" : ""}> Levar junto as <b>${this._fFatApagarN}</b> ${this._fFatApagarN === 1 ? "compra trazida" : "compras trazidas"} delas, para ler do zero. As de nota, de pedido e as lançadas à mão ficam.</label>` : ""}
@@ -2531,7 +2542,7 @@ function instalarFinancas(Classe) {
     .fin,.fcol{grid-template-columns:minmax(0,1fr)}.fin>*,.fcol>*,.fdois>*,.fheroi>*{min-width:0}
     .fanos{overflow-x:auto;overflow-y:hidden}.fab{min-width:46px}
     .fmes.on{background:var(--c-fundo)}.fmes-l{padding:0 0 6px 14px;border-left:3px solid var(--c-linha);margin:0 0 6px 6px}.fmes-tot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 4px 2px;margin-top:6px;border-top:2px solid var(--c-linha);font-size:15px}.fmes-tot span{display:grid}.fmes-tot small{color:var(--c-sub);font-size:11.5px}.ffat-tudo{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--divider-color,rgba(127,127,127,.2))}.fcontagrade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:4px 0 10px}.fcontagrade:has(>.fbox:nth-child(4)){grid-template-columns:repeat(4,minmax(0,1fr))}
-    .fnw{white-space:nowrap}.fcasa{display:grid;gap:6px}.ffat-seg{margin:0 0 10px;width:max-content}div.fag-l{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.8fr) minmax(0,.9fr) 4px;gap:10px;align-items:center;border-bottom:1px solid var(--c-linha);padding:9px 2px}div.fag-l:last-child{border-bottom:0}div.fev{cursor:default}.ffat .ft3,.folha .fev .ft3{overflow-wrap:anywhere}
+    .fnw{white-space:nowrap}div.fnemi{opacity:.7;background:color-mix(in srgb,var(--c-txt) 4%,transparent);border-radius:8px}div.fnemi .fag-m small{white-space:normal}.fcasa{display:grid;gap:6px}.ffat-seg{margin:0 0 10px;width:max-content}div.fag-l{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.8fr) minmax(0,.9fr) 4px;gap:10px;align-items:center;border-bottom:1px solid var(--c-linha);padding:9px 2px}div.fag-l:last-child{border-bottom:0}div.fev{cursor:default}.ffat .ft3,.folha .fev .ft3{overflow-wrap:anywhere}
     @media (max-width:520px){button.fag-l.ffl{grid-template-columns:minmax(0,1fr) auto}button.fag-l.ffl>span:nth-child(2){grid-column:1/-1;grid-row:2}button.fag-l.ffl .fag-s{display:none}div.fag-l{grid-template-columns:minmax(0,1fr) auto}div.fag-l>span:nth-child(2){grid-column:1/-1;grid-row:2}div.fag-l .fag-s{display:none}}
     .fpgd{display:block;font-size:11.5px;font-weight:400;color:var(--c-sub)}.flin b .fpgd{text-align:right}
     .fmais>summary{cursor:pointer;list-style:none;font-size:13px;color:var(--c-acc);padding:8px 2px 2px}.fmais>summary::-webkit-details-marker{display:none}
@@ -8964,7 +8975,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.29";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.30";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
@@ -10031,6 +10042,19 @@ class ComprasV3Card extends BaseV2 {
             const prox = faturas.filter((y) => y.cartao === k.id && !y.pago && y.vence.slice(0, 7) > this._mes).sort((a, b) => a.vence.localeCompare(b.vence))[0];
             if (prox) return { k, x: prox, n: lst.length, antes: x || null };
           }
+          if (!x) {  // nenhuma fatura vence neste mês: as compras do mês e a fatura que vai cobrá-las
+            const fimMes = `${this._mes}-31`;
+            const comp = this._compras().filter((c) => String(c.emissao || "").slice(0, 7) === this._mes && (!pessoa || c.quem === pessoa))
+              .map((c) => (c.pago_com || []).filter((pg) => pg.cartao_id === k.id).reduce((s, pg) => s + (pg.valor || 0), 0)).filter((v) => v > 0.004);
+            const prox = faturas.filter((y) => y.cartao === k.id && y.vence > fimMes).sort((a, b) => a.vence.localeCompare(b.vence))[0];
+            if (comp.length && prox) {
+              const mesN = V3_MESES[Number(this._mes.slice(5, 7)) - 1].toLowerCase();
+              return { k, n: 0, x: { id: `semfat:${k.id}`, tipo: "fatura", cartao: k.id, vence: prox.vence, gasto: true, acao: "v2-cart",
+                total: Math.round(comp.reduce((s, v) => s + v, 0) * 100) / 100, n: comp.length,
+                rotulo: `Compras de ${mesN} → fatura de ${prox.vence.slice(8, 10)}/${prox.vence.slice(5, 7)}`,
+                sem_fatura: true, destino: prox.vence, pulou: String(prox.sem_fatura_no_meio || "").slice(0, 7) === this._mes } };
+            }
+          }
           return { k, x, n: lst.length };
         }
         // ano / tudo: o gasto do período no cartão (compras pela data da compra, valor cheio: antecipação também é gasto),
@@ -10068,6 +10092,12 @@ class ComprasV3Card extends BaseV2 {
   _v3Ciclo(sel, faturas) {
     const mesN = (s) => V3_MESES[Number(s.slice(5, 7)) - 1], dm = (s) => `${s.slice(8, 10)}/${s.slice(5, 7)}`;
     const x = sel?.x, k = sel?.k;
+    if (this._fModo === "mes" && x?.sem_fatura) {  // mês sem fatura deste cartão: explica para onde foram as compras
+      const m = mesN(this._mes).toLowerCase(), nome = this._finNomeCartao(k);
+      return { titulo: `Cartões – ${this._v3MesT(this._mes)}`, linhas: [
+        ...(x.pulou ? [["info", `O banco <b>não emitiu fatura</b> do ${this._e(nome)} em ${m}.`]] : []),
+        ["dir", `As compras de ${m} no ${this._e(nome)} (<b>${this._brl(x.total)}</b>, ${x.n} ${x.n === 1 ? "compra" : "compras"}) são cobradas na <b>fatura de ${dm(x.destino)}</b>.`]] };
+    }
     if (this._fModo !== "mes" || !x || k?.credito === false || String(x.id).startsWith("v2cart:")) return { titulo: "Cartões", linhas: [] };
     const titulo = `Cartões – Fatura de ${this._v3MesT(this._mes)}`;
     const doCartao = faturas.filter((f) => f.cartao === k.id).sort((a, b) => a.vence.localeCompare(b.vence));
@@ -10779,7 +10809,7 @@ class ComprasV3Card extends BaseV2 {
 
   async _clique(ev, el) {
     const acao = el.getAttribute("data-a");
-    if (acao === "f-quem" || (acao === "f-mes" && !this._v2Largo)) this._v3Parado = true;  // trocar a pessoa (celular e computador) e as setas do mês no celular: a tela fica onde estava
+    if (acao === "f-quem" || acao === "f-mes") this._v3Parado = true;  // trocar a pessoa e as setas do mês (celular e computador): a tela fica onde estava, para ver o histórico para trás
     else if (["f-quem", "f-modo", "f-mes", "f-vai-mes", "f-vai-ano"].includes(acao)) this._v3IrTopo = true;  // pessoa/período: começa do alto
     this._v3Antes = new Set(this._v3Abriveis().map((x) => this._v3Assin(x))); this._v3AntesEm = Date.now(); this._v3AntesAba = this._abaAtual?.();
     const a = el.getAttribute("data-a"), k = el.getAttribute("data-k");
