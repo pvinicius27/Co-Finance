@@ -8991,7 +8991,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.31";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.32";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
@@ -9981,7 +9981,7 @@ class ComprasV3Card extends BaseV2 {
       + (resto.length ? `<button class="v3-rp fim" data-a="v3-lista" data-k="m-resto"><i></i><em>e mais</em><b>+ ${resto.length}</b><small>até ${dm(resto[resto.length - 1].vence)}</small></button>` : "");
     // pago mês a mês (a mesma conta do Pagamentos realizados), os 6 meses até este
     const meses = Array.from({ length: 6 }, (_, i) => this._finSomaMes(this._mes, i - 5));
-    const por = meses.map((m) => { const p = this._v3Pago([`${m}-01`, `${this._finSomaMes(m, 1)}-01`]); return [V3_MESES[Number(m.slice(5, 7)) - 1].slice(0, 3), p.pago, p.ant]; });
+    const por = meses.map((m) => { const p = this._v3Pago([`${m}-01`, `${this._finSomaMes(m, 1)}-01`]); return [V3_MESES[Number(m.slice(5, 7)) - 1].slice(0, 3), p.pago, p.ant, m]; });
     const mx = Math.max(1, ...por.map((x) => x[1]));
     const temAnt = por.some((x) => x[2] > 0.004);
     return `<section class="v3-card v3-prx">${hd}
@@ -9998,7 +9998,7 @@ class ComprasV3Card extends BaseV2 {
       ${(() => { const pm = this._v3Pago([`${this._mes}-01`, `${this._finSomaMes(this._mes, 1)}-01`]); return pm.pago > 0.004 && Math.abs(pm.pago - total) > 0.009 ? `<div class="v3-prx-x">Saiu da conta em ${nomeM}: <b>${this._brl(pm.pago)}</b>${pm.naHora > 0.004 ? ` · inclui ${this._brl(pm.naHora)} pagos à vista` : ""}${Math.abs(pm.pago - pm.naHora - total) > 0.009 ? " e contas de outros meses" : ""}</div>` : ""; })()}
       <div class="v3-rl" style="--n:${vis.length + (resto.length ? 1 : 0)}">${pts}</div>
       <div class="v3-prx-s">Pago mês a mês${temAnt ? ` <span class="v3-leg"><i class="b"></i>faturas e contas <i class="a"></i>antecipações</span>` : ""}</div>
-      <div class="v3-rb" style="--n:${por.length}">${por.map(([n, v, a], i) => `<span class="${i === por.length - 1 ? "ag" : ""}" aria-label="${n}: ${this._brl(v)}${a > 0.004 ? `, dos quais ${this._brl(a)} antecipados` : ""}"><b>${v > 0.004 ? `<span class="l">${this._brl(v)}</span><span class="c">${this._v3Curto(v)}</span>` : ""}</b><i style="height:${v > 0.004 ? Math.max(4, v / mx * 60).toFixed(0) : 2}px">${a > 0.004 && v > 0.004 ? `<em class="v3-rb-ant" style="height:${Math.min(100, a / v * 100).toFixed(1)}%"></em>` : ""}</i><small>${n}</small></span>`).join("")}</div></section>`;
+      <div class="v3-rb" style="--n:${por.length}">${por.map(([n, v, a, m], i) => `<span class="${i === por.length - 1 ? "ag" : ""}${this._v3RbTip === m ? " tip" : ""}" ${v > 0.004 ? `data-a="v3-rbtip" data-k="${m}" role="button" tabindex="0"` : ""} aria-label="${n}: ${this._brl(v)}${a > 0.004 ? `, dos quais ${this._brl(a)} antecipados` : ""}">${this._v3RbTip === m && v > 0.004 ? `<span class="v3-rbtip" role="status"><b>${this._v3MesT(m).replace(/^./, (c) => c.toUpperCase())}: ${this._brl(v)}</b><span><i class="b"></i>faturas e contas ${this._brl(v - a)} (${Math.round((v - a) / v * 100)}%)</span>${a > 0.004 ? `<span><i class="a"></i>antecipações ${this._brl(a)} (${Math.round(a / v * 100)}%)</span>` : ""}</span>` : ""}<b>${v > 0.004 ? `<span class="l">${this._brl(v)}</span><span class="c">${this._v3Curto(v)}</span>` : ""}</b><i style="height:${v > 0.004 ? Math.max(4, v / mx * 60).toFixed(0) : 2}px">${a > 0.004 && v > 0.004 ? `<em class="v3-rb-ant" style="height:${Math.min(100, a / v * 100).toFixed(1)}%"></em>` : ""}</i><small>${n}</small></span>`).join("")}</div></section>`;
   }
 
   _v3Futuro() {
@@ -10131,9 +10131,22 @@ class ComprasV3Card extends BaseV2 {
       if (face.tagName === "DIV") { face.setAttribute("role", "button"); face.setAttribute("tabindex", "0"); }
     }
     const ciclo = this._v3Ciclo(sel, faturas);
+    // embaixo do cartão, uma linha só (o principal + o que pede atenção) e "Detalhes": a janela com o cartão e todos os textos
+    const x = sel.x, atrasada = x && !x.gasto && !x.pago && x.vence < hoje && !(x.a_pagar != null && x.a_pagar <= 0.004);
+    const sinais = [atrasada ? `<em class="v3-cs atr">${V3_SVG("alerta")}atrasada</em>` : "",
+      x?.sem_fatura_no_meio || x?.pulou ? `<em class="v3-cs">${V3_SVG("alerta")}mês sem fatura</em>` : "",
+      x?.antecipado ? `<em class="v3-cs">antecipada</em>` : ""].filter(Boolean).join("");
+    const curta = ciclo.linhas.length ? String(ciclo.linhas[x?.sem_fatura ? ciclo.linhas.length - 1 : 0][1]).replace(/^Esta fatura c/, "C").replace(/ \+ parcelas de compras antigas/, "") : "";
+    const pop = this._v3CicloPop && ciclo.linhas.length ? `<div class="v3-pop" role="dialog" aria-modal="true" aria-label="Detalhes do cartão"><div class="v3-pop-f" data-a="v3-ciclo"></div>
+      <div class="v3-pop-c"><div class="v3-pop-h"><span><b>${this._e(this._finNomeCartao(sel.k))}</b><small>${ciclo.titulo.replace(/^Cartões – /, "")}</small></span>
+        <button class="v3-ib" data-a="v3-ciclo" aria-label="Fechar">${V3_SVG("fechar")}</button></div>
+        <div class="v3-pop-l v3-cpop"><div class="v3-cpop-face">${this._finCartaoFace(sel.k, x)}</div>
+          ${x && !x.gasto && x.gasto_mes != null && Math.abs(x.gasto_mes - (x.boleto ?? x.total)) > 0.004 ? `<div class="v3-cpop-v"><span>Gasto do mês<b>${this._brl(x.gasto_mes)}</b></span><span>Boleto<b>${this._brl(x.boleto ?? x.total)}</b></span>${x.antecipado ? `<span>Antecipado<b>${this._brl(x.antecipado)}</b></span>` : ""}</div>` : ""}
+          <div class="v3-ciclo">${ciclo.linhas.map(([ic, tx]) => `<div>${V3_SVG(ic)}<span>${tx}</span></div>`).join("")}</div>
+          ${sel.k.credito !== false ? `<button class="v3-link" data-a="v3-ircart" data-k="${this._e(sel.k.id)}">Abrir em A pagar ${V3_SVG("dir")}</button>` : ""}</div></div></div>` : "";
     return `<section class="v3-card v3-carts"><div class="v3-hd"><h2>${ciclo.titulo}</h2><button class="v3-link" data-a="v3-menu" data-k="contas">A pagar ${V3_SVG("dir")}</button></div>
       <div class="v-pilha v3-pilha">${tpl.innerHTML}</div>
-      ${ciclo.linhas.length ? `<div class="v3-ciclo">${ciclo.linhas.map(([ic, tx]) => `<div>${V3_SVG(ic)}<span>${tx}</span></div>`).join("")}</div>` : ""}
+      ${ciclo.linhas.length ? `<button class="v3-cres" data-a="v3-ciclo" aria-haspopup="dialog">${V3_SVG("info")}<span>${curta}${sinais ? ` ${sinais}` : ""}</span><b>Detalhes ${V3_SVG("dir")}</b></button>` : ""}${pop}
       ${pessoa ? `<div class="v3-dica">Faturas só com as compras de ${this._e(pessoa)}</div>` : ""}</section>`;
   }
 
@@ -10158,7 +10171,7 @@ class ComprasV3Card extends BaseV2 {
       const antigas = (x.itens || []).some((i) => (i.parcela || 1) > 1);
       if (x.fecha) linhas.push(["info", `Esta fatura cobrou as <b>compras ${ini ? `de ${ini} a ${dm(x.fecha)}` : `até ${dm(x.fecha)}`}</b>${antigas ? " + parcelas de compras antigas" : ""}.`]);
       if (x.sem_fatura_no_meio) linhas.push(["info", `O banco não emitiu a fatura de ${mesN(x.sem_fatura_no_meio)}: esta cobre dois meses de compras.`]);
-      const porMes = x.sem_fatura_no_meio ? this._finFatPorMes(x) : "";  // só quando o ciclo foge do normal (mês pulado); sempre nos Detalhes
+      const porMes = this._finFatPorMes(x);  // de onde vem o valor (fica nos Detalhes)
       if (porMes) linhas.push(["info", porMes]);
     }
     // as compras feitas no mês escolhido, neste cartão: em que fatura caem (a 1ª parcela)
@@ -10897,6 +10910,7 @@ class ComprasV3Card extends BaseV2 {
     if (a === "v3-dia") { this._v3Dia = k; this._v3DiaPop = true; this._v3Parado = true; this._render(); return; }
     if (a === "v3-lista") { this._v3ListaK = k; this._v3Parado = true; this._render(); return; }
     if (a === "v3-lista-fechar") { this._v3ListaK = null; this._v3Parado = true; this._render(); return; }
+    if (a === "v3-ciclo") { this._v3CicloPop = !this._v3CicloPop; this._v3Parado = true; this._render(); return; }  // Detalhes do cartão (abre / fecha)
     if (a === "v3-dia-fechar") { this._v3DiaPop = false; this._v3Parado = true; this._render(); return; }
     if (a === "v3-mmsel") { this._v3MmSel = k; this._render(); return; }
     if (a === "v3-ano-cmp") {  // liga/desliga o ano no gráfico; ligar o 4º desliga o mais antigo que estava ligado; sempre fica um
@@ -10927,6 +10941,8 @@ class ComprasV3Card extends BaseV2 {
       this._render();
       return;
     }
+    if (a === "v3-ircart") this._v3CicloPop = false;
+    if (a === "v3-rbtip") { this._v3RbTip = this._v3RbTip === k ? null : k; this._v3Parado = true; this._render(); return; }  // toque na barra do Pago mês a mês: o quanto de cada parte
     if (a === "v3-fat") { this._v3FatAberta = !this._v3FatAberta; this._v3Rolar = this._v3FatAberta ? ".v3-fat-it" : ".v3-fatbox"; this._render(); return; }
     if (a === "v3-ircart") {  // do Resumo para A pagar, já no cartão tocado
       this._v3PgCart = k; this._v3FatAberta = false; this._v2Mais = false; this._v2Per = false; this._aviso = null; this._v3Rolar = ".v3-pgpilha";
@@ -11116,6 +11132,15 @@ class ComprasV3Card extends BaseV2 {
     .v3-rb{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:8px;align-items:end;height:96px}
     .v3-rb>span{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px;min-width:0}
     .v3-rb i{display:block;width:100%;border-radius:5px 5px 2px 2px;background:color-mix(in srgb,#3b82f6 70%,var(--v3-mut))}.v3-rb .ag i{background:#f6b94a}.v3-rb i{display:flex;flex-direction:column;justify-content:flex-start;overflow:hidden}.v3-rb-ant{display:block;width:100%;background:repeating-linear-gradient(135deg,color-mix(in srgb,#a78bfa 85%,transparent) 0 4px,color-mix(in srgb,#a78bfa 55%,transparent) 4px 8px)}
+.v3-rb>span{position:relative}.v3-rb>span[data-a]{cursor:pointer}.v3-rb>span.tip>i{outline:2px solid var(--v3-fg);outline-offset:1px}
+.v3-rbtip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);z-index:5;display:grid;gap:3px;min-width:190px;padding:8px 10px;border-radius:10px;background:var(--v3-card,#fff);color:var(--v3-fg);box-shadow:0 6px 20px rgba(0,0,0,.22);font-size:12px;font-weight:400;text-align:left;white-space:nowrap}
+.v3-rb>span:first-child .v3-rbtip{left:0;transform:none}.v3-rb>span:last-child .v3-rbtip{left:auto;right:0;transform:none}
+.v3-rbtip i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}.v3-rbtip i.b{background:color-mix(in srgb,#3b82f6 70%,var(--v3-mut))}.v3-rbtip i.a{background:#a78bfa}
+.v3-cres{font:inherit;color:inherit;display:flex;align-items:center;gap:8px;width:100%;margin-top:10px;padding:9px 10px;border:1px solid var(--v3-borda,rgba(127,127,127,.25));border-radius:12px;background:transparent;cursor:pointer;text-align:left;font-size:12.5px;line-height:1.35}
+.v3-cres>svg{flex:none;width:16px;height:16px;opacity:.7}.v3-cres>span{flex:1;min-width:0}.v3-cres>b{flex:none;display:inline-flex;align-items:center;gap:2px;font-weight:600;color:var(--v3-pri);white-space:nowrap}.v3-cres>b svg{width:14px;height:14px}
+.v3-cs{display:inline-flex;align-items:center;gap:3px;font-style:normal;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;background:color-mix(in srgb,#f59e0b 18%,transparent);color:color-mix(in srgb,#b45309 85%,var(--v3-fg));margin-left:4px;white-space:nowrap}.v3-cs svg{width:12px;height:12px}.v3-cs.atr{background:color-mix(in srgb,#ef4444 18%,transparent);color:#dc2626}
+.v3-cpop{display:grid;gap:12px;padding:14px 16px 16px}.v3-cpop-face{display:flex;justify-content:center}.v3-cpop-face .fcface{width:min(300px,100%);pointer-events:none}
+.v3-cpop-v{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}.v3-cpop-v span{display:grid;gap:2px;font-size:12px;color:var(--v3-mut-fg);padding:8px 10px;border-radius:10px;background:var(--v3-mut,rgba(127,127,127,.1))}.v3-cpop-v b{font-size:15px;color:var(--v3-fg)}
 .v3-leg{font-weight:400;font-size:11.5px;color:var(--v3-mut-fg);margin-left:8px;white-space:nowrap}.v3-leg i{display:inline-block;width:9px;height:9px;border-radius:2px;margin:0 3px 0 6px;vertical-align:-1px}.v3-leg i.b{background:color-mix(in srgb,#3b82f6 70%,var(--v3-mut))}.v3-leg i.a{background:#a78bfa}
     .v3-rb b{font-size:11.5px;font-weight:600;white-space:nowrap}.v3-rb b .c{display:none}.v3-rb .v3-mm-mil{font-weight:500}
     .v3-rf1.solto{align-items:start}.v3-rf1.solto .v3-rks{grid-auto-rows:auto}.v3-rb small{font-size:11.5px;color:var(--v3-mut-fg)}
