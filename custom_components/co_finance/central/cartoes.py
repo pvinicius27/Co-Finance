@@ -115,7 +115,24 @@ def faturas(db: dict[str, Any]) -> list[dict[str, Any]]:
     grupos: dict[str, dict[str, Any]] = {}
     # fatura lida do banco: o vencimento dela manda (o banco empurra o dia quando cai em fim de semana ou feriado)
     do_banco = {(fb["cartao"], fb["vence"][:7]): fb for fb in (db.get("faturas_banco") or {}).values()}
+    # compra que apareceu numa fatura lida: a parcela fica na fatura em que o banco a mostrou, e as outras parcelas seguem
+    # a sequência a partir dela (o dia de fechamento do cadastro não manda; o banco muda o dia conforme o mês)
+    mes_n = lambda s: int(s[:4]) * 12 + int(s[5:7]) - 1  # noqa: E731
+    onde: dict[str, list[tuple[int, int]]] = {}
+    for fb in (db.get("faturas_banco") or {}).values():
+        for ln in fb["linhas"]:
+            if ln.get("compra") and ln["tipo"] not in ("pagamento", "estorno"):  # estorno vem sem parcela: não conta
+                p = str(ln.get("parcela") or "")
+                n = int(p.split("/")[0]) if re.fullmatch(r"\d{1,2}/\d{1,2}", p) else 1
+                onde.setdefault(ln["compra"], []).append((n, mes_n(fb["vence"])))
     for x in lancamentos_cartao(db):
+        if (ref := onde.get(x["compra"])):
+            p0, m0 = min(ref, key=lambda r: abs(r[0] - x["parcela"]))
+            delta = m0 + (x["parcela"] - p0) - mes_n(x["vence"])
+            if delta:
+                v = date.fromisoformat(x["vence"]); fe = date.fromisoformat(x["fecha"])
+                v2, fe2 = _no_dia(v.year, v.month + delta, v.day), _no_dia(fe.year, fe.month + delta, fe.day)
+                x = {**x, "fatura": f"{x['cartao']}:{v2.isoformat()}", "vence": v2.isoformat(), "fecha": fe2.isoformat()}
         if (fb := do_banco.get((x["cartao"], x["vence"][:7]))) and fb["id"] != x["fatura"]:
             x = {**x, "fatura": fb["id"], "vence": fb["vence"], "fecha": fb.get("fecha") or x["fecha"]}
         f = grupos.setdefault(x["fatura"], {"id": x["fatura"], "tipo": "fatura", "cartao": x["cartao"], "fecha": x["fecha"], "vence": x["vence"],
