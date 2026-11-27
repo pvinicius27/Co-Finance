@@ -9,4 +9,4 @@ PAINEL_URL = "co-finance"  # o item na barra lateral: /co-finance
 PAINEL_TAG = "co-finance-panel"  # o componente do painel (definido no fim do co-finance-card.js, pelo montar.py)
 PAINEL_TITULO = "Finanças"
 PAINEL_ICONE = "mdi:wallet-outline"
-VERSAO = "0.0.32"  # igual ao manifest.json (o montar.py confere)
+VERSAO = "0.0.33"  # igual ao manifest.json (o montar.py confere)
