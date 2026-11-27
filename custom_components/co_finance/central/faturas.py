@@ -35,8 +35,14 @@ def _dia(dd: int, mm: int, vence: str) -> str:
     return f"{v.year - 1 if mm > v.month else v.year:04d}-{mm:02d}-{dd:02d}"
 
 
+_DEVOLUCAO = re.compile(r"DEVOL|ESTORN|CANCEL|REEMBOLS")
+
+
 def _tipo(desc: str, valor: float, secao: str = "") -> str:
     d = _sem_acento(desc).upper()
+    # crédito do banco que cita "pagamento" ("DEVOLUCAO JUROS PAGAMENTO COVENIOS", BB): é estorno, não pagamento
+    if valor < 0 and _DEVOLUCAO.search(d.replace(" ", "")):
+        return "estorno"
     if re.search(r"PAGAMENTO|PAGTO|PGTO", d.replace(" ", "")) and valor < 0:  # Itaú: "PAG AM ENT O PIX"
         return "pagamento"
     # o banco devolvendo à conta o que foi pago a mais ("DEVOLUCAO SALDO CREDOR") ou desfazendo um pagamento: é o
@@ -53,6 +59,11 @@ def _tipo(desc: str, valor: float, secao: str = "") -> str:
     if valor < 0:
         return "estorno"
     return "compra"
+
+
+def e_pagamento(l: dict[str, Any]) -> bool:
+    """Linha de pagamento de verdade (vale também para faturas gravadas antes da regra da devolução)."""
+    return l.get("tipo") == "pagamento" and not (l.get("valor", 0) < 0 and _DEVOLUCAO.search(_sem_acento(l.get("descricao") or "").upper().replace(" ", "")))
 
 
 def _sem_acento(s: str) -> str:

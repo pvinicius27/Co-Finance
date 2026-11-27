@@ -136,19 +136,20 @@ def faturas(db: dict[str, Any]) -> list[dict[str, Any]]:
         f.update(gasto_do_mes(fb))
         # de onde vem o valor, pelas linhas do banco: compras de cada mês (à vista ou 1ª parcela), parcelas de compras
         # antigas, tarifas/encargos e estornos (o que o banco cobrou de verdade, não a conta pelas compras lançadas)
+        from .faturas import e_pagamento
         pm: dict[str, float] = {}
         for ln in fb["linhas"]:
-            if ln["tipo"] == "pagamento":
+            if e_pagamento(ln):
                 continue
             p = str(ln.get("parcela") or "")
-            k = ("estornos" if ln["tipo"] == "estorno" else "tarifas" if ln["tipo"] != "compra"
+            k = ("estornos" if ln["tipo"] in ("estorno", "pagamento") else "tarifas" if ln["tipo"] != "compra"
                  else "parc" if p and not p.startswith(("01/", "1/")) else str(ln.get("data") or "")[:7])
             pm[k] = round(pm.get(k, 0.0) + ln["valor"], 2)
         f["por_mes"] = pm
         # antecipações pelo banco: os pagamentos do período, menos o que pagou o boleto anterior (os primeiros)
         resto = max(float(fb.get("anterior") or 0), 0.0)
         ants = []
-        for ln in sorted((x for x in fb["linhas"] if x["tipo"] == "pagamento"), key=lambda x: x.get("data") or ""):
+        for ln in sorted((x for x in fb["linhas"] if e_pagamento(x)), key=lambda x: x.get("data") or ""):
             v = -ln["valor"]
             usa = min(resto, v)
             resto -= usa

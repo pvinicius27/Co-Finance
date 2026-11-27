@@ -69,7 +69,8 @@ def gasto_do_mes(f: dict[str, Any]) -> dict[str, Any]:
     if f.get("anterior") is None:
         return {}
     ant = float(f["anterior"] or 0)
-    pagos = -sum(l["valor"] for l in f["linhas"] if l.get("tipo") == "pagamento")
+    from .faturas import e_pagamento
+    pagos = -sum(l["valor"] for l in f["linhas"] if e_pagamento(l))
     out = {"gasto_mes": round(f["total"] - ant + pagos, 2)}
     if (adiantado := round(pagos - max(ant, 0.0), 2)) > 0.004:
         out["antecipado"] = adiantado
@@ -301,7 +302,8 @@ def conferir_antecipacoes(db: dict[str, Any], cid: str) -> tuple[int, list[str]]
         if a.get("cartao") != cid or a.get("status") not in ("provisoria", "nao_veio"):
             continue
         d = date.fromisoformat(a["data"])
-        achou = next(((f["id"], i) for f in fs for i, l in enumerate(f["linhas"]) if l.get("tipo") == "pagamento"
+        from .faturas import e_pagamento
+        achou = next(((f["id"], i) for f in fs for i, l in enumerate(f["linhas"]) if e_pagamento(l)
                       and (f["id"], i) not in usados and abs(-l["valor"] - a["valor"]) <= 0.011
                       and abs((date.fromisoformat(l["data"]) - d).days) <= 3), None)
         if achou:
