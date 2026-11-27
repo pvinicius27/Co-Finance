@@ -23,6 +23,8 @@ def _pago(db: dict[str, Any], fid: str, vence: str) -> dict[str, Any] | None:
 def contas(db: dict[str, Any]) -> list[dict[str, Any]]:
     """Contas da casa (luz, água, mensais e carnês do cadastro), por vencimento."""
     out = _contas_luz(db) + contas_agua(db, _pago) + _recorrentes(db) + _parceladas(db) + _financiamentos(db)
+    marco = db.get("marco", MARCO_ZERO)  # antes do início do controle nada conta (vale para todas as contas da casa)
+    out = [x for x in out if x["vence"] >= marco]
     out.sort(key=lambda x: x["vence"])
     return out
 

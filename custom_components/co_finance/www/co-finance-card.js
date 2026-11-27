@@ -180,11 +180,13 @@ function instalarFinancas(Classe) {
   P._finBem = function (l) { const b = this._ramo(l.area)?.bens; return b === "*" || (Array.isArray(b) && b.includes(l.c.subcategoria)); };
 
   P._finLinhas = function () {
-    const marca = `${this._dados?.atualizado_em}|${this._fPartesDe}|${(this._fFin?.contas || []).map((x) => x.pago?.em || "").join(",")}`;
+    const marco = this._fFin?.marco || "";  // controle desde: o que é de antes não entra nos painéis
+    const marca = `${this._dados?.atualizado_em}|${this._fPartesDe}|${marco}|${(this._fFin?.contas || []).map((x) => x.pago?.em || "").join(",")}`;
     if (this._fLinhasDe === marca && this._fLinhasCache) return this._fLinhasCache;
     const out = [];
     for (const c of this._compras()) {
       if (c.moeda && !c.valor_pago) continue;
+      if (marco && String(c.emissao || "").slice(0, 10) < marco) continue;
       const area = c.categoria || "Outros", r = this._ramo(area);
       const v = c.valor_pago || 0, partes = (this._fPartes || {})[c.id];
       if (r?.pelos_itens && partes && Object.keys(partes).length) {
@@ -678,6 +680,21 @@ function instalarFinancas(Classe) {
     if (Math.abs(g.estornos || 0) > 0.004) partes.push(`estornos <b>− ${this._brl(-g.estornos)}</b>`);
     return `Esta fatura inclui: ${partes.join(" · ")}.`;
   };
+  // ⚙ › Cartões › Controle desde: a data em que o CoFinance começa a contar (antes dela, nada entra nos painéis,
+  // faturas calculadas, contas, financiamento, pagamentos e avisos). Escolher → ver o efeito → confirmar.
+  P._finMarcoForm = function () {
+    const M = this._fMarco;
+    if (!M) return "";
+    const F = this._fFin;
+    return `<div class="fmarco"><div class="fs">É a data em que o CoFinance começa a contar. Antes dela nada entra: compras nos painéis, faturas, contas da casa, financiamento, pagamentos e avisos. As compras continuam guardadas e voltam a contar se a data voltar.</div>
+      <div class="fs"><b>Puxar para trás:</b> aparecem as faturas, as contas e o financiamento mais antigos; em compensação, os meses em que as compras não foram lançadas ficam incompletos.</div>
+      <div class="fs"><b>Puxar para frente:</b> os painéis começam limpos a partir dessa data; em compensação, o que for de antes some das contas, e as parcelas de compras antigas saem das faturas previstas.</div>
+      <div class="fmarco-l"><label>Controle desde <input id="f-marco-d" type="date" value="${this._e(M.data || F.marco)}" max="${this._e(F.hoje)}"></label>
+        <button class="btn prim" data-a="f-marco-ok">${M.carregando ? "Salvando…" : "Salvar"}</button><button class="lnk" data-a="f-marco">Cancelar</button></div>
+      ${M.erro ? `<div class="fs fatras">${this._e(M.erro)}</div>` : ""}</div>`;
+  };
+
+
   // lista de faturas: entre uma fatura e a anterior, o mês que o banco pulou ("Total da fatura anterior" = a de 2 meses antes)
   P._finFatPulados = function (f, a) {
     if (!a || f.anterior == null || Math.abs(f.anterior - a.total) > 0.011) return "";
@@ -1323,7 +1340,8 @@ function instalarFinancas(Classe) {
     const cartoes = (F.cartoes || []).map((k) => `<button class="fcart${this._fCartEd === k.id ? " on" : ""}${k.ativo === false ? " inativo" : ""}" data-a="f-cart-ed" data-k="${this._e(k.id)}">💳 <b>${this._e(this._finNomeCartao(k))}</b>${k.visual?.produto ? ` <small>${this._e(k.visual.produto)}</small>` : ""} ${this._e([k.bandeira, k.categoria].filter(Boolean).join(" "))} · ${this._e(k.dono || "")} · ${k.vale ? "vale" : k.credito === false ? "débito" : `${k.fecha ? `fecha ${k.fecha} · vence ${k.vence}` : "crédito sem dias"}${k.debito ? " · crédito e débito" : ""}`}${k.ativo === false ? " · fora de uso" : ""} ✎</button>`).join("")
       + `<button class="fcart novo${this._fCartEd === "novo" ? " on" : ""}" data-a="f-cart-ed" data-k="novo">+ Novo cartão</button>`;
     const deitar = typeof this._v3Deitar === "function" ? `<label class="fdeitar"><input type="checkbox" data-a="f-deitar" ${this._v3Deitar() ? "checked" : ""}><span><b>Mostrar todos os cartões na horizontal</b><small>Os cartões em pé aparecem na horizontal, como os outros; o valor fica embaixo, no centro. Vale neste aparelho.</small></span></label>` : "";
-    const cartoesHtml = `<div class="fcard"><div class="fhd"><h2>Cartões</h2><small>controle desde ${this._dataCurta(F.marco + "T12:00")}</small></div><div class="fcarts">${cartoes}</div>${deitar}${this._finFormCartao()}
+    const cartoesHtml = `<div class="fcard"><div class="fhd"><h2>Cartões</h2><small>controle desde ${this._dataCurta(F.marco + "T12:00")}</small></div>
+      ${this._hass?.user?.is_admin ? `<div class="fmarco-lin"><span class="fs">Controle desde <b>${this._dataCurta(F.marco + "T12:00")}</b></span>${this._fMarco ? "" : `<button class="lnk" data-a="f-marco">Mudar ›</button>`}</div>${this._finMarcoForm()}` : ""}<div class="fcarts">${cartoes}</div>${deitar}${this._finFormCartao()}
           <div class="fs" style="margin-top:8px">Toque num cartão para editar. Compra até o dia do fechamento entra na fatura que fecha no mês; depois, na seguinte. Compra no próprio dia do fechamento vai para a seguinte. Parcelas caem nas faturas seguintes; os centavos que sobram ficam na 1ª.</div></div>
       </div>`;
     return this._finCfgAcordeao(cartoesHtml);
@@ -2338,6 +2356,19 @@ function instalarFinancas(Classe) {
         (e) => { if (this._fFat) this._fFat = { ...this._fFat, abrindo: null, erro: e.message || String(e) }; }).then(() => { if (!this._fFat?.dados) this._finFatCarregar(); this._render(); });
     }
     if (a === "f-fat-volta") { this._fFat = { ...this._fFat, det: null }; this._fFatApagar = null; return this._render(); }
+    if (a === "f-marco") { this._fMarco = this._fMarco ? null : { data: this._fFin?.marco }; return this._render(); }
+    if (a === "f-marco-ok") return (async () => {
+      const data = this.shadowRoot.getElementById("f-marco-d")?.value || this._fMarco?.data, aplicar = true;
+      this._fMarco = { ...this._fMarco, data, carregando: true, erro: null }; this._render();
+      try {
+        const r = await this._api({ acao: "marco", data, aplicar });
+        if (aplicar) {
+          this._fMarco = null; this._aviso = r.mensagem;
+          this._fFin = await this._api({ acao: "financeiro" }); this._fLinhasDe = null; await this._carregar(true);
+        } else this._fMarco = null;
+      } catch (e) { this._fMarco = { ...this._fMarco, carregando: false, erro: e.message || String(e) }; }
+      return this._render();
+    })();
     if (a === "f-fat-vista") { this._fFatVista = k === "mes" ? "mes" : "cartao"; return this._render(); }
     if (a === "f-fat-ano") { this._fFatAno = k; this._fFatMes = null; return this._render(); }
     if (a === "f-fat-mes") { this._fFatMes = this._fFatMes === k ? null : k; return this._render(); }
@@ -2558,7 +2589,7 @@ function instalarFinancas(Classe) {
     .fin,.fcol{grid-template-columns:minmax(0,1fr)}.fin>*,.fcol>*,.fdois>*,.fheroi>*{min-width:0}
     .fanos{overflow-x:auto;overflow-y:hidden}.fab{min-width:46px}
     .fmes.on{background:var(--c-fundo)}.fmes-l{padding:0 0 6px 14px;border-left:3px solid var(--c-linha);margin:0 0 6px 6px}.fmes-tot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 4px 2px;margin-top:6px;border-top:2px solid var(--c-linha);font-size:15px}.fmes-tot span{display:grid}.fmes-tot small{color:var(--c-sub);font-size:11.5px}.ffat-tudo{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--divider-color,rgba(127,127,127,.2))}.fcontagrade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:4px 0 10px}.fcontagrade:has(>.fbox:nth-child(4)){grid-template-columns:repeat(4,minmax(0,1fr))}
-    .fnw{white-space:nowrap}div.fnemi{opacity:.7;background:color-mix(in srgb,var(--c-txt) 4%,transparent);border-radius:8px}div.fnemi .fag-m small{white-space:normal}.fcasa{display:grid;gap:6px}.ffat-seg{margin:0 0 10px;width:max-content}div.fag-l{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.8fr) minmax(0,.9fr) 4px;gap:10px;align-items:center;border-bottom:1px solid var(--c-linha);padding:9px 2px}div.fag-l:last-child{border-bottom:0}div.fev{cursor:default}.ffat .ft3,.folha .fev .ft3{overflow-wrap:anywhere}
+    .fnw{white-space:nowrap}.fmarco-lin{display:flex;align-items:center;gap:10px;margin:0 0 8px}.fmarco{display:grid;gap:8px;margin:6px 0 12px;padding:10px 12px;border:1px solid var(--c-linha);border-radius:12px}.fmarco-l{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.fmarco-l input{font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--c-linha);background:transparent;color:inherit}.fmarco-p ul{margin:6px 0 10px;padding-left:18px}div.fnemi{opacity:.7;background:color-mix(in srgb,var(--c-txt) 4%,transparent);border-radius:8px}div.fnemi .fag-m small{white-space:normal}.fcasa{display:grid;gap:6px}.ffat-seg{margin:0 0 10px;width:max-content}div.fag-l{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.8fr) minmax(0,.9fr) 4px;gap:10px;align-items:center;border-bottom:1px solid var(--c-linha);padding:9px 2px}div.fag-l:last-child{border-bottom:0}div.fev{cursor:default}.ffat .ft3,.folha .fev .ft3{overflow-wrap:anywhere}
     @media (max-width:520px){button.fag-l.ffl{grid-template-columns:minmax(0,1fr) auto}button.fag-l.ffl>span:nth-child(2){grid-column:1/-1;grid-row:2}button.fag-l.ffl .fag-s{display:none}div.fag-l{grid-template-columns:minmax(0,1fr) auto}div.fag-l>span:nth-child(2){grid-column:1/-1;grid-row:2}div.fag-l .fag-s{display:none}}
     .fpgd{display:block;font-size:11.5px;font-weight:400;color:var(--c-sub)}.flin b .fpgd{text-align:right}
     .fmais>summary{cursor:pointer;list-style:none;font-size:13px;color:var(--c-acc);padding:8px 2px 2px}.fmais>summary::-webkit-details-marker{display:none}
@@ -8991,7 +9022,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.47";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.48";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";

@@ -206,7 +206,10 @@ def faturas(db: dict[str, Any]) -> list[dict[str, Any]]:
             f["gasto_mes"] = f["total"]  # soma das compras = o gasto; o que falta pagar é o resto
             f["a_pagar"] = round(max(f["total"] - f["antecipado"], 0.0), 2)
     out = []
+    marco = db.get("marco", MARCO_ZERO)
     for f in sorted(grupos.values(), key=lambda f: f["vence"]):
+        if f["vence"] < marco:  # antes do início do controle nada conta (nem a fatura lida do banco)
+            continue
         k = _cartao(db, f["cartao"])
         f["nome"] = f"Fatura {rotulo_cartao(k, db.get('cartoes') or [])}"
         f["icone"] = "💳"
