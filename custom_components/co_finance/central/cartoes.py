@@ -134,6 +134,28 @@ def faturas(db: dict[str, Any]) -> list[dict[str, Any]]:
         f["fecha"] = fb.get("fecha") or f["fecha"]  # o fechamento que o banco diz, não o do cadastro
         from .faturas_banco import gasto_do_mes  # gasto do mês (custo real): com antecipação o boleto fica menor
         f.update(gasto_do_mes(fb))
+        # de onde vem o valor, pelas linhas do banco: compras de cada mês (à vista ou 1ª parcela), parcelas de compras
+        # antigas, tarifas/encargos e estornos (o que o banco cobrou de verdade, não a conta pelas compras lançadas)
+        pm: dict[str, float] = {}
+        for ln in fb["linhas"]:
+            if ln["tipo"] == "pagamento":
+                continue
+            p = str(ln.get("parcela") or "")
+            k = ("estornos" if ln["tipo"] == "estorno" else "tarifas" if ln["tipo"] != "compra"
+                 else "parc" if p and not p.startswith(("01/", "1/")) else str(ln.get("data") or "")[:7])
+            pm[k] = round(pm.get(k, 0.0) + ln["valor"], 2)
+        f["por_mes"] = pm
+        # antecipações pelo banco: os pagamentos do período, menos o que pagou o boleto anterior (os primeiros)
+        resto = max(float(fb.get("anterior") or 0), 0.0)
+        ants = []
+        for ln in sorted((x for x in fb["linhas"] if x["tipo"] == "pagamento"), key=lambda x: x.get("data") or ""):
+            v = -ln["valor"]
+            usa = min(resto, v)
+            resto -= usa
+            if v - usa > 0.004:
+                ants.append({"data": ln.get("data"), "valor": round(v - usa, 2)})
+        if ants:
+            f["antecipacoes_banco"] = ants
     # mês que o banco pulou (mudou o fechamento, ciclo de dois meses): a fatura lida diz que a anterior foi a de dois meses
     # antes ("Total da fatura anterior" = o boleto dela). A fatura calculada no meio não existe: as compras dela estão
     # na fatura lida seguinte, que já traz o total do banco.
