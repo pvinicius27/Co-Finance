@@ -8991,7 +8991,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.46";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.47";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
@@ -9911,7 +9911,7 @@ class ComprasV3Card extends BaseV2 {
       if (x.tipo === "fatura") {
         const v = pessoa ? (x.itens || []).filter((i) => i.quem === pessoa).reduce((s, i) => s + (i.valor || 0), 0) : x.boleto ?? x.total;
         if (v > 0.004) out.push({ t: "f", id: x.id, nome: this._v3NomeObr(x), sub: `vence ${dm(x.vence)}`, valor: v, boleto: v, ant: 0 });
-      } else if (this._finDoFiltro(x) && x.total > 0.004) out.push({ t: "c", nome: this._v3NomeObr(x), sub: `paga ${dm(x.pago.em)}`, valor: x.total });
+      } else if (this._finDoFiltro(x) && x.total > 0.004) out.push({ t: "c", id: x.id, nome: this._v3NomeObr(x), sub: `paga ${dm(x.pago.em)}`, valor: x.total });
     }
     // antecipação é do cartão: soma na fatura dele (o total da fatura = boleto + antecipado; a divisão aparece embaixo)
     for (const a of this._v3Antecip(ini, fim)) {
@@ -10054,9 +10054,8 @@ class ComprasV3Card extends BaseV2 {
         return `<div class="v3-pop v3-rbpop" role="dialog" aria-modal="true" aria-label="Pago em ${this._v3MesT(m)}"><div class="v3-pop-f" data-a="v3-rbtip" data-k=""></div>
           <div class="v3-pop-c"><div class="v3-pop-h"><span><b>Pago em ${this._v3MesT(m)}</b><small>${pp.length} ${pp.length === 1 ? "item" : "itens"} · ${this._brl(v)}</small></span>
             <button class="v3-ib" data-a="v3-rbtip" data-k="" aria-label="Fechar">${V3_SVG("fechar")}</button></div>
-            <div class="v3-pop-l v3-rbpop-l">${pp.map((x) => { const pc = x.valor / v * 100; return `<div class="v3-rbpop-i"><span><i class="b"></i><b>${this._e(x.nome)}</b></span><span class="v3-rbpop-v"><b>${this._brl(x.valor)}</b><small>${pc < 1 ? "<1" : Math.round(pc)}%</small></span>
-              ${x.ant > 0.004 ? `<span class="v3-rbpop-s">└ fatura<b>${this._brl(x.boleto)}</b></span><span class="v3-rbpop-s a">└ antecipações<b>${this._brl(x.ant)}</b></span>` : ""}
-              <em><u class="b" style="width:${(Math.max(1, pc) * (x.ant > 0.004 ? x.boleto / x.valor : 1)).toFixed(1)}%"></u><u class="a" style="width:${(pc * (x.ant || 0) / x.valor).toFixed(1)}%"></u></em></div>`; }).join("")}
+            <div class="v3-pop-l v3-rbpop-l">${pp.map((x) => { const pc = x.valor / v * 100; return `<button class="v3-rbpop-i" data-a="f-conta" data-k="${this._e(x.id)}" aria-label="Abrir ${this._e(x.nome)}"><span><i class="b"></i><b>${this._e(x.nome)}</b></span><span class="v3-rbpop-v"><b>${this._brl(x.valor)}</b><small>${pc < 1 ? "<1" : Math.round(pc)}%</small></span>
+              ${x.ant > 0.004 ? `<span class="v3-rbpop-s">└ fatura<b>${this._brl(x.boleto)}</b></span><span class="v3-rbpop-s a">└ antecipações<b>${this._brl(x.ant)}</b></span>` : ""}</button>`; }).join("")}
               <div class="v3-rbpop-t"><span>Total</span><b>${this._brl(v)}</b></div></div></div></div>`;
       })()}
       <div class="v3-prx-s">Pago mês a mês</div>
@@ -10187,7 +10186,12 @@ class ComprasV3Card extends BaseV2 {
     const tpl = document.createElement("template");
     tpl.innerHTML = this._v2Face(this._finPilha(cards, Math.max(0, this._fCartLista.indexOf(this._fCartSel))), sel, hoje);
     const face = tpl.content.querySelector(".fcface");
-    if (face && sel.k.credito !== false) {
+    const passado = modo === "mes" && this._mes < hoje.slice(0, 7) && sel.x && !sel.x.gasto && !String(sel.x.id).includes("cart:");
+    if (face && passado) {
+      face.setAttribute("data-a", "f-conta"); face.setAttribute("data-k", sel.x.id);
+      face.setAttribute("aria-label", `${this._finNomeCartao(sel.k)}: abrir a fatura`);
+      if (face.tagName === "DIV") { face.setAttribute("role", "button"); face.setAttribute("tabindex", "0"); }
+    } else if (face && sel.k.credito !== false) {
       face.setAttribute("data-a", "v3-ircart"); face.setAttribute("data-k", sel.k.id);
       face.setAttribute("aria-label", `${this._finNomeCartao(sel.k)}: abrir em A pagar`);
       if (face.tagName === "DIV") { face.setAttribute("role", "button"); face.setAttribute("tabindex", "0"); }
@@ -11289,7 +11293,7 @@ class ComprasV3Card extends BaseV2 {
 .v3-cs{display:inline-flex;align-items:center;gap:3px;font-style:normal;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;background:color-mix(in srgb,#f59e0b 18%,transparent);color:color-mix(in srgb,#b45309 85%,var(--v3-fg));margin-left:4px;white-space:nowrap}.v3-cs svg{width:12px;height:12px}.v3-cs.atr{background:color-mix(in srgb,#ef4444 18%,transparent);color:#dc2626}
 .v3-cpop{display:grid;gap:12px;padding:14px 16px 16px}.v3-cpop-face{display:flex;justify-content:center}.v3-cpop-face .fcface{width:min(300px,100%);pointer-events:none}
 .v3-cpop-v{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}.v3-cpop-v span{display:grid;gap:2px;font-size:12px;color:var(--v3-mut-fg);padding:8px 10px;border-radius:10px;background:var(--v3-mut,rgba(127,127,127,.1))}.v3-cpop-v b{font-size:15px;color:var(--v3-fg)}
-.v3-rbpop-l{display:grid;gap:2px;padding:8px 16px 14px}.v3-rbpop-i{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:9px 0;border-bottom:1px solid var(--v3-borda,rgba(127,127,127,.2))}
+.v3-rbpop-l{display:grid;gap:2px;padding:8px 16px 14px}.v3-rbpop-i{font:inherit;color:inherit;text-align:left;background:none;border:0;border-bottom:1px solid var(--v3-borda,rgba(127,127,127,.2));cursor:pointer;width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:9px 0;border-bottom:1px solid var(--v3-borda,rgba(127,127,127,.2))}
 .v3-rbpop-i>span:first-child{display:flex;align-items:center;gap:8px;min-width:0}.v3-rbpop-i>span:first-child b{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .v3-rbpop-i i{width:10px;height:10px;border-radius:3px;flex:none}.v3-rbpop-i i.b,.v3-rbpop-i u.b{background:color-mix(in srgb,#3b82f6 70%,var(--v3-mut))}.v3-rbpop-i i.a,.v3-rbpop-i u.a{background:#a78bfa}
 .v3-rbpop-v{display:flex;align-items:baseline;gap:8px;white-space:nowrap}.v3-rbpop-v small{color:var(--v3-mut-fg);min-width:34px;text-align:right}
