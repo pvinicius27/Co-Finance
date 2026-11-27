@@ -8991,7 +8991,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.38";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.39";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
@@ -10867,6 +10867,17 @@ class ComprasV3Card extends BaseV2 {
 
   _ligar() {
     super._ligar();
+    if (!this._v3TipOuve) {  // balão das barras (Pago mês a mês, Mês a mês): qualquer toque fora dele fecha (também ao trocar de tela)
+      this._v3TipOuve = true;
+      this.shadowRoot.addEventListener("click", (ev) => {
+        if (!this._v3RbTip && !this._v3MmTip) return;
+        const dentro = ev.composedPath().some((e) => e.matches?.('[data-a="v3-rbtip"],[data-a="v3-mmtip"],.v3-rbtip,.v3-mmtip'));
+        if (dentro) return;
+        const outro = ev.composedPath().some((e) => e.matches?.("[data-a]"));  // outro botão: ele mesmo redesenha, já sem o balão
+        this._v3RbTip = this._v3MmTip = null;
+        if (!outro) { this._v3Parado = true; this._render(); }
+      }, true);  // na captura: antes do botão tocado, para o desenho dele já sair sem o balão
+    }
     {  // aba Financiamento
       const r = this.shadowRoot, arq = r.getElementById("fin-arq");
       if (arq) arq.addEventListener("change", () => this._v3FinLer(arq.files));
