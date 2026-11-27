@@ -8991,7 +8991,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.34";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.35";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
@@ -10195,11 +10195,34 @@ class ComprasV3Card extends BaseV2 {
         : `<div class="v3-vazio">Nenhum gasto neste período.</div>`}</section>`;
   }
 
+  // Mês a mês por forma de pagamento: crédito, Pix/débito (pago na hora) e sem forma informada. Cada compra é dividida
+  // pelo que foi pago em cada forma (parte no Pix, parte no cartão).
+  _v3MmFormas(linhas) {
+    const naHora = this._fFin?.pagos_na_hora || V3_NA_HORA, por = {};
+    for (const l of linhas) {
+      const m = String(l.c.emissao).slice(0, 7), o = (por[m] ||= { c: 0, h: 0, s: 0 });
+      const pgs = (l.c.pago_com || []).filter((pg) => pg.tipo), soma = pgs.reduce((s, pg) => s + (pg.valor || 0), 0);
+      if (!pgs.length || soma < 0.004) { o.s += l.valor || 0; continue; }
+      for (const pg of pgs) o[pg.tipo === "Crédito" ? "c" : naHora.includes(pg.tipo) ? "h" : "s"] += (l.valor || 0) * (pg.valor || 0) / soma;
+    }
+    return por;
+  }
+
+  // as bolinhas Crédito · Pix/débito (· Sem forma, se houver): tocar filtra o gráfico; tocar de novo volta ao total
+  _v3MmChips(por) {
+    const tem = { c: 0, h: 0, s: 0 };
+    for (const o of Object.values(por)) for (const k of "chs") tem[k] += o[k];
+    const f = this._v3MmF, nomes = { c: "Crédito", h: "Pix/débito", s: "Sem forma" };
+    return `<div class="v3-mm-f" role="group" aria-label="Forma de pagamento">${["c", "h", "s"].filter((k) => k !== "s" || tem.s > 0.004).map((k) =>
+      `<button class="${f === k ? "on" : ""}" aria-pressed="${f === k}" data-a="v3-mmf" data-k="${k}"><i class="${k}"></i>${nomes[k]}</button>`).join("")}</div>`;
+  }
+
   // 6 meses até o escolhido (mês) ou os meses do ano/tudo (grande, no lugar do calendário)
   _v3MesAMes(grande) {
     const linhas = this._finLinhas().filter((l) => this._finDaPessoa(l));
-    const soma = this._finSomaPor(linhas, (l) => String(l.c.emissao).slice(0, 7));
-    if (this._fModo === "tudo") return this._v3Comparar(grande, soma);
+    const porF = this._v3MmFormas(linhas), f = this._v3MmF;
+    const soma = f ? Object.fromEntries(Object.entries(porF).map(([m, o]) => [m, o[f]])) : this._finSomaPor(linhas, (l) => String(l.c.emissao).slice(0, 7));
+    if (this._fModo === "tudo") return this._v3Comparar(grande, soma, this._v3MmChips(porF));
     let meses;
     if (this._fModo === "mes") meses = Array.from({ length: 6 }, (_, i) => this._finSomaMes(this._mes, i - 5));
     else if (this._fModo === "ano") meses = Array.from({ length: 12 }, (_, i) => `${this._fAno}-${String(i + 1).padStart(2, "0")}`);
@@ -10207,11 +10230,27 @@ class ComprasV3Card extends BaseV2 {
     const mx = Math.max(1, ...meses.map((m) => soma[m] || 0)), atual = this._fModo === "mes" ? this._mes : null;
     const curto = (v) => this._v3Curto(v);
     const totalM = meses.reduce((s, m) => s + (soma[m] || 0), 0);
-    const sub = this._fModo === "mes" ? `${V3_MESES[Number(this._mes.slice(5, 7)) - 1]} · ${this._brl(soma[this._mes] || 0)}`
-      : this._fModo === "ano" ? `${this._fAno} · ${this._brl(totalM)}` : `últimos 12 meses · ${this._brl(totalM)}`;
-    return `<section class="v3-card v3-mmc${grande ? " v3-mm-g" : ""}${meses.length > 6 ? " v3-mm12" : ""}"><div class="v3-hd"><h2>Mês a mês <small class="v3-mm-sub">${this._e(sub)}<span class="v3-mm-emmil"> · em R$ mil</span></small></h2>${this._fModo !== "tudo" ? `<button class="v3-link" data-a="v2-per-tudo">Tudo ${V3_SVG("dir")}</button>` : ""}</div>
-      <div class="v3-mm">${meses.map((m) => `<button class="${m === atual ? "on" : ""}" data-a="v2-per-mes" data-k="${m}" aria-label="${V3_MESES[Number(m.slice(5, 7)) - 1]} ${m.slice(0, 4)}: ${this._brl(soma[m] || 0)}" ${m > this._mesDe(new Date()) ? "disabled" : ""}>
-        <i><b class="v3-mm-v" aria-hidden="true">${curto(soma[m] || 0)}</b><em style="height:calc((100% - 16px) * ${Math.max(0.03, (soma[m] || 0) / mx).toFixed(3)})"></em></i><small>${V3_MESES[Number(m.slice(5, 7)) - 1].slice(0, 3)}</small></button>`).join("")}</div></section>`;
+    const qual = { c: " no crédito", h: " no Pix/débito", s: " sem forma" }[f] || "";
+    const sub = this._fModo === "mes" ? `${V3_MESES[Number(this._mes.slice(5, 7)) - 1]} · ${this._brl(soma[this._mes] || 0)}${qual}`
+      : this._fModo === "ano" ? `${this._fAno} · ${this._brl(totalM)}${qual}` : `últimos 12 meses · ${this._brl(totalM)}${qual}`;
+    // a barra: sem filtro, empilhada por forma (crédito embaixo); com filtro, só a forma escolhida, na cor dela
+    const barra = (m) => {
+      const o = porF[m] || { c: 0, h: 0, s: 0 }, tot = o.c + o.h + o.s;
+      const seg = f ? `<u class="${f}" style="flex:1"></u>` : tot > 0.004 ? ["c", "h", "s"].filter((k) => o[k] > 0.004).map((k) => `<u class="${k}" style="flex:${(o[k] / tot).toFixed(4)}"></u>`).join("") : "";
+      return `<em style="height:calc((100% - 16px) * ${Math.max(0.03, (soma[m] || 0) / mx).toFixed(3)})">${seg}</em>`;
+    };
+    const tip = (() => {  // toque numa barra: o mês por forma de pagamento e o atalho para abrir o mês
+      const m = this._v3MmTip, i = meses.indexOf(m);
+      if (i < 0 || !(soma[m] > 0.004)) return "";
+      const o = porF[m] || { c: 0, h: 0, s: 0 }, tot = o.c + o.h + o.s, pc = (v) => `${Math.round(v / (tot || 1) * 100)}%`;
+      const lado = i === 0 ? "left:0" : i === meses.length - 1 ? "right:0" : `left:${((i + 0.5) / meses.length * 100).toFixed(2)}%;transform:translateX(-50%)`;
+      return `<div class="v3-mmtip" role="status" style="${lado}"><b>${this._v3MesT(m).replace(/^./, (c) => c.toUpperCase())}: ${this._brl(tot)}</b>
+        ${["c", "h", "s"].filter((k) => o[k] > 0.004).map((k) => `<span><i class="${k}"></i>${{ c: "crédito", h: "Pix/débito", s: "sem forma" }[k]} ${this._brl(o[k])} (${pc(o[k])})</span>`).join("")}
+        <button class="v3-link" data-a="v2-per-mes" data-k="${m}">Abrir o mês ${V3_SVG("dir")}</button></div>`;
+    })();
+    return `<section class="v3-card v3-mmc${grande ? " v3-mm-g" : ""}${meses.length > 6 ? " v3-mm12" : ""}"><div class="v3-hd"><h2>Mês a mês <small class="v3-mm-sub">${this._e(sub)}<span class="v3-mm-emmil"> · em R$ mil</span></small></h2><span class="v3-mm-hd">${this._v3MmChips(porF)}${this._fModo !== "tudo" ? `<button class="v3-link" data-a="v2-per-tudo">Tudo ${V3_SVG("dir")}</button>` : ""}</span></div>
+      <div class="v3-mm v3-mmf">${tip}${meses.map((m) => `<button class="${m === atual ? "on" : ""}${m === this._v3MmTip ? " tip" : ""}" data-a="v3-mmtip" data-k="${m}" aria-label="${V3_MESES[Number(m.slice(5, 7)) - 1]} ${m.slice(0, 4)}: ${this._brl(soma[m] || 0)}${qual}" ${m > this._mesDe(new Date()) ? "disabled" : ""}>
+        <i><b class="v3-mm-v" aria-hidden="true">${curto(soma[m] || 0)}</b>${barra(m)}</i><small>${V3_MESES[Number(m.slice(5, 7)) - 1].slice(0, 3)}</small></button>`).join("")}</div></section>`;
   }
 
   // valor curto em cima da barra: "9,6 mil" (o " mil" some no quadro estreito com 12 meses)
@@ -10221,7 +10260,7 @@ class ComprasV3Card extends BaseV2 {
 
   // Tudo: janeiro a dezembro, uma barra por ano em cada mês (o ano mais recente no verde mais escuro). Os chips no alto
   // escolhem até 3 anos; tocar num mês mostra o valor de cada ano embaixo, e cada valor abre aquele mês.
-  _v3Comparar(grande, soma) {
+  _v3Comparar(grande, soma, chipsF = "") {
     const hoje = this._mesDe(new Date());
     const todos = [...new Set(Object.keys(soma).filter((m) => soma[m] > 0 && m <= hoje).map((m) => m.slice(0, 4)))].sort();
     if (!this._v3Anos?.length || !this._v3Anos.every((a) => todos.includes(a))) this._v3Anos = todos.slice(-3);
@@ -10239,7 +10278,7 @@ class ComprasV3Card extends BaseV2 {
     const chips = todos.length > 1 ? `<div class="v3-cmp-anos" role="group" aria-label="Anos no gráfico">${todos.map((a) => `<button class="${anos.includes(a) ? "on" : ""}" aria-pressed="${anos.includes(a)}" data-a="v3-ano-cmp" data-k="${a}">${anos.includes(a) ? `<i style="background:${tom(a)}"></i>` : ""}${a}</button>`).join("")}</div>` : "";
     const sub = um ? `${anos[0]} · ${this._brl(total)}` : "por ano · toque num mês";
     return `<section class="v3-card v3-mmc v3-cmp${grande ? " v3-mm-g" : ""}${um ? " v3-mm12" : ""}"><div class="v3-hd"><h2>Mês a mês <small class="v3-mm-sub">${this._e(sub)}${um ? `<span class="v3-mm-emmil"> · em R$ mil</span>` : ""}</small></h2>${chips}</div>
-      <div class="v3-cmp-mm">${grupos}</div>${det}</section>`;
+      ${chipsF}<div class="v3-cmp-mm">${grupos}</div>${det}</section>`;
   }
 
   // como foi pago: um chip por cartão ou forma (tocar abre as compras daquele meio)
@@ -10945,6 +10984,8 @@ class ComprasV3Card extends BaseV2 {
       return;
     }
     if (a === "v3-ircart") this._v3CicloPop = false;
+    if (a === "v3-mmf") { this._v3MmF = this._v3MmF === k ? null : k; this._v3MmTip = null; this._v3Parado = true; this._render(); return; }  // Mês a mês: filtro por forma
+    if (a === "v3-mmtip") { this._v3MmTip = this._v3MmTip === k ? null : k; this._v3Parado = true; this._render(); return; }  // Mês a mês: detalhe do mês
     if (a === "v3-rbtip") { this._v3RbTip = this._v3RbTip === k ? null : k; this._v3Parado = true; this._render(); return; }  // toque na barra do Pago mês a mês: o quanto de cada parte
     if (a === "v3-fat") { this._v3FatAberta = !this._v3FatAberta; this._v3Rolar = this._v3FatAberta ? ".v3-fat-it" : ".v3-fatbox"; this._render(); return; }
     if (a === "v3-ircart") {  // do Resumo para A pagar, já no cartão tocado
@@ -11272,7 +11313,16 @@ class ComprasV3Card extends BaseV2 {
     @container (max-width:520px){.v3-mm12 .v3-mm-mil{display:none}.v3-mm12 .v3-mm-emmil{display:inline}.v3-mm12 .v3-mm{gap:4px}
       .v3-mm12 .v3-mm button small{font-size:10.5px}.v3-cmp-mm{gap:2px}.v3-cmp-b{gap:1px}.v3-cmp-g{padding:4px 1px 2px}.v3-cmp-g small{font-size:10.5px}.v3-cmp-anos{justify-content:flex-start}.v3-mm12 .v3-mm-v{font-size:10px}.v3-mmc .v3-mm-sub{display:block;margin:2px 0 0;white-space:normal}}
     .v3-mm button i{display:flex;flex-direction:column;justify-content:flex-end;height:100%;min-height:0}.v3-mm button em{display:block;width:100%;border-radius:10px;background:var(--v3-acc)}
-    .v3-mm button.on em{background:var(--v3-pri)}.v3-mm button small{font-size:12px;color:var(--v3-mut-fg)}.v3-mm button.on small{color:var(--v3-fg);font-weight:600}
+    .v3-mm button.on em{background:var(--v3-pri)}
+.v3-mmf{position:relative}.v3-mmf button em{display:flex;flex-direction:column-reverse;overflow:hidden;background:none!important}.v3-mmf em u{display:block;width:100%;min-height:0}
+.v3-mmf em u.c,.v3-mm-f i.c,.v3-mmtip i.c{background:color-mix(in srgb,var(--v3-pri) 55%,var(--v3-acc))}.v3-mmf button.on em u.c{background:var(--v3-pri)}
+.v3-mmf em u.h,.v3-mm-f i.h,.v3-mmtip i.h{background:#f59e0b}.v3-mmf em u.s,.v3-mm-f i.s,.v3-mmtip i.s{background:#9ca3af}
+.v3-mmf button.tip em{outline:2px solid var(--v3-fg);outline-offset:1px}
+.v3-mm-hd{display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}.v3-mm-hd .v3-link{margin-left:0}
+.v3-mm-f{display:flex;flex-wrap:wrap;gap:6px;margin:0}.v3-cmp .v3-mm-f{margin:-2px 0 10px}.v3-mm-f button{font:inherit;font-size:12px;display:inline-flex;align-items:center;gap:5px;min-height:30px;padding:3px 10px;border-radius:999px;border:1px solid var(--v3-borda,rgba(127,127,127,.3));background:transparent;color:var(--v3-fg);cursor:pointer}
+.v3-mm-f button.on{background:var(--v3-fg);color:var(--v3-bg,#fff);border-color:var(--v3-fg)}.v3-mm-f i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.v3-mmtip{position:absolute;bottom:calc(100% - 4px);z-index:5;display:grid;gap:3px;min-width:200px;padding:8px 10px;border-radius:10px;background:var(--v3-card,#fff);color:var(--v3-fg);box-shadow:0 6px 20px rgba(0,0,0,.22);font-size:12px;white-space:nowrap}
+.v3-mmtip i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}.v3-mmtip .v3-link{padding:2px 0;min-height:24px;margin:0;justify-self:start;display:inline-flex;white-space:nowrap}.v3-mm button small{font-size:12px;color:var(--v3-mut-fg)}.v3-mm button.on small{color:var(--v3-fg);font-weight:600}
     .v3-mm button:disabled{opacity:.4;cursor:default}
     .v3-chips{display:flex;flex-wrap:wrap;gap:8px}
     .v3-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--v3-borda);background:var(--v3-card);border-radius:999px;padding:5px 11px;font-size:12.5px;font-weight:500;cursor:pointer}
