@@ -8991,11 +8991,30 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.39";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.40";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
 const V3_BANCOS = { santander: "Santander", bb: "Banco do Brasil", bradesco: "Bradesco", itau: "Itaú" };
+// sino › Lojas para classificar: área e subcategoria sugeridas pelo nome da loja (só quando existem na árvore de vocês)
+const V3_SUG_LOJA = [
+  [/POSTO|SHELL|IPIRANGA|PETROBRAS|COMBUSTIV|AUTO ?POSTO/, "Carro", "Combustível"],
+  [/ESTAPAR|ESTACION|PARKING|ZONA AZUL|SEM PARAR|CONECTCAR|VELOE|PEDAGIO/, "Carro", "Estacionamento e pedágio"],
+  [/AZOS|SEGURO AUTO|PORTO SEGURO|YOUSE|AUTO SEGURO/, "Carro", "Seguro"],
+  [/DETRAN|IPVA|LICENCIAMENTO/, "Carro", "Documentação"],
+  [/OFICINA|AUTO ?CENTER|PNEU|MECANIC|ALL ?CAR|AUTO ?PECA|LUBRIFIC|FUNILARIA/, "Carro", "Manutenção e revisão"],
+  [/LAVA ?JATO|LAVAGEM AUTO|ESTETICA AUTO/, "Carro", "Estética e acessórios"],
+  [/UBER|99 ?APP|99 ?POP|CABIFY|INDRIVE/, "Transporte", "Aplicativo (Uber, 99)"],
+  [/TOTALPASS|GYMPASS|WELLHUB|SMART ?FIT|ACADEMIA|BLUEFIT/, "Lazer e viagem", "Esporte"],
+  [/DROGA|FARMAC|PAGUE MENOS|PANVEL/, "Saúde", "Farmácia"],
+  [/IFOOD|RAPPI|99 ?FOOD|AIQFOME/, "Comer fora", "Delivery"],
+  [/NETFLIX|SPOTIFY|DISNEY|HBO|PRIME VIDEO|GLOBOPLAY|PARAMOUNT|YOUTUBE|DEEZER/, "Assinaturas e serviços", "Streaming"],
+  [/PADARIA|PANIFIC|PAES|CONFEITARIA/, "Comer fora", "Lanche e padaria"],
+  [/LEROY|TELHA ?NORTE|C ?& ?C|CASA ?SHOW|MATERIAIS? DE CONSTR/, "Casa", "Manutenção e reparos"],
+  [/ZARA|RENNER|RIACHUELO|HERING|C ?& ?A\b|MARISA|CENTAURO|NETSHOES/, "Pessoal", "Vestuário, bolsas e malas"],
+  [/ANUIDADE|TARIFA/, "Banco", "Anuidade e tarifas"], [/\bIOF\b|JUROS|ENCARGO/, "Banco", "Juros e IOF"],
+];
+
 const V3_NA_HORA = ["Débito", "Pix", "Benefício", "Dinheiro", "Saldo em carteira", "Boleto"];
 const V3_PONTOS_A = 8;  // quantos vencimentos a linha do tempo mostra antes do "depois" (no layout B, de ponta a ponta: 10)
 const V3_MENU = [["inicio", "Resumo", "grade"], ["contas", "A pagar", "cartao"], ["gastos", "Áreas", "areas"], ["compras", "Compras", "sacola"], ["produtos", "Produtos", "etiqueta"]];
@@ -10261,6 +10280,17 @@ class ComprasV3Card extends BaseV2 {
         <i><b class="v3-mm-v" aria-hidden="true">${curto(soma[m] || 0)}</b>${barra(m)}</i><small>${V3_MESES[Number(m.slice(5, 7)) - 1].slice(0, 3)}</small></button>`).join("")}</div></section>`;
   }
 
+  // área e subcategoria sugeridas pelo nome da loja (V3_SUG_LOJA), só se existirem na árvore
+  _v3SugLoja(txt, arv) {
+    const n = String(txt || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+    for (const [rx, cat, sub] of V3_SUG_LOJA) {
+      if (!rx.test(n)) continue;
+      const r = (arv || []).find((a) => a.nome === cat);
+      if (r) return { cat, sub: (r.subs || []).includes(sub) ? sub : "" };
+    }
+    return null;
+  }
+
   // a fatura pelo mês em que vence ("julho"), que é como as pessoas a chamam; o ano só quando não é o da tela
   _v3FatM(vence) {
     const v = String(vence || ""), ref = String(this._mes || this._fAno || "").slice(0, 4);
@@ -10714,13 +10744,15 @@ class ComprasV3Card extends BaseV2 {
     if (!L.lojas?.length) return `${cab}${aviso}<div class="v-vazio">Tudo classificado.</div>`;
     const arv = (L.arvore || []).filter((a) => a.nome !== "Outros");
     return `${cab}${aviso}<div class="v-lista">${L.lojas.slice(0, 60).map((x, i) => {
-      const s = x.sugestao;  // só a área aqui; a subcategoria a pessoa dá depois, na compra
+      const s = x.sugestao, pn = this._v3SugLoja(`${x.descricao} ${x.loja}`, arv);  // conhecida (área) ou pelo nome (área e subcategoria)
+      const cat = s?.categoria || pn?.cat || "", sub = s ? (s.subcategoria || (pn?.cat === s.categoria ? pn.sub : "")) : pn?.sub || "";
+      const subs = (arv.find((a) => a.nome === cat && !a.pelos_itens)?.subs) || [];
       return `<div class="v-cl${s ? " v3-conhecida" : ""}">
       <div class="v-t"><b>${this._e(s ? s.nome : x.loja)}</b><small>${this._e(x.descricao)} · ${x.n} ${x.n === 1 ? "compra" : "compras"} · ${this._brl(x.total)} · ${this._e(x.quem.join(", "))}</small>
-        ${s ? `<small class="v3-sug">✓ Já conhecida: confira e salve.</small>` : ""}</div>
-      <div class="v-cl-campos">
-        <select id="cl-a-${i}" class="v-cl-area" data-i="${i}" aria-label="Área"><option value="">Área…</option>${arv.map((a) => `<option ${s && a.nome === s.categoria ? "selected" : ""}>${this._e(a.nome)}</option>`).join("")}</select>
-        <select id="cl-s-${i}" class="v3-semsub" aria-hidden="true" tabindex="-1" hidden></select>
+        ${s ? `<small class="v3-sug">✓ Já conhecida: confira e salve.</small>` : pn ? `<small class="v3-sug">Sugestão pelo nome: confira e salve.</small>` : ""}</div>
+      <div class="v-cl-campos v3-cl4">
+        <select id="cl-a-${i}" class="v-cl-area" data-i="${i}" aria-label="Área"><option value="">Área…</option>${arv.map((a) => `<option ${a.nome === cat ? "selected" : ""}>${this._e(a.nome)}</option>`).join("")}</select>
+        <select id="cl-s-${i}" class="v3-clsub" aria-label="Subcategoria" ${subs.length ? "" : "hidden"}><option value="">— depois —</option>${subs.map((x2) => `<option ${x2 === sub ? "selected" : ""}>${this._e(x2)}</option>`).join("")}</select>
         <input id="cl-n-${i}" type="text" maxlength="40" placeholder="Nome fantasia (opcional)" aria-label="Nome fantasia, como aparece no painel (opcional)" value="${s ? this._e(s.nome) : ""}" autocomplete="off">
         <button class="btn prim" data-a="v2-classif-salvar" data-k="${this._e(x.chave)}" data-i="${i}">Salvar</button>
       </div></div>`; }).join("")}</div>
@@ -10867,6 +10899,14 @@ class ComprasV3Card extends BaseV2 {
 
   _ligar() {
     super._ligar();
+    this.shadowRoot.querySelectorAll(".v-cl-area").forEach((sel) => sel.addEventListener("change", () => {
+      const i = sel.dataset.i, subEl = this.shadowRoot.getElementById(`cl-s-${i}`), L = this._v2Classif;
+      if (!subEl || !L) return;
+      const arv = L.arvore || [], ramo = arv.find((a) => a.nome === sel.value), subs = ramo && !ramo.pelos_itens ? ramo.subs || [] : [];
+      const x = (L.lojas || [])[Number(i)], pn = x ? this._v3SugLoja(`${x.descricao} ${x.loja}`, arv) : null, sug = pn?.cat === sel.value ? pn.sub : "";
+      subEl.innerHTML = `<option value="">— depois —</option>${subs.map((s) => `<option ${s === sug ? "selected" : ""}>${this._e(s)}</option>`).join("")}`;
+      subEl.hidden = !subs.length;
+    }));
     if (!this._v3TipOuve) {  // balão das barras (Pago mês a mês, Mês a mês): qualquer toque fora dele fecha (também ao trocar de tela)
       this._v3TipOuve = true;
       this.shadowRoot.addEventListener("click", (ev) => {
@@ -11024,10 +11064,11 @@ class ComprasV3Card extends BaseV2 {
       if (this._v3Grupo) this._v3Perto = ".v3-g.on";  // fica onde está; só rola o mínimo para mostrar o que abriu
       this._render(); return;
     }
-    if (a === "v2-classif-salvar") {  // Classificar: só a área (sem subcategoria); o nome fantasia, se tiver
+    if (a === "v2-classif-salvar") {  // Classificar: área e subcategoria da loja ("— depois —" = só a área); o nome fantasia, se tiver
       const i = el.getAttribute("data-i"), campo = (id) => this.shadowRoot.getElementById(id), cat = campo(`cl-a-${i}`)?.value;
       if (!cat) { this._aviso = "Escolha a área."; this._render(); return; }
-      try { this._aviso = (await this._api({ acao: "faturas_classificar", chave: k, categoria: cat, subcategoria: null, sem_subcategoria: true, nome: campo(`cl-n-${i}`)?.value || "" })).mensagem; }
+      const sEl = campo(`cl-s-${i}`), sub = sEl && !sEl.hidden ? sEl.value : "";
+      try { this._aviso = (await this._api({ acao: "faturas_classificar", chave: k, categoria: cat, subcategoria: sub || null, sem_subcategoria: !sub, nome: campo(`cl-n-${i}`)?.value || "" })).mensagem; }
       catch (e) { this._aviso = "⚠ " + (e.message || e); }
       await this._carregar(true);
       this._v2ClassifCarregar();
@@ -11271,7 +11312,7 @@ class ComprasV3Card extends BaseV2 {
     .v3 dialog.v3d.v3larga[open]{display:block}.v3 dialog.v3d.v3larga>*+*{margin-top:12px}  /* no Safari do iPhone a grade ainda encolhia a lista: em sequência normal, ela fica inteira e a janela rola */
     .v3 dialog.v3d.v3larga .v-lista{overflow:visible;flex:none}
     .v3 dialog.v3d>.v-fh{position:sticky;top:0;z-index:2;background:var(--v3-bg);margin:0 -20px;padding:14px 20px 10px}  /* o X fica sempre à vista */  /* a lista não encolhe dentro da folha (ficava cortada e sem rolar) */
-    .v3-semsub{display:none!important}
+    .v3-cl4{flex-wrap:wrap}.v3-cl4 .v3-clsub{min-width:0}
     .v3-sug{display:block;color:var(--v3-pri);margin-top:2px;white-space:normal}
     .v3-consg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:4px 0 12px}
     .v3-cons{display:grid;gap:1px;padding:10px 12px;border-radius:12px;background:var(--v3-mut)}.v3-cons small{font-size:11px;color:var(--v3-mut-fg)}
