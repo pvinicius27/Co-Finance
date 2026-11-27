@@ -8991,7 +8991,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.35";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.36";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
@@ -9781,14 +9781,14 @@ class ComprasV3Card extends BaseV2 {
         ${this._mes === this._mesDe(new Date()) ? `<button class="v3-bt prim" data-a="v2-mais">${V3_SVG("mais")}Lançar</button>` : ""}</div></section>`
       : modo === "mes" ? this._v3Calendario(lst, idx) : this._v3MesAMes(true);
     const cartoes = F ? this._v3Cartoes() : "", futuro = F ? this._v3Futuro() || this._v3PagosMes() : "";
-    const ultimas = `<section class="v3-card v3-ult"><div class="v3-hd"><h2>Últimas compras</h2><button class="v3-link" data-a="v3-menu" data-k="compras">Todas ${V3_SVG("dir")}</button></div>
-      ${this._v3Lista(itens.slice(0, this._v2Largo ? 15 : 5), idx)}</section>`;
     const onde = vazio ? "" : this._v3Onde(lst, total), mes = modo === "mes" ? this._v3MesAMes(false) : "", pagos = vazio ? "" : this._v3ComoPago(lst);
-    const ultimasV = vazio ? "" : ultimas;
     const listaPop = this._v3ListaK ? this._v3ListaPop(itensC, idx) : "";
-    if (!this._v2Largo) return `<div class="v3-resumo">${alerta}${heroi}${futuro}${cal}${cartoes}${onde}${modo === "mes" ? "" : ultimasV}${mes}${modo === "mes" ? "" : pagos}${listaPop}</div>`;
-    if (modo !== "mes") return `<div class="v3-resumo larga">${alerta}<div class="v3-grade v3-alinha"><div class="v3-col">${heroi}${cal}</div><div class="v3-col">${cartoes}</div>
-      <div class="v3-col">${onde}${pagos}</div><div class="v3-col">${ultimas}</div></div>${listaPop}</div>`;  // a janela da lista (No cartão, Faturas…) vale também em Ano e Tudo
+    if (!this._v2Largo) return modo === "mes" ? `<div class="v3-resumo">${alerta}${heroi}${futuro}${cal}${cartoes}${onde}${mes}${listaPop}</div>`
+      : `<div class="v3-resumo">${alerta}${heroi}${cartoes}${cal}${onde}${pagos}${listaPop}</div>`;  // Ano e Tudo: sem as Últimas compras
+    // Ano e Tudo: Compras e Pagamentos um embaixo do outro, os Cartões ao lado na mesma altura; embaixo, o Mês a mês e o
+    // Onde foi o dinheiro de ponta a ponta. O mesmo espaço entre todos os quadros.
+    if (modo !== "mes") return `<div class="v3-resumo larga">${alerta}<div class="v3-anov"><div class="v3-anog"><div class="v3-anok">${kpiC}${kpiP}</div>${cartoes}</div>
+      ${cal}${onde}${pagos}</div>${listaPop}</div>`;  // a janela da lista (No cartão, Faturas…) vale também em Ano e Tudo
     // mês de hoje: à direita do topo, os Próximos pagamentos; outro mês: as últimas compras dele
     const ult6 = vazio ? "" : `<section class="v3-card v3-ult"><div class="v3-hd"><h2>Últimas compras</h2><button class="v3-link" data-a="v3-menu" data-k="compras">Todas ${V3_SVG("dir")}</button></div>
       ${this._v3Lista(itens.slice(0, 6), idx)}</section>`;
@@ -11287,7 +11287,10 @@ class ComprasV3Card extends BaseV2 {
     .v3-mm-v{display:block;font:600 10.5px/16px Manrope,system-ui,sans-serif;color:var(--v3-mut-fg);text-align:center;white-space:nowrap;overflow:hidden}
     .v3-mm button.on .v3-mm-v{color:var(--v3-fg)}
     /* Ano e Tudo: o total e o Mês a mês terminam na mesma altura dos Cartões (o gráfico cresce para preencher) */
-    .v3-alinha{align-items:stretch}.v3-alinha>.v3-col{display:flex;flex-direction:column;min-width:0}
+    .v3-alinha{align-items:stretch}
+.v3-anov{display:grid;gap:12px}.v3-anov>*,.v3-anog>*,.v3-anok>*{margin:0!important}
+.v3-anog{display:grid;grid-template-columns:minmax(0,1.85fr) minmax(300px,1fr);gap:12px;align-items:stretch}
+.v3-anok{display:grid;gap:12px;grid-auto-rows:1fr}.v3-anog>.v3-carts{display:flex;flex-direction:column}.v3-anog>.v3-carts>.v3-pilha{flex:1;display:flex;align-items:center;justify-content:center}.v3-alinha>.v3-col{display:flex;flex-direction:column;min-width:0}
     .v3-alinha>.v3-col:nth-child(-n+2)>.v3-card:last-child{flex:1}
     .v3-alinha .v3-mmc{display:flex;flex-direction:column}.v3-alinha .v3-mmc .v3-mm{flex:1;height:auto;min-height:190px}
     .v3-mm button{flex:1;border:0;background:none;display:grid;grid-template-rows:1fr auto;grid-template-columns:minmax(0,1fr);gap:6px;cursor:pointer;padding:0;min-width:0}
