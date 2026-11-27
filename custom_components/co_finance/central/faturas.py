@@ -356,7 +356,8 @@ def _ler_itau(L) -> dict[str, Any]:
     ordem = []  # itens na ordem da fatura: por página, a coluna da esquerda inteira e depois a da direita
     for pag in sorted({p for p, *_r in L}):
         esq, dir_ = [], []
-        for p, x, _y, t in L:
+        # de cima para baixo pela posição na página: alguns PDFs entregam os lançamentos antes dos títulos das seções
+        for p, x, _y, t in sorted((r for r in L if r[0] == pag), key=lambda r: (-r[2], r[1])):
             if p == pag:
                 a, b = colunas(x, t)
                 esq += a
