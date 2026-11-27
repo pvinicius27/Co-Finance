@@ -898,7 +898,8 @@ def chave_loja(desc: str) -> str:
     d = _sem_acento(desc).upper()
     d = re.sub(r"\bPARC\b|#", "", d)
     depois = re.sub(r"[^A-Z]", "", d.split("*", 1)[1]) if "*" in d else ""
-    return depois if len(depois) >= 5 else re.sub(r"[^A-Z]", "", d)
+    letras = depois if len(depois) >= 5 else re.sub(r"[^A-Z]", "", d)
+    return letras or re.sub(r"[^A-Z0-9]", "", d)  # nome só com números ("99"): os números são a chave
 
 
 _MESMA_LOJA = {"EBAZAR": "MERCADOLIVRE", "RAIADROGASIL": "DROGASIL"}  # razão social da nota → nome na fatura

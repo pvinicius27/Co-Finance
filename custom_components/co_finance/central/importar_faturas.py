@@ -593,7 +593,8 @@ def faturas_lojas(_: dict[str, Any]) -> dict[str, Any]:
         if c.get("via") != "fatura" or c.get("classe_via") != "a classificar":
             continue
         fb = c["fatura_banco"]
-        x = g.setdefault(fb["chave"], {"chave": fb["chave"], "loja": (c.get("loja") or {}).get("nome"), "descricao": fb["descricao"],
+        ch = fb.get("chave") or chave_loja(fb.get("descricao") or "")  # trazida antes da chave com números ("99"): calcula de novo
+        x = g.setdefault(ch, {"chave": ch, "loja": (c.get("loja") or {}).get("nome"), "descricao": fb["descricao"],
                                        "n": 0, "total": 0.0, "quem": set(), "ultima": ""})
         x["n"] += 1
         x["total"] = round(x["total"] + (c.get("valor_pago") or 0), 2)
@@ -639,7 +640,7 @@ def faturas_classificar(p: dict[str, Any]) -> dict[str, Any]:
         n = 0
         for c in db["compras"]:
             fb = c.get("fatura_banco") or {}
-            if c.get("via") == "fatura" and fb.get("chave") == ch and c.get("classe_via") in ("a classificar", "regra", "loja"):
+            if c.get("via") == "fatura" and (fb.get("chave") or chave_loja(fb.get("descricao") or "")) == ch and c.get("classe_via") in ("a classificar", "regra", "loja"):
                 c["categoria"], c["subcategoria"], c["classe_via"] = cat, sub, "loja"
                 if nome:
                     c["loja"]["nome"] = nome
