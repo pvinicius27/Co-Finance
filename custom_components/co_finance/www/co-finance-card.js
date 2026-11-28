@@ -9022,7 +9022,7 @@ registrarCartoes({ layouts: { nubankv: (p) => p.pecas(FICHAS_NUBANKV[p.k.modelo]
 const BaseNova = ComprasCard;  // mesmo arquivo
 // CARTOES: incluído acima (codigo/cartoes/)
 
-const V3_VERSION = "0.0.49";  // a versão da integração (rodapé)
+const V3_VERSION = "0.0.50";  // a versão da integração (rodapé)
 const V3_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const V3_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];  // começa na segunda
 const V3_ESCURO = "compras-v3:escuro";
@@ -10470,52 +10470,125 @@ class ComprasV3Card extends BaseV2 {
       + (resto > 0 && !q.length ? `<button class="v3-bt v3-mais" data-a="v3-prod-mais">Mostrar mais (${resto})</button>` : "");
   }
 
-  // ---------------------------------------------------------------- Áreas: um botão por área; a escolhida com subáreas, linha do tempo, veículo e lojas
+  // ---------------------------------------------------------------- Áreas
+  // Resumo do período (4 números), "Para onde foi o dinheiro" (rosca + lista), "Pontos de atenção", e a área escolhida:
+  // total, últimos 6 meses, subcategorias, linha do tempo; ao lado, veículo, lojas e quem gastou. O período e a pessoa
+  // são os do topo do app. Orçamento por área é opcional (this._dados.orcamento): sem ele, nada de orçamento aparece.
   _v3Areas() {
     this._finEstado();
     this._finGarantir();
     const lst = this._finFiltradas(), idx = this._v3Faturas(), modo = this._fModo;
-    const por = Object.entries(this._finSomaPor(lst, (l) => l.area)).sort((a, b) => b[1] - a[1]);
+    const por = Object.entries(this._finSomaPor(lst, (l) => l.area)).filter(([, v]) => v > 0.004).sort((a, b) => b[1] - a[1]);
     if (!por.length) return `<section class="v3-card"><div class="v3-vazio">Nenhum gasto em ${this._e(this._finPeriodoTxt())}${this._fQuem === "Todos" ? "" : ` de ${this._e(this._fQuem)}`}.</div></section>`;
     if (!por.some(([a]) => a === this._v3Area)) { this._v3Area = por[0][0]; this._v3Sub = null; }
-    const ar = this._v3Area, daArea = lst.filter((l) => l.area === ar), total = daArea.reduce((s, l) => s + l.valor, 0);
+    const total = por.reduce((s, [, v]) => s + v, 0), ar = this._v3Area;
+    const orc = this._dados?.orcamento || {}, temOrc = Object.values(orc).some((v) => v > 0);
+    const quando = modo === "mes" ? `em ${V3_MESES[Number(this._mes.slice(5, 7)) - 1]}` : modo === "ano" ? `em ${this._fAno}` : "no total";
+    const cor = (a) => this._finInfo(a).cor;
+    // média dos 3 meses anteriores (só no modo mês; da mesma pessoa, quando escolhida)
+    const linhasP = this._finLinhas().filter((l) => this._finDaPessoa(l));
+    const doMes = (m, f) => linhasP.filter((l) => String(l.c.emissao).startsWith(m) && (!f || f(l))).reduce((s, l) => s + l.valor, 0);
+    const media = (f) => modo !== "mes" ? 0 : [1, 2, 3].reduce((s, i) => s + doMes(this._finSomaMes(this._mes, -i), f), 0) / 3;
+    const tend = (v, m) => {
+      if (!(m >= 50)) return "";
+      const x = (v - m) / m;
+      if (Math.abs(x) < 0.005) return `<em class="v3-ap igual">= média</em>`;
+      return `<em class="v3-ap ${x > 0 ? "sobe" : "desce"}" title="média dos 3 meses anteriores: ${this._brl(m)}">${x > 0 ? "▲" : "▼"} ${Math.round(Math.abs(x) * 100)}%</em>`;
+    };
+    const medA = Object.fromEntries(por.map(([a]) => [a, media((l) => l.area === a)])), medT = media();
+    const itensT = this._v3Itens(lst);
+
+    // A. resumo
+    const maior = por[0];
+    const usadoOrc = temOrc ? por.reduce((s, [a, v]) => s + (orc[a] > 0 ? v : 0), 0) : 0, totOrc = temOrc ? Object.values(orc).reduce((s, v) => s + (v > 0 ? v : 0), 0) : 0;
+    const res = [
+      `<div class="v3-ar-k"><small>Gasto ${quando}</small><b>${this._brl(total)}</b>${tend(total, medT)}</div>`,
+      temOrc ? `<div class="v3-ar-k"><small>Orçamento usado</small><b>${Math.round(usadoOrc / totOrc * 100)}%</b><i class="v3-ar-bar"><u style="width:${Math.min(100, usadoOrc / totOrc * 100).toFixed(1)}%"></u></i><span>${usadoOrc <= totOrc ? `sobram ${this._brl(totOrc - usadoOrc)}` : `passou ${this._brl(usadoOrc - totOrc)}`}</span></div>` : "",
+      `<div class="v3-ar-k"><small>Maior área</small><b class="v3-ar-nm">${this._e(maior[0])}</b><span>${Math.round(maior[1] / total * 100)}% do total</span></div>`,
+      `<div class="v3-ar-k"><small>Compras</small><b>${itensT.length}</b><span>ticket médio ${this._brl(itensT.length ? total / itensT.length : 0)}</span></div>`,
+    ].filter(Boolean);
+    const resumo = `<div class="v3-ar-res" style="--n:${res.length}">${res.join("")}</div>`;
+
+    // B. rosca + lista
+    const R = 78, C = 2 * Math.PI * R, gap = por.length > 1 ? 1.5 : 0;
+    let acum = 0;
+    const fatias = por.map(([a, v]) => {
+      const len = Math.max(0.5, v / total * C - gap), on = a === ar;
+      const s = `<circle class="v3-ar-f${on ? " on" : ""}" data-a="v3-area" data-k="${this._e(a)}" cx="100" cy="100" r="${R}" fill="none" stroke="${cor(a)}"
+        stroke-width="${on ? 26 : 18}" stroke-dasharray="${len.toFixed(2)} ${(C - len).toFixed(2)}" stroke-dashoffset="${(-acum).toFixed(2)}"
+        transform="rotate(-90 100 100)" opacity="${on ? 1 : 0.45}"><title>${this._e(a)}: ${this._brl(v)}</title></circle>`;
+      acum += v / total * C;
+      return s;
+    }).join("");
+    const rosca = `<svg class="v3-ar-ros" viewBox="0 0 200 200" role="img" aria-label="Gasto por área ${quando}"><title>Gasto por área ${quando}</title>${fatias}
+      <text x="100" y="92" text-anchor="middle" class="v3-ar-rt">${this._e(quando.replace(/^em /, ""))}</text><text x="100" y="116" text-anchor="middle" class="v3-ar-rv">${this._brl(total)}</text></svg>`;
+    const lista = por.map(([a, v]) => `<button class="v3-ar-l${a === ar ? " on" : ""}" data-a="v3-area" data-k="${this._e(a)}" aria-pressed="${a === ar}">
+        <span class="v3-ar-ln"><i style="background:${cor(a)}"></i><b>${this._e(a)}</b>${tend(v, medA[a])}</span><span class="v3-ar-lv">${this._brl(v)}</span>
+        ${orc[a] > 0 ? `<i class="v3-ar-bar${v > orc[a] ? " estourou" : v > orc[a] * 0.9 ? " quase" : ""}"><u style="width:${Math.min(100, v / orc[a] * 100).toFixed(1)}%"></u></i><small class="v3-ar-lo">${Math.round(v / orc[a] * 100)}% de ${this._brl(orc[a])}</small>` : ""}</button>`).join("");
+    const para = `<section class="v3-card v3-ar-para"><div class="v3-hd"><h2>Para onde foi o dinheiro</h2></div><div class="v3-ar-pg">${rosca}<div class="v3-ar-lista" role="group" aria-label="Áreas">${lista}</div></div></section>`;
+
+    // C. pontos de atenção
+    const att = [];
+    for (const [a, v] of por) {
+      const m = medA[a];
+      if (orc[a] > 0 && v > orc[a]) att.push([3, a, "des", `${this._e(a)}: passou do orçamento em ${this._brl(v - orc[a])}`]);
+      else if (orc[a] > 0 && v > orc[a] * 0.9) att.push([2, a, "av", `${this._e(a)}: ${Math.round(v / orc[a] * 100)}% do orçamento`]);
+      else if (m >= 50 && v > m * 1.15 && v - m >= 100) att.push([2, a, "av", `${this._e(a)}: ${Math.round((v - m) / m * 100)}% acima da média (${this._brl(v - m)} a mais)`]);
+      else if (m >= 50 && v < m * 0.9 && m - v >= 100) att.push([1, a, "ok", `${this._e(a)}: economia de ${this._brl(m - v)} na média`]);
+    }
+    const semSub = {};
+    for (const l of lst) if (!l.c.subcategoria && !this._ramo(l.area)?.pelos_itens) semSub[l.area] = (semSub[l.area] || 0) + 1;
+    const ss = Object.entries(semSub).sort((a, b) => b[1] - a[1])[0];
+    if (ss) att.push([0, ss[0], "mut", `${ss[1]} ${ss[1] === 1 ? "compra" : "compras"} sem subcategoria em ${this._e(ss[0])}`]);
+    att.sort((a, b) => b[0] - a[0]);
+    const atencao = `<section class="v3-card v3-ar-att"><div class="v3-hd"><h2>Pontos de atenção</h2></div>${att.length ? att.slice(0, 3).map(([, a, cl, txt]) =>
+      `<button class="v3-ar-a ${cl}" data-a="v3-area" data-k="${this._e(a)}">${V3_SVG(cl === "ok" ? "desce" : cl === "mut" ? "info" : "alerta")}<span>${txt}</span></button>`).join("")
+      : `<div class="v3-vazio">Nada fora do normal neste período.</div>`}</section>`;
+
+    // D. a área escolhida
+    const daArea = lst.filter((l) => l.area === ar), totA = daArea.reduce((s, l) => s + l.valor, 0);
     const subs = Object.entries(this._finSomaPor(daArea, (l) => l.c.subcategoria || "Outros")).sort((a, b) => b[1] - a[1]);
     const sub = subs.some(([s]) => s === this._v3Sub) ? this._v3Sub : null;
     const vis = sub ? daArea.filter((l) => (l.c.subcategoria || "Outros") === sub) : daArea;
-    const quando = modo === "mes" ? `em ${V3_MESES[Number(this._mes.slice(5, 7)) - 1]}` : modo === "ano" ? `em ${this._fAno}` : "no total";
-    let cmp = "";
-    if (modo === "mes") {  // contra a média dos 3 meses anteriores (da mesma pessoa, quando escolhida)
-      const lin = this._finLinhas().filter((l) => l.area === ar && this._finDaPessoa(l));
-      const media = [1, 2, 3].reduce((s, i) => { const m = this._finSomaMes(this._mes, -i); return s + lin.filter((l) => String(l.c.emissao).startsWith(m)).reduce((x, l) => x + l.valor, 0); }, 0) / 3;
-      if (media > 0) { const v = (total - media) / media; cmp = `<div class="v3-tend ${v > 0 ? "sobe" : "desce"}">${V3_SVG(v > 0 ? "sobe" : "desce")}${Math.round(Math.abs(v) * 100)}% ${v > 0 ? "acima" : "abaixo"} da média dos 3 meses anteriores (${this._brl(media)})</div>`; }
-    }
-    const chips = `<div class="v3-achips" role="group" aria-label="Áreas">${por.map(([a, v]) => `<button class="v3-achip${a === ar ? " on" : ""}" data-a="v3-area" data-k="${this._e(a)}" aria-pressed="${a === ar}" style="--ac:${this._finInfo(a).cor}"><small><i></i>${this._e(a)}</small><b>${this._brl(v)}</b></button>`).join("")}</div>`;
-    const det = `<section class="v3-card"><span class="v3-rot">${this._e(ar)} ${quando}</span><div class="v3-total m">${this._brl(total)}</div>${cmp}
-      ${subs.length > 1 ? `<div class="v3-chips v3-subs">${subs.map(([s, v]) => `<button class="v3-chip${s === sub ? " on" : ""}" data-a="v3-sub" data-k="${this._e(s === sub ? "" : s)}" aria-pressed="${s === sub}">${this._e(s)}<b>${this._brl(v)}</b></button>`).join("")}</div>` : ""}</section>`;
+    const hoje = this._mesDe(new Date());
+    const base = modo === "mes" ? this._mes : modo === "ano" ? (`${this._fAno}-12` > hoje ? hoje : `${this._fAno}-12`) : hoje;
+    const hist = Array.from({ length: 6 }, (_, i) => this._finSomaMes(base, i - 5)).map((m) => [m, doMes(m, (l) => l.area === ar)]);
+    const hmx = Math.max(1, ...hist.map(([, v]) => v));
+    const histH = hist.some(([, v]) => v > 0.004) ? `<div class="v3-ar-h" role="img" aria-label="${this._e(ar)}: últimos 6 meses">${hist.map(([m, v], i) =>
+      `<span title="${V3_MESES[Number(m.slice(5, 7)) - 1]}: ${this._brl(v)}"><i style="height:${v > 0.004 ? Math.max(4, v / hmx * 56).toFixed(0) : 2}px;opacity:${i === hist.length - 1 ? 1 : 0.35};background:${cor(ar)}"></i><small>${V3_MESES[Number(m.slice(5, 7)) - 1].slice(0, 3)}</small></span>`).join("")}</div>` : "";
+    const smx = Math.max(1, ...subs.map(([, v]) => v));
+    const subsH = subs.length ? `<div class="v3-ar-subs">${subs.map(([s, v]) => `<button class="v3-ar-s${s === sub ? " on" : ""}" data-a="v3-sub" data-k="${this._e(s === sub ? "" : s)}" aria-pressed="${s === sub}">
+        <span><b>${this._e(s)}</b><small>${Math.round(v / (totA || 1) * 100)}%</small></span><span class="v3-ar-lv">${this._brl(v)}</span>
+        ${subs.length > 1 ? `<i class="v3-ar-bar"><u style="width:${(v / smx * 100).toFixed(1)}%;background:${cor(ar)}"></u></i>` : ""}</button>`).join("")}</div>` : "";
     const itens = this._v3Itens(vis);
-    const linha = `<section class="v3-card"><div class="v3-hd"><h2>Linha do tempo${sub ? ` · ${this._e(sub)}` : ""}</h2><span class="v3-dica0">${itens.length} ${itens.length === 1 ? "compra" : "compras"}</span></div>${this._v3Lista(itens, idx)}</section>`;
+    const det = `<section class="v3-card v3-ar-det"><div class="v3-ar-dh"><span class="v3-rot"><i style="background:${cor(ar)}"></i>${this._e(ar)} ${quando}</span>${tend(totA, medA[ar])}</div>
+      <div class="v3-total m">${this._brl(totA)}</div>${histH}
+      ${subsH ? `<div class="v3-hd"><h2>Subcategorias</h2>${sub ? `<button class="v3-link" data-a="v3-sub" data-k="">Ver todas ${V3_SVG("dir")}</button>` : ""}</div>${subsH}` : ""}
+      <div class="v3-hd"><h2>Linha do tempo${sub ? ` · ${this._e(sub)}` : ""}</h2><span class="v3-dica0">${itens.length} ${itens.length === 1 ? "compra" : "compras"}</span></div>${this._v3Lista(itens, idx)}</section>`;
+
+    // E. lateral: veículo, lojas, quem gastou
     const veic = (this._dados.bens || []).map((b) => {
       const lb = daArea.filter((l) => l.c.bem === b.id);
       if (!lb.length) return "";
-      const cs = b.consumo || {}, km = cs.km_atual;  // só o km que vocês informaram
-      const n1 = (v) => String(v).replace(".", ","), med = cs.tanque || cs.ultimos_30 || cs.geral;
-      const linha = (rot, val, sub) => `<div class="v3-cons"><small>${rot}</small><b>${val}</b>${sub ? `<em>${sub}</em>` : ""}</div>`;
-      const cons = med ? `<div class="v3-consg">
-          ${cs.tanque ? linha("Tanque a tanque", `${n1(cs.tanque.kml)} km/l`, `${this._dataCurta(cs.tanque.de + "T12:00").slice(0, 5)} a ${this._dataCurta(cs.tanque.ate + "T12:00").slice(0, 5)}`) : ""}
-          ${cs.ultimos_30 ? linha("Últimos 30 dias", `${n1(cs.ultimos_30.kml)} km/l`, `${cs.ultimos_30.km.toLocaleString("pt-BR")} km`) : ""}
-          ${cs.geral ? linha("Média geral", `${n1(cs.geral.kml)} km/l`, `${cs.geral.leituras} leituras`) : ""}
-          ${(cs.ultimos_30 || cs.geral)?.rs_km ? linha("Custo por km", this._brl((cs.ultimos_30 || cs.geral).rs_km), "combustível") : ""}
-          ${cs.km_mes ? linha("Rodou no mês", `${cs.km_mes.toLocaleString("pt-BR")} km`, "") : ""}</div>`
-        : `<div class="fs v3-consf">Consumo: ${cs.faltam_leituras ? `faltam ${cs.faltam_leituras} ${cs.faltam_leituras === 1 ? "leitura" : "leituras"} de km nos abastecimentos para calcular` : "ainda sem dados"}. Responda o km no aviso do posto (ou no Editar › Veículo).</div>`;
+      const cs = b.consumo || {}, km = cs.km_atual, n1 = (v) => String(v).replace(".", ","), rk = (cs.ultimos_30 || cs.geral)?.rs_km;
+      const cx = (rot, val, s) => `<div class="v3-cons"><small>${rot}</small><b>${val}</b>${s ? `<em>${s}</em>` : ""}</div>`;
+      const caixas = [cs.tanque && cx("Tanque a tanque", `${n1(cs.tanque.kml)} km/l`, `${this._dataCurta(cs.tanque.de + "T12:00").slice(0, 5)} a ${this._dataCurta(cs.tanque.ate + "T12:00").slice(0, 5)}`),
+        cs.ultimos_30 && cx("Últimos 30 dias", `${n1(cs.ultimos_30.kml)} km/l`, `${cs.ultimos_30.km.toLocaleString("pt-BR")} km`),
+        cs.geral && cx("Média geral", `${n1(cs.geral.kml)} km/l`, `${cs.geral.leituras} leituras`)].filter(Boolean).join("");
       return `<section class="v3-card"><div class="v3-hd"><h2>Veículo</h2></div><div class="v3-veic"><span class="v3-it-ic g">${V3_SVG("carro")}</span><span class="v3-it-t"><b>${this._e(b.nome)}</b><small>${km ? `${km.toLocaleString("pt-BR")} km (última leitura)` : "sem km lançado"}</small></span></div>
-        ${cons}${cs.sem_km ? `<div class="fs v3-consf">${cs.sem_km} ${cs.sem_km === 1 ? "abastecimento" : "abastecimentos"} sem km nos últimos 90 dias.</div>` : ""}
+        ${rk ? `<div class="v3-ar-km"><small>Custo por km</small><b>${this._brl(rk)}</b>${cs.km_mes ? `<span>rodou ${cs.km_mes.toLocaleString("pt-BR")} km este mês</span>` : ""}</div>` : ""}
+        ${caixas ? `<div class="v3-consg">${caixas}</div>` : `<div class="fs v3-consf">Consumo: ${cs.faltam_leituras ? `faltam ${cs.faltam_leituras} ${cs.faltam_leituras === 1 ? "leitura" : "leituras"} de km nos abastecimentos para calcular` : "ainda sem dados"}. Responda o km no aviso do posto (ou no Editar › Veículo).</div>`}
+        ${cs.sem_km ? `<div class="fs v3-consf">${cs.sem_km} ${cs.sem_km === 1 ? "abastecimento" : "abastecimentos"} sem km nos últimos 90 dias.</div>` : ""}
         <div class="v3-cxa"><small>Gasto com o ${this._e(b.nome)} ${quando}</small><b>${this._brl(lb.reduce((s, l) => s + l.valor, 0))}</b></div></section>`;
     }).join("");
-    const lojas = Object.entries(this._finSomaPor(vis, (l) => l.c.loja_curta || "—")).sort((a, b) => b[1] - a[1]).slice(0, 8);
-    const lojasH = `<section class="v3-card"><div class="v3-hd"><h2>Lojas</h2></div>${lojas.map(([nm, v]) => `<div class="v3-loja"><span>${this._e(nm)}</span><b>${this._brl(v)}</b></div>`).join("")}</section>`;
-    const regras = this._hass?.user?.is_admin ? `<button class="v3-link v3-regras" data-a="f-cats">${V3_SVG("engrenagem")}Categorias e regras ›</button>` : "";
-    if (!this._v2Largo) return `<div class="v3-areas">${chips}${det}${veic}${linha}${lojasH}${regras}</div>`;
-    return `<div class="v3-areas">${chips}<div class="v3-grade"><div class="v3-col">${det}${linha}</div><div class="v3-col">${veic}${lojasH}${regras}</div></div></div>`;
+    const lojas = Object.entries(this._finSomaPor(vis, (l) => l.c.loja_curta || "—")).sort((a, b) => b[1] - a[1]).slice(0, 6), lmx = lojas[0]?.[1] || 1;
+    const lojasH = lojas.length ? `<section class="v3-card"><div class="v3-hd"><h2>Onde mais gastou</h2></div>${lojas.map(([nm, v]) => `<div class="v3-ar-lj"><span>${this._e(nm)}</span><b>${this._brl(v)}</b><i class="v3-ar-bar"><u style="width:${(v / lmx * 100).toFixed(1)}%;background:${cor(ar)}"></u></i></div>`).join("")}</section>` : "";
+    const quem = Object.entries(this._finSomaPor(vis, (l) => l.c.quem || "—")).sort((a, b) => b[1] - a[1]), qt = quem.reduce((s, [, v]) => s + v, 0) || 1;
+    const quemH = quem.length > 1 ? `<section class="v3-card"><div class="v3-hd"><h2>Quem gastou</h2></div><div class="v3-ar-q">${quem.map(([q, v]) => `<u style="width:${(v / qt * 100).toFixed(2)}%;background:${this._cor(q)}" title="${this._e(q)}: ${this._brl(v)}"></u>`).join("")}</div>
+      ${quem.map(([q, v]) => `<div class="v3-ar-lj"><span><i style="background:${this._cor(q)}"></i>${this._e(q)}</span><b>${this._brl(v)}</b><small>${Math.round(v / qt * 100)}%</small></div>`).join("")}</section>` : "";
+    const regras = this._hass?.user?.is_admin ? `<button class="v3-link v3-regras" data-a="f-cats">Categorias e regras ›</button>` : "";
+    if (!this._v2Largo) return `<div class="v3-areas">${resumo}${para}${atencao}${det}${veic}${lojasH}${quemH}${regras}</div>`;
+    return `<div class="v3-areas larga">${resumo}<div class="v3-ar-g">${para}${atencao}</div><div class="v3-ar-g">${det}<div class="v3-col">${veic}${lojasH}${quemH}${regras}</div></div></div>`;
   }
 
   // ---------------------------------------------------------------- A pagar: cartão com a fatura, atrasadas e próximas, contas da casa, assinaturas
@@ -11434,6 +11507,29 @@ class ComprasV3Card extends BaseV2 {
     .v3-mm button.on .v3-mm-v{color:var(--v3-fg)}
     /* Ano e Tudo: o total e o Mês a mês terminam na mesma altura dos Cartões (o gráfico cresce para preencher) */
     .v3-alinha{align-items:stretch}
+.v3-areas{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;min-width:0}.v3-areas>*,.v3-ar-g>*,.v3-ar-g .v3-col>*{margin:0!important}
+.v3-ar-g{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;align-items:start}.v3-ar-g .v3-col{display:grid;gap:12px}
+.v3-ar-res{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.v3-ar-res>:last-child:nth-child(odd){grid-column:1/-1}.v3-areas.larga .v3-ar-res{grid-template-columns:repeat(var(--n),minmax(0,1fr))}.v3-areas.larga .v3-ar-res>*{grid-column:auto}
+.v3-ar-k{display:grid;gap:3px;align-content:start;padding:12px 14px;border-radius:var(--v3-r);background:var(--v3-card);border:1px solid var(--v3-borda);min-width:0}
+.v3-ar-k small{font-size:12px;color:var(--v3-mut-fg)}.v3-ar-k b{font-size:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.v3-ar-k span{font-size:12px;color:var(--v3-mut-fg)}.v3-ar-k .v3-ap{justify-self:start}
+.v3-ap{font-style:normal;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;white-space:nowrap}.v3-ap.sobe{background:var(--v3-av-soft);color:var(--v3-av-forte)}.v3-ap.desce{background:var(--v3-ok-soft);color:var(--v3-ok-forte)}.v3-ap.igual{background:var(--v3-mut);color:var(--v3-mut-fg)}
+.v3-ar-bar{display:block;height:5px;border-radius:3px;background:var(--v3-mut);overflow:hidden}.v3-ar-bar u{display:block;height:100%;border-radius:3px;background:var(--v3-pri)}.v3-ar-bar.quase u{background:var(--v3-av-forte)}.v3-ar-bar.estourou u{background:var(--v3-des)}
+.v3-ar-pg{display:grid;grid-template-columns:200px minmax(0,1fr);gap:16px;align-items:start}.v3-areas.larga .v3-ar-ros{position:sticky;top:12px}.v3-ar-ros{width:200px;height:200px}.v3-ar-f{cursor:pointer;transition:stroke-width .15s,opacity .15s}
+.v3-ar-rt{font-size:12px;fill:var(--v3-mut-fg)}.v3-ar-rv{font-size:17px;font-weight:700;fill:var(--v3-fg)}
+.v3-ar-lista{display:grid;gap:2px}.v3-ar-l,.v3-ar-s{font:inherit;color:inherit;text-align:left;background:none;border:0;border-radius:10px;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:8px 10px;min-height:44px}
+.v3-ar-l.on,.v3-ar-s.on{background:var(--v3-acc);color:var(--v3-acc-fg)}.v3-ar-ln{display:flex;align-items:center;gap:8px;min-width:0}.v3-ar-ln b{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.v3-ar-ln>i{width:10px;height:10px;border-radius:50%;flex:none}.v3-ar-lv{font-weight:600;white-space:nowrap}.v3-ar-l .v3-ar-bar,.v3-ar-s .v3-ar-bar{grid-column:1/-1}.v3-ar-lo{grid-column:1/-1;font-size:11px;color:var(--v3-mut-fg)}
+.v3-ar-a{font:inherit;color:var(--v3-fg);text-align:left;border:0;border-radius:12px;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;min-height:44px;margin-bottom:6px;font-size:13.5px}
+.v3-ar-a svg{width:18px;height:18px;flex:none}.v3-ar-a.av{background:var(--v3-av-soft)}.v3-ar-a.des{background:var(--v3-av-soft);color:var(--v3-des)}.v3-ar-a.ok{background:var(--v3-ok-soft)}.v3-ar-a.mut{background:var(--v3-mut)}
+.v3-ar-dh{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.v3-ar-dh .v3-rot{display:inline-flex;align-items:center;gap:6px}.v3-ar-dh .v3-rot i{width:10px;height:10px;border-radius:50%}
+.v3-ar-h{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;align-items:end;height:84px;margin:8px 0 14px}.v3-ar-h span{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%}
+.v3-ar-h i{display:block;width:100%;max-width:42px;border-radius:5px 5px 2px 2px}.v3-ar-h small{font-size:11px;color:var(--v3-mut-fg)}
+.v3-ar-subs{display:grid;gap:2px;margin-bottom:12px}.v3-ar-s>span:first-child{display:flex;align-items:baseline;gap:8px;min-width:0}.v3-ar-s small{font-size:11.5px;color:var(--v3-mut-fg)}.v3-ar-s.on small{color:inherit}
+.v3-ar-km{display:grid;gap:2px;padding:10px 12px;border-radius:12px;background:var(--v3-mut);margin:8px 0}.v3-ar-km small,.v3-ar-km span{font-size:12px;color:var(--v3-mut-fg)}.v3-ar-km b{font-size:20px}
+.v3-ar-lj{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:4px 10px;align-items:center;padding:6px 0;font-size:13.5px}.v3-ar-lj>span{display:flex;align-items:center;gap:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.v3-ar-lj b{white-space:nowrap}.v3-ar-lj small{color:var(--v3-mut-fg);font-size:11.5px}.v3-ar-lj .v3-ar-bar{grid-column:1/-1}.v3-ar-lj>span>i{width:9px;height:9px;border-radius:50%;flex:none}
+.v3-ar-q{display:flex;height:10px;border-radius:5px;overflow:hidden;margin:4px 0 8px}.v3-ar-q u{display:block;height:100%}
+@media (max-width:520px){.v3-ar-pg{grid-template-columns:minmax(0,1fr);justify-items:center}.v3-ar-pg .v3-ar-lista{width:100%}.v3-ar-k b{font-size:17px}}
 .v3-anov{display:grid;gap:12px}.v3-anov>*,.v3-anog>*,.v3-anok>*{margin:0!important}
 .v3-anog{display:grid;grid-template-columns:minmax(0,1.85fr) minmax(300px,1fr);gap:12px;align-items:stretch}
 .v3-anok{display:grid;gap:12px;grid-auto-rows:1fr}
